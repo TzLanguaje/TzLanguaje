@@ -279,6 +279,75 @@ int environment_get(
 
 /*
  * ==========================
+ * ¿EXISTE LA VARIABLE?
+ * ==========================
+ */
+
+int environment_has(
+    Environment *environment,
+    const char *name
+) {
+
+    if (environment == NULL) {
+        return 0;
+    }
+
+    return
+        environment_find(
+            environment,
+            name
+        ) >= 0;
+}
+
+/*
+ * ==========================
+ * ASIGNAR VARIABLE EXISTENTE
+ * ==========================
+ *
+ * edad = 25
+ */
+
+int environment_assign(
+    Environment *environment,
+    const char *name,
+    Value value
+) {
+
+    if (environment == NULL) {
+        return 0;
+    }
+
+    int index =
+        environment_find(
+            environment,
+            name
+        );
+
+    /*
+     * La asignación NO declara.
+     */
+
+    if (index < 0) {
+        return 0;
+    }
+
+    /*
+     * Liberamos el valor anterior
+     * antes de sustituirlo.
+     */
+
+    value_free(
+        &environment->variables[index].value
+    );
+
+    environment->variables[index].value =
+        value;
+
+    return 1;
+}
+
+/*
+ * ==========================
  * LIBERAR ENVIRONMENT
  * ==========================
  */
@@ -841,6 +910,74 @@ static int execute_statement(
             node->data.variable.name,
             value
         );
+
+        return 1;
+    }
+
+    /*
+     * ==========================
+     * ASIGNACIÓN
+     * ==========================
+     *
+     * edad = 25
+     */
+
+    if (node->type == AST_ASSIGNMENT) {
+
+        /*
+         * 1. La variable debe existir.
+         */
+
+        if (
+            !environment_has(
+                environment,
+                node->data.assignment.name
+            )
+        ) {
+
+            fprintf(
+                stderr,
+                "Error: la variable '%s' no existe.\n",
+                node->data.assignment.name
+            );
+
+            return 0;
+        }
+
+        /*
+         * 2. Evaluar la expresión.
+         */
+
+        Value value;
+
+        if (
+            !evaluate_expression(
+                node->data.assignment.value,
+                environment,
+                &value
+            )
+        ) {
+
+            return 0;
+        }
+
+        /*
+         * 3. Sustituir el valor
+         *    anterior.
+         */
+
+        if (
+            !environment_assign(
+                environment,
+                node->data.assignment.name,
+                value
+            )
+        ) {
+
+            value_free(&value);
+
+            return 0;
+        }
 
         return 1;
     }

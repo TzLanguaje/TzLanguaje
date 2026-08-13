@@ -15,6 +15,7 @@ typedef enum {
     AST_UNARY,
 
     AST_VARIABLE_DECLARATION,
+    AST_ASSIGNMENT,
     AST_PRINT,
     AST_IF
 } ASTNodeType;
@@ -114,6 +115,11 @@ struct ASTNode {
             ASTNode *value;
         } variable;
 
+        struct {
+            char *name;
+            ASTNode *value;
+        } assignment;
+
         ASTNode *print;
 
         struct {
@@ -181,6 +187,24 @@ ASTNode *ast_unary(
  */
 
 ASTNode *ast_variable(
+    const char *name,
+    ASTNode *value
+);
+
+/*
+ * ASIGNACIÓN
+ *
+ * Modifica una variable que YA
+ * existe:
+ *
+ * edad = 25
+ * contador = contador + 1
+ *
+ * A diferencia de ast_variable,
+ * no declara nada nuevo.
+ */
+
+ASTNode *ast_assignment(
     const char *name,
     ASTNode *value
 );

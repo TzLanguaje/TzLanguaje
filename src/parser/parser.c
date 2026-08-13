@@ -18,6 +18,36 @@ static Token *current_token(Parser *parser) {
 }
 
 /*
+ * Mira un token más adelante
+ * sin consumirlo.
+ *
+ * Sirve para distinguir:
+ *
+ * edad = 25     (asignación)
+ * edad + 1      (expresión)
+ */
+static Token *peek_token(
+    Parser *parser,
+    int offset
+) {
+    if (parser == NULL) {
+        return NULL;
+    }
+
+    int index =
+        parser->current + offset;
+
+    if (
+        index < 0 ||
+        index >= parser->token_count
+    ) {
+        return NULL;
+    }
+
+    return &parser->tokens[index];
+}
+
+/*
  * Avanza al siguiente token.
  */
 static void advance(Parser *parser) {
@@ -1036,6 +1066,66 @@ static ASTNode *parse_variable(
 }
 
 /*
+ * ASIGNACIÓN
+ *
+ * edad = 25
+ * contador = contador + 1
+ * edad = (edad + 5) * 2
+ *
+ * parse_statement ya comprobó
+ * que venimos de:
+ *
+ * IDENTIFIER '='
+ */
+static ASTNode *parse_assignment(
+    Parser *parser
+) {
+
+    Token *name =
+        current_token(parser);
+
+    /*
+     * nombre
+     */
+
+    advance(parser);
+
+    /*
+     * =
+     */
+
+    advance(parser);
+
+    /*
+     * Valor
+     *
+     * Usa la misma expresión que
+     * el resto del lenguaje, así
+     * que la precedencia ya está
+     * resuelta.
+     */
+
+    ASTNode *value =
+        parse_expression(parser);
+
+    if (value == NULL) {
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(value);
+
+        return NULL;
+    }
+
+    return ast_assignment(
+        name->value,
+        value
+    );
+}
+
+/*
  * IMPRIMIR
  *
  * Las dos formas son válidas:
@@ -1248,6 +1338,35 @@ static ASTNode *parse_statement(
     if (match(parser, TOKEN_SI)) {
 
         return parse_if(parser);
+    }
+
+    /*
+     * asignación
+     *
+     * edad = 25
+     *
+     * Se distingue de una expresión
+     * mirando el token siguiente:
+     * tiene que ser '=' (no '==').
+     */
+
+    Token *token =
+        current_token(parser);
+
+    Token *next =
+        peek_token(parser, 1);
+
+    if (
+        token != NULL &&
+        next != NULL &&
+        (
+            token->type == TOKEN_IDENTIFIER ||
+            is_contextual_name(token->type)
+        ) &&
+        next->type == TOKEN_EQUAL
+    ) {
+
+        return parse_assignment(parser);
     }
 
     parser_error(

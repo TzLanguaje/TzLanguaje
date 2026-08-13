@@ -46,6 +46,30 @@ int environment_get(
 );
 
 /*
+ * ¿La variable existe?
+ */
+int environment_has(
+    Environment *environment,
+    const char *name
+);
+
+/*
+ * Asignar a una variable EXISTENTE.
+ *
+ * A diferencia de environment_set,
+ * nunca crea variables nuevas:
+ * devuelve 0 si no existe.
+ *
+ * Libera el Value anterior y se
+ * queda con el nuevo.
+ */
+int environment_assign(
+    Environment *environment,
+    const char *name,
+    Value value
+);
+
+/*
  * Ejecutar programa
  */
 int interpreter_run(

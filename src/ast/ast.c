@@ -259,6 +259,30 @@ ASTNode *ast_variable(
     return node;
 }
 
+ASTNode *ast_assignment(
+    const char *name,
+    ASTNode *value
+) {
+    ASTNode *node =
+        create_node(AST_ASSIGNMENT);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.assignment.name =
+        copy_string(name);
+
+    if (node->data.assignment.name == NULL) {
+        free(node);
+        return NULL;
+    }
+
+    node->data.assignment.value = value;
+
+    return node;
+}
+
 ASTNode *ast_print(ASTNode *expression) {
     ASTNode *node = create_node(AST_PRINT);
 
@@ -547,6 +571,24 @@ void ast_print_tree(
             break;
 
         /*
+         * ASSIGNMENT
+         */
+
+        case AST_ASSIGNMENT:
+
+            printf(
+                "ASSIGNMENT: %s\n",
+                node->data.assignment.name
+            );
+
+            ast_print_tree(
+                node->data.assignment.value,
+                indentation + 1
+            );
+
+            break;
+
+        /*
          * PRINT
          */
 
@@ -709,6 +751,22 @@ void ast_free(ASTNode *node) {
 
             ast_free(
                 node->data.variable.value
+            );
+
+            break;
+
+        /*
+         * ASSIGNMENT
+         */
+
+        case AST_ASSIGNMENT:
+
+            free(
+                node->data.assignment.name
+            );
+
+            ast_free(
+                node->data.assignment.value
             );
 
             break;
