@@ -17,7 +17,8 @@ typedef enum {
     AST_VARIABLE_DECLARATION,
     AST_ASSIGNMENT,
     AST_PRINT,
-    AST_IF
+    AST_IF,
+    AST_WHILE
 } ASTNodeType;
 
 /*
@@ -129,6 +130,11 @@ struct ASTNode {
         } if_statement;
 
         struct {
+            ASTNode *condition;
+            ASTNode *body;
+        } while_statement;
+
+        struct {
             ASTNode **statements;
             int count;
             int capacity;
@@ -227,6 +233,20 @@ ASTNode *ast_if(
     ASTNode *condition,
     ASTNode *then_branch,
     ASTNode *else_branch
+);
+
+/*
+ * mientras (condicion)
+ *     body
+ * fin
+ *
+ * El body reutiliza AST_PROGRAM,
+ * igual que los bloques del 'si'.
+ */
+
+ASTNode *ast_while(
+    ASTNode *condition,
+    ASTNode *body
 );
 
 /*

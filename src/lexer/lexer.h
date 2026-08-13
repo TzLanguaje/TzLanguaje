@@ -46,11 +46,13 @@ typedef enum {
      *
      * si
      * sino
+     * mientras
      * fin
      */
 
     TOKEN_SI,
     TOKEN_SINO,
+    TOKEN_MIENTRAS,
     TOKEN_FIN,
 
     /*

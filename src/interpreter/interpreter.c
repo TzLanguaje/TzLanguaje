@@ -1074,6 +1074,70 @@ static int execute_statement(
 
     /*
      * ==========================
+     * MIENTRAS
+     * ==========================
+     *
+     * mientras (condicion)
+     *     ...
+     * fin
+     */
+
+    if (node->type == AST_WHILE) {
+
+        for (;;) {
+
+            /*
+             * 1. Evaluar la condición
+             *    EN CADA VUELTA.
+             */
+
+            Value condition;
+
+            if (
+                !evaluate_expression(
+                    node->data.while_statement.condition,
+                    environment,
+                    &condition
+                )
+            ) {
+
+                return 0;
+            }
+
+            int is_true =
+                value_is_truthy(condition);
+
+            value_free(&condition);
+
+            /*
+             * 2. Si es falso, salimos.
+             */
+
+            if (!is_true) {
+                return 1;
+            }
+
+            /*
+             * 3. Ejecutar el cuerpo.
+             *
+             *    Si algo falla dentro,
+             *    abortamos el bucle.
+             */
+
+            if (
+                !execute_block(
+                    node->data.while_statement.body,
+                    environment
+                )
+            ) {
+
+                return 0;
+            }
+        }
+    }
+
+    /*
+     * ==========================
      * STATEMENT DESCONOCIDO
      * ==========================
      */

@@ -1310,6 +1310,88 @@ static ASTNode *parse_if(
 }
 
 /*
+ * MIENTRAS / FIN
+ *
+ * mientras (contador es menor que 5)
+ *     imprimir contador
+ *     contador = contador + 1
+ * fin
+ *
+ * Misma forma que 'si': la condición
+ * usa parse_expression (con o sin
+ * paréntesis) y el cuerpo reutiliza
+ * parse_block.
+ */
+static ASTNode *parse_while(
+    Parser *parser
+) {
+
+    /*
+     * Ya consumimos:
+     *
+     * mientras
+     */
+
+    ASTNode *condition =
+        parse_expression(parser);
+
+    if (condition == NULL) {
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(condition);
+
+        return NULL;
+    }
+
+    /*
+     * Cuerpo
+     */
+
+    ASTNode *body =
+        parse_block(parser);
+
+    if (body == NULL) {
+
+        ast_free(condition);
+
+        return NULL;
+    }
+
+    /*
+     * fin
+     */
+
+    if (!match(parser, TOKEN_FIN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba 'fin' para cerrar el 'mientras'."
+        );
+
+        ast_free(condition);
+        ast_free(body);
+
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(condition);
+        ast_free(body);
+
+        return NULL;
+    }
+
+    return ast_while(
+        condition,
+        body
+    );
+}
+
+/*
  * INSTRUCCIÓN
  */
 static ASTNode *parse_statement(
@@ -1338,6 +1420,14 @@ static ASTNode *parse_statement(
     if (match(parser, TOKEN_SI)) {
 
         return parse_if(parser);
+    }
+
+    /*
+     * mientras
+     */
+    if (match(parser, TOKEN_MIENTRAS)) {
+
+        return parse_while(parser);
     }
 
     /*

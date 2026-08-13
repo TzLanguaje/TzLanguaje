@@ -318,6 +318,25 @@ ASTNode *ast_if(
     return node;
 }
 
+ASTNode *ast_while(
+    ASTNode *condition,
+    ASTNode *body
+) {
+    ASTNode *node = create_node(AST_WHILE);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.while_statement.condition =
+        condition;
+
+    node->data.while_statement.body =
+        body;
+
+    return node;
+}
+
 /*
  * ==========================
  * NOMBRE DE LOS OPERADORES
@@ -644,6 +663,32 @@ void ast_print_tree(
             break;
 
         /*
+         * WHILE
+         */
+
+        case AST_WHILE:
+
+            printf("WHILE\n");
+
+            print_indent(indentation + 1);
+            printf("CONDITION\n");
+
+            ast_print_tree(
+                node->data.while_statement.condition,
+                indentation + 2
+            );
+
+            print_indent(indentation + 1);
+            printf("BODY\n");
+
+            ast_print_tree(
+                node->data.while_statement.body,
+                indentation + 2
+            );
+
+            break;
+
+        /*
          * UNKNOWN
          */
 
@@ -799,6 +844,22 @@ void ast_free(ASTNode *node) {
 
             ast_free(
                 node->data.if_statement.else_branch
+            );
+
+            break;
+
+        /*
+         * WHILE
+         */
+
+        case AST_WHILE:
+
+            ast_free(
+                node->data.while_statement.condition
+            );
+
+            ast_free(
+                node->data.while_statement.body
             );
 
             break;

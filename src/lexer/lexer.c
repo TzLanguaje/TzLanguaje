@@ -69,6 +69,7 @@ static const Keyword keywords[] = {
 
     { "si",        TOKEN_SI        },
     { "sino",      TOKEN_SINO      },
+    { "mientras",  TOKEN_MIENTRAS  },
     { "fin",       TOKEN_FIN       },
 
     /*
@@ -170,6 +171,9 @@ const char *token_type_name(
 
         case TOKEN_SINO:
             return "SINO";
+
+        case TOKEN_MIENTRAS:
+            return "MIENTRAS";
 
         case TOKEN_FIN:
             return "FIN";
