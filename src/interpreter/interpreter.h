@@ -2,10 +2,11 @@
 #define TZLANG_INTERPRETER_H
 
 #include "../ast/ast.h"
+#include "../runtime/value.h"
 
 typedef struct {
     char *name;
-    int value;
+    Value value;
 } Variable;
 
 typedef struct {
@@ -22,28 +23,30 @@ Environment *environment_create(void);
 /*
  * Liberar entorno
  */
-void environment_free(Environment *environment);
+void environment_free(
+    Environment *environment
+);
 
 /*
- * Guardar o actualizar una variable
+ * Guardar o actualizar variable
  */
 void environment_set(
     Environment *environment,
     const char *name,
-    int value
+    Value value
 );
 
 /*
- * Buscar una variable
+ * Buscar variable
  */
 int environment_get(
     Environment *environment,
     const char *name,
-    int *value
+    Value *value
 );
 
 /*
- * Ejecutar un programa AST
+ * Ejecutar programa
  */
 int interpreter_run(
     ASTNode *program

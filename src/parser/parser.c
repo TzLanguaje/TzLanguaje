@@ -130,6 +130,7 @@ static ASTNode *parse_primary(Parser *parser) {
     Token *token = current_token(parser);
 
     if (token == NULL) {
+
         parser_error(
             parser,
             "Se esperaba una expresión."
@@ -139,38 +140,98 @@ static ASTNode *parse_primary(Parser *parser) {
     }
 
     /*
-     * Número
+     * ==========================
+     * NUMBER
+     * ==========================
+     *
+     * 19
      */
+
     if (match(parser, TOKEN_NUMBER)) {
 
-        int value = atoi(token->value);
+        int value =
+            atoi(token->value);
 
         return ast_number(value);
     }
 
     /*
-     * String
+     * ==========================
+     * DECIMAL
+     * ==========================
+     *
+     * 1.78
      */
-    if (match(parser, TOKEN_STRING)) {
 
-        return ast_string(token->value);
+    if (match(parser, TOKEN_DECIMAL)) {
+
+        double value =
+            atof(token->value);
+
+        return ast_decimal(value);
     }
 
     /*
-     * Identificador
+     * ==========================
+     * STRING
+     * ==========================
      *
-     * Ejemplo:
+     * "TzLang"
+     */
+
+    if (match(parser, TOKEN_STRING)) {
+
+        return ast_string(
+            token->value
+        );
+    }
+
+    /*
+     * ==========================
+     * BOOLEAN TRUE
+     * ==========================
+     *
+     * verdadero
+     */
+
+    if (match(parser, TOKEN_TRUE)) {
+
+        return ast_boolean(1);
+    }
+
+    /*
+     * ==========================
+     * BOOLEAN FALSE
+     * ==========================
+     *
+     * falso
+     */
+
+    if (match(parser, TOKEN_FALSE)) {
+
+        return ast_boolean(0);
+    }
+
+    /*
+     * ==========================
+     * IDENTIFIER
+     * ==========================
      *
      * x
+     * nombre
+     * edad
      */
+
     if (match(parser, TOKEN_IDENTIFIER)) {
 
-        return ast_identifier(token->value);
+        return ast_identifier(
+            token->value
+        );
     }
 
     parser_error(
         parser,
-        "Se esperaba un número, texto o identificador."
+        "Se esperaba un número, decimal, texto, booleano o identificador."
     );
 
     return NULL;

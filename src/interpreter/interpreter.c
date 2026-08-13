@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*
- * Copiar string
- */
 static char *copy_string(const char *source) {
 
     size_t length = strlen(source);
@@ -24,8 +21,11 @@ static char *copy_string(const char *source) {
 }
 
 /*
- * Crear Environment
+ * ==========================
+ * ENVIRONMENT
+ * ==========================
  */
+
 Environment *environment_create(void) {
 
     Environment *environment =
@@ -52,34 +52,6 @@ Environment *environment_create(void) {
     return environment;
 }
 
-/*
- * Liberar Environment
- */
-void environment_free(
-    Environment *environment
-) {
-
-    if (environment == NULL) {
-        return;
-    }
-
-    for (
-        int i = 0;
-        i < environment->count;
-        i++
-    ) {
-        free(
-            environment->variables[i].name
-        );
-    }
-
-    free(environment->variables);
-    free(environment);
-}
-
-/*
- * Buscar índice de variable
- */
 static int environment_find(
     Environment *environment,
     const char *name
@@ -104,29 +76,30 @@ static int environment_find(
     return -1;
 }
 
-/*
- * Guardar variable
- */
 void environment_set(
     Environment *environment,
     const char *name,
-    int value
+    Value value
 ) {
 
     if (environment == NULL) {
         return;
     }
 
-    /*
-     * ¿Ya existe?
-     */
     int index =
         environment_find(
             environment,
             name
         );
 
+    /*
+     * La variable ya existe.
+     */
     if (index >= 0) {
+
+        value_free(
+            &environment->variables[index].value
+        );
 
         environment->variables[index].value =
             value;
@@ -135,7 +108,7 @@ void environment_set(
     }
 
     /*
-     * ¿Necesitamos más espacio?
+     * Necesitamos más espacio.
      */
     if (
         environment->count >=
@@ -163,9 +136,6 @@ void environment_set(
             new_capacity;
     }
 
-    /*
-     * Crear nueva variable
-     */
     environment->variables[
         environment->count
     ].name =
@@ -179,13 +149,10 @@ void environment_set(
     environment->count++;
 }
 
-/*
- * Obtener variable
- */
 int environment_get(
     Environment *environment,
     const char *name,
-    int *value
+    Value *value
 ) {
 
     if (
@@ -211,13 +178,44 @@ int environment_get(
     return 1;
 }
 
+void environment_free(
+    Environment *environment
+) {
+
+    if (environment == NULL) {
+        return;
+    }
+
+    for (
+        int i = 0;
+        i < environment->count;
+        i++
+    ) {
+
+        free(
+            environment->variables[i].name
+        );
+
+        value_free(
+            &environment->variables[i].value
+        );
+    }
+
+    free(environment->variables);
+
+    free(environment);
+}
+
 /*
- * Evaluar expresión
+ * ==========================
+ * EXPRESIONES
+ * ==========================
  */
+
 static int evaluate_expression(
     ASTNode *node,
     Environment *environment,
-    int *result
+    Value *result
 ) {
 
     if (
@@ -229,21 +227,32 @@ static int evaluate_expression(
 
     /*
      * NUMBER
-     *
-     * 10
      */
     if (node->type == AST_NUMBER) {
 
         *result =
-            node->data.number;
+            value_number(
+                node->data.number
+            );
+
+        return 1;
+    }
+
+    /*
+     * STRING
+     */
+    if (node->type == AST_STRING) {
+
+        *result =
+            value_string(
+                node->data.string
+            );
 
         return 1;
     }
 
     /*
      * IDENTIFIER
-     *
-     * x
      */
     if (node->type == AST_IDENTIFIER) {
 
@@ -269,13 +278,11 @@ static int evaluate_expression(
 
     /*
      * BINARY
-     *
-     * x + y
      */
     if (node->type == AST_BINARY) {
 
-        int left;
-        int right;
+        Value left;
+        Value right;
 
         if (
             !evaluate_expression(
@@ -294,28 +301,79 @@ static int evaluate_expression(
                 &right
             )
         ) {
+
+            value_free(&left);
+
             return 0;
         }
+
+        /*
+         * Actualmente las operaciones
+         * matemáticas trabajan con números.
+         */
+
+        if (
+            left.type != VALUE_NUMBER ||
+            right.type != VALUE_NUMBER
+        ) {
+
+            fprintf(
+                stderr,
+                "Error: la operación requiere números.\n"
+            );
+
+            value_free(&left);
+            value_free(&right);
+
+            return 0;
+        }
+
+        int left_number =
+            left.data.number;
+
+        int right_number =
+            right.data.number;
+
+        value_free(&left);
+        value_free(&right);
 
         switch (
             node->data.binary.operator
         ) {
 
             case '+':
-                *result = left + right;
+
+                *result =
+                    value_number(
+                        left_number +
+                        right_number
+                    );
+
                 return 1;
 
             case '-':
-                *result = left - right;
+
+                *result =
+                    value_number(
+                        left_number -
+                        right_number
+                    );
+
                 return 1;
 
             case '*':
-                *result = left * right;
+
+                *result =
+                    value_number(
+                        left_number *
+                        right_number
+                    );
+
                 return 1;
 
             case '/':
 
-                if (right == 0) {
+                if (right_number == 0) {
 
                     fprintf(
                         stderr,
@@ -325,7 +383,11 @@ static int evaluate_expression(
                     return 0;
                 }
 
-                *result = left / right;
+                *result =
+                    value_number(
+                        left_number /
+                        right_number
+                    );
 
                 return 1;
 
@@ -350,8 +412,11 @@ static int evaluate_expression(
 }
 
 /*
- * Ejecutar una instrucción
+ * ==========================
+ * STATEMENTS
+ * ==========================
  */
+
 static int execute_statement(
     ASTNode *node,
     Environment *environment
@@ -362,16 +427,14 @@ static int execute_statement(
     }
 
     /*
-     * VARIABLE
-     *
-     * variable x = 10;
+     * variable x = ...
      */
     if (
         node->type ==
         AST_VARIABLE_DECLARATION
     ) {
 
-        int value;
+        Value value;
 
         if (
             !evaluate_expression(
@@ -393,13 +456,11 @@ static int execute_statement(
     }
 
     /*
-     * PRINT
-     *
-     * imprimir(x);
+     * imprimir(...)
      */
     if (node->type == AST_PRINT) {
 
-        int value;
+        Value value;
 
         if (
             !evaluate_expression(
@@ -411,10 +472,11 @@ static int execute_statement(
             return 0;
         }
 
-        printf(
-            "%d\n",
-            value
-        );
+        value_print(value);
+
+        printf("\n");
+
+        value_free(&value);
 
         return 1;
     }
@@ -428,8 +490,11 @@ static int execute_statement(
 }
 
 /*
- * Ejecutar programa
+ * ==========================
+ * RUN
+ * ==========================
  */
+
 int interpreter_run(
     ASTNode *program
 ) {

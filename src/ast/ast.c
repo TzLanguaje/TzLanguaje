@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * ==========================
+ * UTILIDADES
+ * ==========================
+ */
+
 static char *copy_string(const char *source) {
     size_t length = strlen(source);
 
@@ -31,7 +37,9 @@ static ASTNode *create_node(ASTNodeType type) {
 }
 
 /*
+ * ==========================
  * PROGRAM
+ * ==========================
  */
 
 ASTNode *ast_program(void) {
@@ -87,8 +95,11 @@ void ast_program_add(
             return;
         }
 
-        program->data.program.statements = new_statements;
-        program->data.program.capacity = new_capacity;
+        program->data.program.statements =
+            new_statements;
+
+        program->data.program.capacity =
+            new_capacity;
     }
 
     program->data.program.statements[
@@ -99,7 +110,9 @@ void ast_program_add(
 }
 
 /*
+ * ==========================
  * VALUES
+ * ==========================
  */
 
 ASTNode *ast_number(int value) {
@@ -110,6 +123,18 @@ ASTNode *ast_number(int value) {
     }
 
     node->data.number = value;
+
+    return node;
+}
+
+ASTNode *ast_decimal(double value) {
+    ASTNode *node = create_node(AST_DECIMAL);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.decimal = value;
 
     return node;
 }
@@ -127,6 +152,18 @@ ASTNode *ast_string(const char *value) {
         free(node);
         return NULL;
     }
+
+    return node;
+}
+
+ASTNode *ast_boolean(int value) {
+    ASTNode *node = create_node(AST_BOOLEAN);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.boolean = value ? 1 : 0;
 
     return node;
 }
@@ -149,7 +186,9 @@ ASTNode *ast_identifier(const char *name) {
 }
 
 /*
+ * ==========================
  * EXPRESSIONS
+ * ==========================
  */
 
 ASTNode *ast_binary(
@@ -171,7 +210,9 @@ ASTNode *ast_binary(
 }
 
 /*
+ * ==========================
  * STATEMENTS
+ * ==========================
  */
 
 ASTNode *ast_variable(
@@ -211,7 +252,9 @@ ASTNode *ast_print(ASTNode *expression) {
 }
 
 /*
+ * ==========================
  * AST TREE PRINTING
+ * ==========================
  */
 
 static void print_indent(int indentation) {
@@ -232,6 +275,10 @@ void ast_print_tree(
 
     switch (node->type) {
 
+        /*
+         * PROGRAM
+         */
+
         case AST_PROGRAM:
 
             printf("PROGRAM\n");
@@ -249,6 +296,10 @@ void ast_print_tree(
 
             break;
 
+        /*
+         * NUMBER
+         */
+
         case AST_NUMBER:
 
             printf(
@@ -257,6 +308,23 @@ void ast_print_tree(
             );
 
             break;
+
+        /*
+         * DECIMAL
+         */
+
+        case AST_DECIMAL:
+
+            printf(
+                "DECIMAL: %g\n",
+                node->data.decimal
+            );
+
+            break;
+
+        /*
+         * STRING
+         */
 
         case AST_STRING:
 
@@ -267,6 +335,25 @@ void ast_print_tree(
 
             break;
 
+        /*
+         * BOOLEAN
+         */
+
+        case AST_BOOLEAN:
+
+            printf(
+                "BOOLEAN: %s\n",
+                node->data.boolean
+                    ? "verdadero"
+                    : "falso"
+            );
+
+            break;
+
+        /*
+         * IDENTIFIER
+         */
+
         case AST_IDENTIFIER:
 
             printf(
@@ -275,6 +362,10 @@ void ast_print_tree(
             );
 
             break;
+
+        /*
+         * BINARY
+         */
 
         case AST_BINARY:
 
@@ -295,6 +386,10 @@ void ast_print_tree(
 
             break;
 
+        /*
+         * VARIABLE
+         */
+
         case AST_VARIABLE_DECLARATION:
 
             printf(
@@ -309,6 +404,10 @@ void ast_print_tree(
 
             break;
 
+        /*
+         * PRINT
+         */
+
         case AST_PRINT:
 
             printf("PRINT\n");
@@ -320,6 +419,10 @@ void ast_print_tree(
 
             break;
 
+        /*
+         * UNKNOWN
+         */
+
         default:
 
             printf("UNKNOWN\n");
@@ -329,15 +432,22 @@ void ast_print_tree(
 }
 
 /*
+ * ==========================
  * AST MEMORY MANAGEMENT
+ * ==========================
  */
 
 void ast_free(ASTNode *node) {
+
     if (node == NULL) {
         return;
     }
 
     switch (node->type) {
+
+        /*
+         * PROGRAM
+         */
 
         case AST_PROGRAM:
 
@@ -351,9 +461,15 @@ void ast_free(ASTNode *node) {
                 );
             }
 
-            free(node->data.program.statements);
+            free(
+                node->data.program.statements
+            );
 
             break;
+
+        /*
+         * STRING
+         */
 
         case AST_STRING:
 
@@ -361,22 +477,41 @@ void ast_free(ASTNode *node) {
 
             break;
 
+        /*
+         * IDENTIFIER
+         */
+
         case AST_IDENTIFIER:
 
             free(node->data.identifier);
 
             break;
 
+        /*
+         * BINARY
+         */
+
         case AST_BINARY:
 
-            ast_free(node->data.binary.left);
-            ast_free(node->data.binary.right);
+            ast_free(
+                node->data.binary.left
+            );
+
+            ast_free(
+                node->data.binary.right
+            );
 
             break;
 
+        /*
+         * VARIABLE
+         */
+
         case AST_VARIABLE_DECLARATION:
 
-            free(node->data.variable.name);
+            free(
+                node->data.variable.name
+            );
 
             ast_free(
                 node->data.variable.value
@@ -384,15 +519,35 @@ void ast_free(ASTNode *node) {
 
             break;
 
+        /*
+         * PRINT
+         */
+
         case AST_PRINT:
 
-            ast_free(node->data.print);
+            ast_free(
+                node->data.print
+            );
 
             break;
+
+        /*
+         * NUMBER
+         * DECIMAL
+         * BOOLEAN
+         *
+         * No necesitan free().
+         */
 
         case AST_NUMBER:
+        case AST_DECIMAL:
+        case AST_BOOLEAN:
 
             break;
+
+        /*
+         * UNKNOWN
+         */
 
         default:
 

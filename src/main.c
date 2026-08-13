@@ -3,14 +3,15 @@
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "ast/ast.h"
-#include "interpreter/interpreter.h"
 
 int main(void) {
 
     const char *source =
-        "variable x = 10;\n"
-        "variable y = 20;\n"
-        "imprimir(x + y);";
+        "variable edad = 19;\n"
+        "variable altura = 1.78;\n"
+        "variable activo = verdadero;\n"
+        "variable eliminado = falso;\n"
+        "imprimir(edad);";
 
     /*
      * ==========================
@@ -30,7 +31,7 @@ int main(void) {
 
         fprintf(
             stderr,
-            "Error: no se pudieron crear los tokens.\n"
+            "Error ejecutando Lexer.\n"
         );
 
         return 1;
@@ -52,7 +53,7 @@ int main(void) {
 
         fprintf(
             stderr,
-            "Error: no se pudo crear el Parser.\n"
+            "Error creando Parser.\n"
         );
 
         lexer_free_tokens(
@@ -70,7 +71,7 @@ int main(void) {
 
         fprintf(
             stderr,
-            "Error: no se pudo construir el AST.\n"
+            "Error construyendo AST.\n"
         );
 
         parser_free(parser);
@@ -85,31 +86,18 @@ int main(void) {
 
     /*
      * ==========================
-     * EJECUTAR
+     * AST
      * ==========================
      */
 
-    printf("=== TzLang ===\n\n");
+    printf(
+        "=== TzLang AST ===\n\n"
+    );
 
-    if (
-        !interpreter_run(program)
-    ) {
-
-        fprintf(
-            stderr,
-            "\nLa ejecución falló.\n"
-        );
-
-        ast_free(program);
-        parser_free(parser);
-
-        lexer_free_tokens(
-            tokens,
-            token_count
-        );
-
-        return 1;
-    }
+    ast_print_tree(
+        program,
+        0
+    );
 
     /*
      * ==========================
