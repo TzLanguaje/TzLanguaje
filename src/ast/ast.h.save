@@ -17,7 +17,6 @@ struct ASTNode {
     ASTNodeType type;
 
     union {
-
         int number;
 
         char *string;
@@ -37,26 +36,11 @@ struct ASTNode {
 
         ASTNode *print;
 
-        struct {
-            ASTNode **statements;
-            int count;
-            int capacity;
-        } program;
-
     } data;
 };
 
-ASTNode *ast_program(void);
-
-void ast_program_add(
-    ASTNode *program,
-    ASTNode *statement
-);
-
 ASTNode *ast_number(int value);
-
 ASTNode *ast_string(const char *value);
-
 ASTNode *ast_identifier(const char *name);
 
 ASTNode *ast_binary(
@@ -70,15 +54,8 @@ ASTNode *ast_variable(
     ASTNode *value
 );
 
-ASTNode *ast_print(
-    ASTNode *expression
-);
+ASTNode *ast_print(ASTNode *expression);
 
 void ast_free(ASTNode *node);
 
-void ast_print_tree(
-    const ASTNode *node,
-    int indentation
-);
-
-#endif
+vxxx
