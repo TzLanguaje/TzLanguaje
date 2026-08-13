@@ -1392,6 +1392,171 @@ static ASTNode *parse_while(
 }
 
 /*
+ * DECLARACIÓN DE FUNCIÓN
+ *
+ * funcion saludar()
+ *     imprimir "Hola"
+ * fin
+ *
+ * Declarar no ejecuta nada: el
+ * cuerpo se guarda tal cual.
+ */
+static ASTNode *parse_function_declaration(
+    Parser *parser
+) {
+
+    /*
+     * Ya consumimos:
+     *
+     * funcion
+     */
+
+    Token *name =
+        current_token(parser);
+
+    if (
+        name == NULL ||
+        (
+            name->type != TOKEN_IDENTIFIER &&
+            !is_contextual_name(name->type)
+        )
+    ) {
+
+        parser_error(
+            parser,
+            "Se esperaba el nombre de la función."
+        );
+
+        return NULL;
+    }
+
+    advance(parser);
+
+    /*
+     * (
+     */
+
+    if (!match(parser, TOKEN_LPAREN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba '(' después del nombre de la función."
+        );
+
+        return NULL;
+    }
+
+    /*
+     * )
+     */
+
+    if (!match(parser, TOKEN_RPAREN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba ')'. Las funciones todavía no admiten parámetros."
+        );
+
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+        return NULL;
+    }
+
+    /*
+     * Cuerpo
+     */
+
+    ASTNode *body =
+        parse_block(parser);
+
+    if (body == NULL) {
+        return NULL;
+    }
+
+    /*
+     * fin
+     */
+
+    if (!match(parser, TOKEN_FIN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba 'fin' para cerrar la función."
+        );
+
+        ast_free(body);
+
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(body);
+
+        return NULL;
+    }
+
+    return ast_function_declaration(
+        name->value,
+        body
+    );
+}
+
+/*
+ * LLAMADA A FUNCIÓN
+ *
+ * saludar()
+ *
+ * parse_statement ya comprobó
+ * que venimos de:
+ *
+ * IDENTIFIER '('
+ */
+static ASTNode *parse_function_call(
+    Parser *parser
+) {
+
+    Token *name =
+        current_token(parser);
+
+    /*
+     * nombre
+     */
+
+    advance(parser);
+
+    /*
+     * (
+     */
+
+    advance(parser);
+
+    /*
+     * )
+     */
+
+    if (!match(parser, TOKEN_RPAREN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba ')'. Las llamadas todavía no admiten argumentos."
+        );
+
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+        return NULL;
+    }
+
+    return ast_function_call(
+        name->value
+    );
+}
+
+/*
  * INSTRUCCIÓN
  */
 static ASTNode *parse_statement(
@@ -1431,13 +1596,23 @@ static ASTNode *parse_statement(
     }
 
     /*
-     * asignación
+     * funcion
+     */
+    if (match(parser, TOKEN_FUNCION)) {
+
+        return parse_function_declaration(parser);
+    }
+
+    /*
+     * Instrucciones que empiezan
+     * por un nombre.
      *
-     * edad = 25
+     * El token SIGUIENTE decide:
      *
-     * Se distingue de una expresión
-     * mirando el token siguiente:
-     * tiene que ser '=' (no '==').
+     * edad = 25    →  asignación
+     * saludar()    →  llamada
+     *
+     * Ojo: '=' no es '=='.
      */
 
     Token *token =
@@ -1452,11 +1627,18 @@ static ASTNode *parse_statement(
         (
             token->type == TOKEN_IDENTIFIER ||
             is_contextual_name(token->type)
-        ) &&
-        next->type == TOKEN_EQUAL
+        )
     ) {
 
-        return parse_assignment(parser);
+        if (next->type == TOKEN_EQUAL) {
+
+            return parse_assignment(parser);
+        }
+
+        if (next->type == TOKEN_LPAREN) {
+
+            return parse_function_call(parser);
+        }
     }
 
     parser_error(

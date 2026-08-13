@@ -73,6 +73,12 @@ static const Keyword keywords[] = {
     { "fin",       TOKEN_FIN       },
 
     /*
+     * Funciones
+     */
+
+    { "funcion",   TOKEN_FUNCION   },
+
+    /*
      * Lógicos
      */
 
@@ -177,6 +183,9 @@ const char *token_type_name(
 
         case TOKEN_FIN:
             return "FIN";
+
+        case TOKEN_FUNCION:
+            return "FUNCION";
 
         case TOKEN_Y:
             return "Y";

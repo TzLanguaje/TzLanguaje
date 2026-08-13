@@ -337,6 +337,58 @@ ASTNode *ast_while(
     return node;
 }
 
+ASTNode *ast_function_declaration(
+    const char *name,
+    ASTNode *body
+) {
+    ASTNode *node =
+        create_node(AST_FUNCTION_DECLARATION);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.function_declaration.name =
+        copy_string(name);
+
+    if (
+        node->data.function_declaration.name
+        == NULL
+    ) {
+        free(node);
+        return NULL;
+    }
+
+    node->data.function_declaration.body =
+        body;
+
+    return node;
+}
+
+ASTNode *ast_function_call(
+    const char *name
+) {
+    ASTNode *node =
+        create_node(AST_FUNCTION_CALL);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.function_call.name =
+        copy_string(name);
+
+    if (
+        node->data.function_call.name
+        == NULL
+    ) {
+        free(node);
+        return NULL;
+    }
+
+    return node;
+}
+
 /*
  * ==========================
  * NOMBRE DE LOS OPERADORES
@@ -689,6 +741,40 @@ void ast_print_tree(
             break;
 
         /*
+         * FUNCTION DECLARATION
+         */
+
+        case AST_FUNCTION_DECLARATION:
+
+            printf(
+                "FUNCTION: %s\n",
+                node->data.function_declaration.name
+            );
+
+            print_indent(indentation + 1);
+            printf("BODY\n");
+
+            ast_print_tree(
+                node->data.function_declaration.body,
+                indentation + 2
+            );
+
+            break;
+
+        /*
+         * FUNCTION CALL
+         */
+
+        case AST_FUNCTION_CALL:
+
+            printf(
+                "CALL: %s\n",
+                node->data.function_call.name
+            );
+
+            break;
+
+        /*
          * UNKNOWN
          */
 
@@ -860,6 +946,38 @@ void ast_free(ASTNode *node) {
 
             ast_free(
                 node->data.while_statement.body
+            );
+
+            break;
+
+        /*
+         * FUNCTION DECLARATION
+         *
+         * El AST es el dueño del
+         * cuerpo. La tabla de
+         * funciones solo lo apunta.
+         */
+
+        case AST_FUNCTION_DECLARATION:
+
+            free(
+                node->data.function_declaration.name
+            );
+
+            ast_free(
+                node->data.function_declaration.body
+            );
+
+            break;
+
+        /*
+         * FUNCTION CALL
+         */
+
+        case AST_FUNCTION_CALL:
+
+            free(
+                node->data.function_call.name
             );
 
             break;

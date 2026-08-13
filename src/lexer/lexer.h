@@ -56,6 +56,16 @@ typedef enum {
     TOKEN_FIN,
 
     /*
+     * Funciones
+     *
+     * funcion nombre()
+     *     ...
+     * fin
+     */
+
+    TOKEN_FUNCION,
+
+    /*
      * Operadores lógicos
      *
      * y

@@ -18,7 +18,9 @@ typedef enum {
     AST_ASSIGNMENT,
     AST_PRINT,
     AST_IF,
-    AST_WHILE
+    AST_WHILE,
+    AST_FUNCTION_DECLARATION,
+    AST_FUNCTION_CALL
 } ASTNodeType;
 
 /*
@@ -135,6 +137,15 @@ struct ASTNode {
         } while_statement;
 
         struct {
+            char *name;
+            ASTNode *body;
+        } function_declaration;
+
+        struct {
+            char *name;
+        } function_call;
+
+        struct {
             ASTNode **statements;
             int count;
             int capacity;
@@ -247,6 +258,32 @@ ASTNode *ast_if(
 ASTNode *ast_while(
     ASTNode *condition,
     ASTNode *body
+);
+
+/*
+ * funcion nombre()
+ *     body
+ * fin
+ *
+ * El body reutiliza AST_PROGRAM.
+ *
+ * Declarar NO ejecuta: el nodo
+ * solo guarda el cuerpo.
+ */
+
+ASTNode *ast_function_declaration(
+    const char *name,
+    ASTNode *body
+);
+
+/*
+ * nombre()
+ *
+ * Todavía sin argumentos.
+ */
+
+ASTNode *ast_function_call(
+    const char *name
 );
 
 /*

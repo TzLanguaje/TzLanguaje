@@ -77,7 +77,9 @@ static Value value_copy(Value source) {
  * ==========================
  */
 
-Environment *environment_create(void) {
+Environment *environment_create(
+    Environment *parent
+) {
 
     Environment *environment =
         malloc(sizeof(Environment));
@@ -88,6 +90,14 @@ Environment *environment_create(void) {
 
     environment->count = 0;
     environment->capacity = 8;
+
+    /*
+     * Solo guardamos la referencia:
+     * el padre pertenece a quien lo
+     * creó.
+     */
+
+    environment->parent = parent;
 
     environment->variables =
         malloc(
@@ -105,11 +115,13 @@ Environment *environment_create(void) {
 
 /*
  * ==========================
- * BUSCAR VARIABLE
+ * BUSCAR EN ESTE SCOPE
  * ==========================
+ *
+ * NO sube por la cadena.
  */
 
-static int environment_find(
+static int environment_find_local(
     Environment *environment,
     const char *name
 ) {
@@ -136,8 +148,77 @@ static int environment_find(
 
 /*
  * ==========================
- * GUARDAR VARIABLE
+ * BUSCAR EN LA CADENA
  * ==========================
+ *
+ * local → parent → ... → global
+ *
+ * Devuelve el scope que contiene
+ * la variable, o NULL.
+ */
+
+static Environment *environment_owner(
+    Environment *environment,
+    const char *name
+) {
+
+    Environment *scope = environment;
+
+    while (scope != NULL) {
+
+        if (
+            environment_find_local(
+                scope,
+                name
+            ) >= 0
+        ) {
+
+            return scope;
+        }
+
+        scope = scope->parent;
+    }
+
+    return NULL;
+}
+
+/*
+ * ==========================
+ * ENTORNO GLOBAL
+ * ==========================
+ *
+ * Sube hasta la raíz de la cadena.
+ *
+ * Es el entorno de definición de
+ * TODAS las funciones de TzLang
+ * hoy por hoy.
+ */
+
+static Environment *environment_global(
+    Environment *environment
+) {
+
+    if (environment == NULL) {
+        return NULL;
+    }
+
+    while (environment->parent != NULL) {
+        environment = environment->parent;
+    }
+
+    return environment;
+}
+
+/*
+ * ==========================
+ * DECLARAR VARIABLE
+ * ==========================
+ *
+ * variable x = 10
+ *
+ * Siempre en ESTE scope, nunca en
+ * el padre: así una función puede
+ * tapar una global sin tocarla.
  */
 
 void environment_set(
@@ -151,7 +232,7 @@ void environment_set(
     }
 
     int index =
-        environment_find(
+        environment_find_local(
             environment,
             name
         );
@@ -251,15 +332,26 @@ int environment_get(
         return 0;
     }
 
-    int index =
-        environment_find(
+    /*
+     * Buscamos subiendo por la
+     * cadena de scopes.
+     */
+
+    Environment *scope =
+        environment_owner(
             environment,
             name
         );
 
-    if (index < 0) {
+    if (scope == NULL) {
         return 0;
     }
+
+    int index =
+        environment_find_local(
+            scope,
+            name
+        );
 
     /*
      * Devolvemos una copia.
@@ -271,7 +363,7 @@ int environment_get(
 
     *value =
         value_copy(
-            environment->variables[index].value
+            scope->variables[index].value
         );
 
     return 1;
@@ -293,10 +385,10 @@ int environment_has(
     }
 
     return
-        environment_find(
+        environment_owner(
             environment,
             name
-        ) >= 0;
+        ) != NULL;
 }
 
 /*
@@ -305,6 +397,11 @@ int environment_has(
  * ==========================
  *
  * edad = 25
+ *
+ * Modifica la variable en el scope
+ * donde exista: si es local, la
+ * local; si viene del padre, la
+ * del padre.
  */
 
 int environment_assign(
@@ -317,8 +414,8 @@ int environment_assign(
         return 0;
     }
 
-    int index =
-        environment_find(
+    Environment *scope =
+        environment_owner(
             environment,
             name
         );
@@ -327,9 +424,15 @@ int environment_assign(
      * La asignación NO declara.
      */
 
-    if (index < 0) {
+    if (scope == NULL) {
         return 0;
     }
+
+    int index =
+        environment_find_local(
+            scope,
+            name
+        );
 
     /*
      * Liberamos el valor anterior
@@ -337,10 +440,10 @@ int environment_assign(
      */
 
     value_free(
-        &environment->variables[index].value
+        &scope->variables[index].value
     );
 
-    environment->variables[index].value =
+    scope->variables[index].value =
         value;
 
     return 1;
@@ -359,6 +462,14 @@ void environment_free(
     if (environment == NULL) {
         return;
     }
+
+    /*
+     * OJO: no se toca
+     * environment->parent.
+     *
+     * El padre pertenece al contexto
+     * que lo creó y sigue vivo.
+     */
 
     for (
         int i = 0;
@@ -380,6 +491,167 @@ void environment_free(
     );
 
     free(environment);
+}
+
+/*
+ * ==========================
+ * TABLA DE FUNCIONES
+ * ==========================
+ */
+
+FunctionTable *function_table_create(void) {
+
+    FunctionTable *table =
+        malloc(sizeof(FunctionTable));
+
+    if (table == NULL) {
+        return NULL;
+    }
+
+    table->count = 0;
+    table->capacity = 8;
+
+    table->functions =
+        malloc(
+            sizeof(Function) *
+            table->capacity
+        );
+
+    if (table->functions == NULL) {
+        free(table);
+        return NULL;
+    }
+
+    return table;
+}
+
+Function *function_table_find(
+    FunctionTable *table,
+    const char *name
+) {
+
+    if (table == NULL) {
+        return NULL;
+    }
+
+    for (
+        int i = 0;
+        i < table->count;
+        i++
+    ) {
+
+        if (
+            strcmp(
+                table->functions[i].name,
+                name
+            ) == 0
+        ) {
+
+            return &table->functions[i];
+        }
+    }
+
+    return NULL;
+}
+
+int function_table_declare(
+    FunctionTable *table,
+    const char *name,
+    ASTNode *body,
+    Environment *closure
+) {
+
+    if (table == NULL) {
+        return 0;
+    }
+
+    /*
+     * ==========================
+     * AUMENTAR CAPACIDAD
+     * ==========================
+     */
+
+    if (table->count >= table->capacity) {
+
+        int new_capacity =
+            table->capacity * 2;
+
+        Function *new_functions =
+            realloc(
+                table->functions,
+                sizeof(Function) *
+                new_capacity
+            );
+
+        if (new_functions == NULL) {
+            return 0;
+        }
+
+        table->functions =
+            new_functions;
+
+        table->capacity =
+            new_capacity;
+    }
+
+    char *stored_name =
+        copy_string(name);
+
+    if (stored_name == NULL) {
+        return 0;
+    }
+
+    table->functions[table->count].name =
+        stored_name;
+
+    /*
+     * Guardamos la referencia al
+     * cuerpo, sin copiarlo.
+     */
+
+    table->functions[table->count].body =
+        body;
+
+    /*
+     * Entorno de definición.
+     *
+     * Solo referencia: no lo
+     * liberamos nunca aquí.
+     */
+
+    table->functions[table->count].closure =
+        closure;
+
+    table->count++;
+
+    return 1;
+}
+
+void function_table_free(
+    FunctionTable *table
+) {
+
+    if (table == NULL) {
+        return;
+    }
+
+    for (
+        int i = 0;
+        i < table->count;
+        i++
+    ) {
+
+        free(table->functions[i].name);
+
+        /*
+         * El cuerpo NO se libera
+         * aquí: pertenece al AST.
+         */
+    }
+
+    free(table->functions);
+
+    free(table);
 }
 
 /*
@@ -867,12 +1139,14 @@ static int evaluate_expression(
 
 static int execute_block(
     ASTNode *block,
-    Environment *environment
+    Environment *environment,
+    FunctionTable *functions
 );
 
 static int execute_statement(
     ASTNode *node,
-    Environment *environment
+    Environment *environment,
+    FunctionTable *functions
 ) {
 
     if (node == NULL) {
@@ -1050,7 +1324,8 @@ static int execute_statement(
 
             return execute_block(
                 node->data.if_statement.then_branch,
-                environment
+                environment,
+                functions
             );
         }
 
@@ -1068,7 +1343,8 @@ static int execute_statement(
 
         return execute_block(
             node->data.if_statement.else_branch,
-            environment
+            environment,
+            functions
         );
     }
 
@@ -1127,13 +1403,185 @@ static int execute_statement(
             if (
                 !execute_block(
                     node->data.while_statement.body,
-                    environment
+                    environment,
+                    functions
                 )
             ) {
 
                 return 0;
             }
         }
+    }
+
+    /*
+     * ==========================
+     * DECLARACIÓN DE FUNCIÓN
+     * ==========================
+     *
+     * funcion saludar()
+     *     ...
+     * fin
+     *
+     * Solo REGISTRA. No ejecuta
+     * el cuerpo.
+     */
+
+    if (node->type == AST_FUNCTION_DECLARATION) {
+
+        const char *name =
+            node->data.function_declaration.name;
+
+        /*
+         * No sobrescribimos en
+         * silencio.
+         */
+
+        if (
+            function_table_find(
+                functions,
+                name
+            ) != NULL
+        ) {
+
+            fprintf(
+                stderr,
+                "Error: la función '%s' ya existe.\n",
+                name
+            );
+
+            return 0;
+        }
+
+        /*
+         * ==========================
+         * ENTORNO DE DEFINICIÓN
+         * ==========================
+         *
+         * En TzLang todas las
+         * declaraciones de función
+         * son globales, así que el
+         * closure es el entorno
+         * global.
+         *
+         * Guardamos la raíz de la
+         * cadena y NO el entorno
+         * actual a propósito: si una
+         * declaración aparece dentro
+         * de otra función, su entorno
+         * local muere al terminar la
+         * llamada y el closure
+         * quedaría colgando.
+         */
+
+        if (
+            !function_table_declare(
+                functions,
+                name,
+                node->data.function_declaration.body,
+                environment_global(environment)
+            )
+        ) {
+
+            fprintf(
+                stderr,
+                "Error: no se pudo declarar la función '%s'.\n",
+                name
+            );
+
+            return 0;
+        }
+
+        return 1;
+    }
+
+    /*
+     * ==========================
+     * LLAMADA A FUNCIÓN
+     * ==========================
+     *
+     * saludar()
+     */
+
+    if (node->type == AST_FUNCTION_CALL) {
+
+        const char *name =
+            node->data.function_call.name;
+
+        Function *function =
+            function_table_find(
+                functions,
+                name
+            );
+
+        if (function == NULL) {
+
+            fprintf(
+                stderr,
+                "Error: la función '%s' no existe.\n",
+                name
+            );
+
+            return 0;
+        }
+
+        /*
+         * ==========================
+         * SCOPE LOCAL (LÉXICO)
+         * ==========================
+         *
+         * El padre es el entorno donde
+         * la función fue DEFINIDA, no
+         * el de quien llama.
+         *
+         * Por eso una función solo ve
+         * sus propias variables y las
+         * de su ámbito de definición:
+         * nunca las locales del
+         * llamador.
+         */
+
+        Environment *local =
+            environment_create(
+                function->closure
+            );
+
+        if (local == NULL) {
+
+            fprintf(
+                stderr,
+                "Error: no se pudo crear el entorno de '%s'.\n",
+                name
+            );
+
+            return 0;
+        }
+
+        /*
+         * El cuerpo es un bloque
+         * como cualquier otro.
+         */
+
+        int success =
+            execute_block(
+                function->body,
+                local,
+                functions
+            );
+
+        /*
+         * Destruir el scope local.
+         *
+         * Solo libera SUS variables:
+         * el padre queda intacto.
+         *
+         * Se libera también cuando la
+         * llamada falla, para no perder
+         * memoria en la ruta de error.
+         */
+
+        environment_free(local);
+
+        return success;
     }
 
     /*
@@ -1161,7 +1609,8 @@ static int execute_statement(
 
 static int execute_block(
     ASTNode *block,
-    Environment *environment
+    Environment *environment,
+    FunctionTable *functions
 ) {
 
     if (
@@ -1181,7 +1630,8 @@ static int execute_block(
         if (
             !execute_statement(
                 block->data.program.statements[i],
-                environment
+                environment,
+                functions
             )
         ) {
 
@@ -1211,11 +1661,14 @@ int interpreter_run(
     }
 
     /*
-     * Crear entorno
+     * Crear entorno GLOBAL
+     *
+     * Sin padre: es la raíz de la
+     * cadena de scopes.
      */
 
     Environment *environment =
-        environment_create();
+        environment_create(NULL);
 
     if (environment == NULL) {
 
@@ -1229,6 +1682,27 @@ int interpreter_run(
 
     /*
      * ==========================
+     * TABLA DE FUNCIONES
+     * ==========================
+     */
+
+    FunctionTable *functions =
+        function_table_create();
+
+    if (functions == NULL) {
+
+        fprintf(
+            stderr,
+            "Error: no se pudo crear la tabla de funciones.\n"
+        );
+
+        environment_free(environment);
+
+        return 0;
+    }
+
+    /*
+     * ==========================
      * EJECUTAR STATEMENTS
      * ==========================
      */
@@ -1236,9 +1710,12 @@ int interpreter_run(
     if (
         !execute_block(
             program,
-            environment
+            environment,
+            functions
         )
     ) {
+
+        function_table_free(functions);
 
         environment_free(
             environment
@@ -1252,6 +1729,8 @@ int interpreter_run(
      * LIBERAR ENTORNO
      * ==========================
      */
+
+    function_table_free(functions);
 
     environment_free(
         environment
