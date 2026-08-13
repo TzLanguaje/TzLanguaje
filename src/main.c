@@ -3,6 +3,7 @@
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "ast/ast.h"
+#include "interpreter/interpreter.h"
 
 int main(void) {
 
@@ -11,12 +12,13 @@ int main(void) {
         "variable altura = 1.78;\n"
         "variable activo = verdadero;\n"
         "variable eliminado = falso;\n"
-        "imprimir(edad);";
+        "imprimir(edad);\n"
+        "imprimir(altura);\n"
+        "imprimir(activo);\n"
+        "imprimir(eliminado);";
 
     /*
-     * ==========================
      * LEXER
-     * ==========================
      */
 
     int token_count = 0;
@@ -38,9 +40,7 @@ int main(void) {
     }
 
     /*
-     * ==========================
      * PARSER
-     * ==========================
      */
 
     Parser *parser =
@@ -64,6 +64,10 @@ int main(void) {
         return 1;
     }
 
+    /*
+     * AST
+     */
+
     ASTNode *program =
         parser_parse(parser);
 
@@ -75,34 +79,33 @@ int main(void) {
         );
 
         parser_free(parser);
-
-        lexer_free_tokens(
-            tokens,
-            token_count
-        );
+        lexer_free_tokens(tokens, token_count);
 
         return 1;
     }
 
     /*
-     * ==========================
-     * AST
-     * ==========================
+     * INTERPRETER
      */
 
-    printf(
-        "=== TzLang AST ===\n\n"
-    );
+    printf("=== TzLang ===\n\n");
 
-    ast_print_tree(
-        program,
-        0
-    );
+    if (!interpreter_run(program)) {
+
+        fprintf(
+            stderr,
+            "La ejecución falló.\n"
+        );
+
+        ast_free(program);
+        parser_free(parser);
+        lexer_free_tokens(tokens, token_count);
+
+        return 1;
+    }
 
     /*
-     * ==========================
      * LIMPIEZA
-     * ==========================
      */
 
     ast_free(program);

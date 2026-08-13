@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * ==========================
+ * UTILIDADES
+ * ==========================
+ */
+
 static char *copy_string(const char *source) {
 
     size_t length = strlen(source);
@@ -18,6 +24,50 @@ static char *copy_string(const char *source) {
     strcpy(result, source);
 
     return result;
+}
+
+/*
+ * ==========================
+ * COPIAR VALUE
+ * ==========================
+ */
+
+static Value value_copy(Value source) {
+
+    switch (source.type) {
+
+        case VALUE_NUMBER:
+
+            return value_number(
+                source.data.number
+            );
+
+        case VALUE_DECIMAL:
+
+            return value_decimal(
+                source.data.decimal
+            );
+
+        case VALUE_STRING:
+
+            return value_string(
+                source.data.string
+            );
+
+        case VALUE_BOOLEAN:
+
+            return value_boolean(
+                source.data.boolean
+            );
+
+        case VALUE_NULL:
+
+            return value_null();
+
+        default:
+
+            return value_null();
+    }
 }
 
 /*
@@ -52,6 +102,10 @@ Environment *environment_create(void) {
     return environment;
 }
 
+/*
+ * Buscar variable
+ */
+
 static int environment_find(
     Environment *environment,
     const char *name
@@ -69,12 +123,17 @@ static int environment_find(
                 name
             ) == 0
         ) {
+
             return i;
         }
     }
 
     return -1;
 }
+
+/*
+ * Guardar variable
+ */
 
 void environment_set(
     Environment *environment,
@@ -95,6 +154,7 @@ void environment_set(
     /*
      * La variable ya existe.
      */
+
     if (index >= 0) {
 
         value_free(
@@ -108,8 +168,9 @@ void environment_set(
     }
 
     /*
-     * Necesitamos más espacio.
+     * Aumentar capacidad.
      */
+
     if (
         environment->count >=
         environment->capacity
@@ -136,10 +197,18 @@ void environment_set(
             new_capacity;
     }
 
+    /*
+     * Guardar nombre.
+     */
+
     environment->variables[
         environment->count
     ].name =
         copy_string(name);
+
+    /*
+     * Guardar Value.
+     */
 
     environment->variables[
         environment->count
@@ -148,6 +217,10 @@ void environment_set(
 
     environment->count++;
 }
+
+/*
+ * Obtener variable
+ */
 
 int environment_get(
     Environment *environment,
@@ -159,6 +232,7 @@ int environment_get(
         environment == NULL ||
         value == NULL
     ) {
+
         return 0;
     }
 
@@ -172,11 +246,24 @@ int environment_get(
         return 0;
     }
 
+    /*
+     * Devolvemos una copia.
+     *
+     * Esto es importante para STRING,
+     * porque contiene memoria dinámica.
+     */
+
     *value =
-        environment->variables[index].value;
+        value_copy(
+            environment->variables[index].value
+        );
 
     return 1;
 }
+
+/*
+ * Liberar Environment
+ */
 
 void environment_free(
     Environment *environment
@@ -201,7 +288,9 @@ void environment_free(
         );
     }
 
-    free(environment->variables);
+    free(
+        environment->variables
+    );
 
     free(environment);
 }
@@ -222,12 +311,16 @@ static int evaluate_expression(
         node == NULL ||
         result == NULL
     ) {
+
         return 0;
     }
 
     /*
+     * ==========================
      * NUMBER
+     * ==========================
      */
+
     if (node->type == AST_NUMBER) {
 
         *result =
@@ -239,8 +332,27 @@ static int evaluate_expression(
     }
 
     /*
-     * STRING
+     * ==========================
+     * DECIMAL
+     * ==========================
      */
+
+    if (node->type == AST_DECIMAL) {
+
+        *result =
+            value_decimal(
+                node->data.decimal
+            );
+
+        return 1;
+    }
+
+    /*
+     * ==========================
+     * STRING
+     * ==========================
+     */
+
     if (node->type == AST_STRING) {
 
         *result =
@@ -252,8 +364,27 @@ static int evaluate_expression(
     }
 
     /*
-     * IDENTIFIER
+     * ==========================
+     * BOOLEAN
+     * ==========================
      */
+
+    if (node->type == AST_BOOLEAN) {
+
+        *result =
+            value_boolean(
+                node->data.boolean
+            );
+
+        return 1;
+    }
+
+    /*
+     * ==========================
+     * IDENTIFIER
+     * ==========================
+     */
+
     if (node->type == AST_IDENTIFIER) {
 
         if (
@@ -277,8 +408,11 @@ static int evaluate_expression(
     }
 
     /*
+     * ==========================
      * BINARY
+     * ==========================
      */
+
     if (node->type == AST_BINARY) {
 
         Value left;
@@ -291,6 +425,7 @@ static int evaluate_expression(
                 &left
             )
         ) {
+
             return 0;
         }
 
@@ -309,7 +444,7 @@ static int evaluate_expression(
 
         /*
          * Actualmente las operaciones
-         * matemáticas trabajan con números.
+         * matemáticas requieren NUMBER.
          */
 
         if (
@@ -403,6 +538,12 @@ static int evaluate_expression(
         }
     }
 
+    /*
+     * ==========================
+     * EXPRESIÓN DESCONOCIDA
+     * ==========================
+     */
+
     fprintf(
         stderr,
         "Error: expresión desconocida.\n"
@@ -427,8 +568,13 @@ static int execute_statement(
     }
 
     /*
+     * ==========================
+     * VARIABLE
+     * ==========================
+     *
      * variable x = ...
      */
+
     if (
         node->type ==
         AST_VARIABLE_DECLARATION
@@ -443,6 +589,7 @@ static int execute_statement(
                 &value
             )
         ) {
+
             return 0;
         }
 
@@ -456,8 +603,13 @@ static int execute_statement(
     }
 
     /*
+     * ==========================
+     * PRINT
+     * ==========================
+     *
      * imprimir(...)
      */
+
     if (node->type == AST_PRINT) {
 
         Value value;
@@ -469,6 +621,7 @@ static int execute_statement(
                 &value
             )
         ) {
+
             return 0;
         }
 
@@ -480,6 +633,12 @@ static int execute_statement(
 
         return 1;
     }
+
+    /*
+     * ==========================
+     * ERROR
+     * ==========================
+     */
 
     fprintf(
         stderr,
@@ -503,6 +662,7 @@ int interpreter_run(
         program == NULL ||
         program->type != AST_PROGRAM
     ) {
+
         return 0;
     }
 
@@ -518,6 +678,10 @@ int interpreter_run(
 
         return 0;
     }
+
+    /*
+     * Ejecutar cada statement
+     */
 
     for (
         int i = 0;
@@ -539,6 +703,10 @@ int interpreter_run(
             return 0;
         }
     }
+
+    /*
+     * Liberar entorno
+     */
 
     environment_free(
         environment
