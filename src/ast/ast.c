@@ -168,6 +168,10 @@ ASTNode *ast_boolean(int value) {
     return node;
 }
 
+ASTNode *ast_null(void) {
+    return create_node(AST_NULL);
+}
+
 ASTNode *ast_identifier(const char *name) {
     ASTNode *node = create_node(AST_IDENTIFIER);
 
@@ -193,7 +197,7 @@ ASTNode *ast_identifier(const char *name) {
 
 ASTNode *ast_binary(
     ASTNode *left,
-    char operator,
+    BinaryOperator operator,
     ASTNode *right
 ) {
     ASTNode *node = create_node(AST_BINARY);
@@ -205,6 +209,22 @@ ASTNode *ast_binary(
     node->data.binary.left = left;
     node->data.binary.operator = operator;
     node->data.binary.right = right;
+
+    return node;
+}
+
+ASTNode *ast_unary(
+    UnaryOperator operator,
+    ASTNode *operand
+) {
+    ASTNode *node = create_node(AST_UNARY);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.unary.operator = operator;
+    node->data.unary.operand = operand;
 
     return node;
 }
@@ -249,6 +269,96 @@ ASTNode *ast_print(ASTNode *expression) {
     node->data.print = expression;
 
     return node;
+}
+
+ASTNode *ast_if(
+    ASTNode *condition,
+    ASTNode *then_branch,
+    ASTNode *else_branch
+) {
+    ASTNode *node = create_node(AST_IF);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.if_statement.condition =
+        condition;
+
+    node->data.if_statement.then_branch =
+        then_branch;
+
+    node->data.if_statement.else_branch =
+        else_branch;
+
+    return node;
+}
+
+/*
+ * ==========================
+ * NOMBRE DE LOS OPERADORES
+ * ==========================
+ */
+
+static const char *binary_operator_name(
+    BinaryOperator operator
+) {
+
+    switch (operator) {
+
+        case OP_ADD:
+            return "+";
+
+        case OP_SUBTRACT:
+            return "-";
+
+        case OP_MULTIPLY:
+            return "*";
+
+        case OP_DIVIDE:
+            return "/";
+
+        case OP_GREATER:
+            return ">";
+
+        case OP_LESS:
+            return "<";
+
+        case OP_GREATER_EQUAL:
+            return ">=";
+
+        case OP_LESS_EQUAL:
+            return "<=";
+
+        case OP_EQUAL:
+            return "==";
+
+        case OP_NOT_EQUAL:
+            return "!=";
+
+        case OP_AND:
+            return "y";
+
+        case OP_OR:
+            return "o";
+
+        default:
+            return "?";
+    }
+}
+
+static const char *unary_operator_name(
+    UnaryOperator operator
+) {
+
+    switch (operator) {
+
+        case OP_NOT:
+            return "no";
+
+        default:
+            return "?";
+    }
 }
 
 /*
@@ -351,6 +461,16 @@ void ast_print_tree(
             break;
 
         /*
+         * NULL
+         */
+
+        case AST_NULL:
+
+            printf("NULL: nulo\n");
+
+            break;
+
+        /*
          * IDENTIFIER
          */
 
@@ -370,8 +490,10 @@ void ast_print_tree(
         case AST_BINARY:
 
             printf(
-                "BINARY: %c\n",
-                node->data.binary.operator
+                "BINARY: %s\n",
+                binary_operator_name(
+                    node->data.binary.operator
+                )
             );
 
             ast_print_tree(
@@ -381,6 +503,26 @@ void ast_print_tree(
 
             ast_print_tree(
                 node->data.binary.right,
+                indentation + 1
+            );
+
+            break;
+
+        /*
+         * UNARY
+         */
+
+        case AST_UNARY:
+
+            printf(
+                "UNARY: %s\n",
+                unary_operator_name(
+                    node->data.unary.operator
+                )
+            );
+
+            ast_print_tree(
+                node->data.unary.operand,
                 indentation + 1
             );
 
@@ -416,6 +558,46 @@ void ast_print_tree(
                 node->data.print,
                 indentation + 1
             );
+
+            break;
+
+        /*
+         * IF
+         */
+
+        case AST_IF:
+
+            printf("IF\n");
+
+            print_indent(indentation + 1);
+            printf("CONDITION\n");
+
+            ast_print_tree(
+                node->data.if_statement.condition,
+                indentation + 2
+            );
+
+            print_indent(indentation + 1);
+            printf("THEN\n");
+
+            ast_print_tree(
+                node->data.if_statement.then_branch,
+                indentation + 2
+            );
+
+            if (
+                node->data.if_statement.else_branch
+                != NULL
+            ) {
+
+                print_indent(indentation + 1);
+                printf("ELSE\n");
+
+                ast_print_tree(
+                    node->data.if_statement.else_branch,
+                    indentation + 2
+                );
+            }
 
             break;
 
@@ -504,6 +686,18 @@ void ast_free(ASTNode *node) {
             break;
 
         /*
+         * UNARY
+         */
+
+        case AST_UNARY:
+
+            ast_free(
+                node->data.unary.operand
+            );
+
+            break;
+
+        /*
          * VARIABLE
          */
 
@@ -532,9 +726,30 @@ void ast_free(ASTNode *node) {
             break;
 
         /*
+         * IF
+         */
+
+        case AST_IF:
+
+            ast_free(
+                node->data.if_statement.condition
+            );
+
+            ast_free(
+                node->data.if_statement.then_branch
+            );
+
+            ast_free(
+                node->data.if_statement.else_branch
+            );
+
+            break;
+
+        /*
          * NUMBER
          * DECIMAL
          * BOOLEAN
+         * NULL
          *
          * No necesitan free().
          */
@@ -542,6 +757,7 @@ void ast_free(ASTNode *node) {
         case AST_NUMBER:
         case AST_DECIMAL:
         case AST_BOOLEAN:
+        case AST_NULL:
 
             break;
 

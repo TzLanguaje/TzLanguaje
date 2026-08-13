@@ -8,13 +8,78 @@ typedef enum {
     AST_DECIMAL,
     AST_STRING,
     AST_BOOLEAN,
+    AST_NULL,
     AST_IDENTIFIER,
 
     AST_BINARY,
+    AST_UNARY,
 
     AST_VARIABLE_DECLARATION,
-    AST_PRINT
+    AST_PRINT,
+    AST_IF
 } ASTNodeType;
+
+/*
+ * ==========================
+ * OPERADORES BINARIOS
+ * ==========================
+ *
+ * La sintaxis visible es
+ * pseudocódigo en español:
+ *
+ * "es mayor que"        → OP_GREATER
+ * "es mayor o igual que" → OP_GREATER_EQUAL
+ * "es igual a"          → OP_EQUAL
+ * "es diferente de"     → OP_NOT_EQUAL
+ * "y"                   → OP_AND
+ * "o"                   → OP_OR
+ *
+ * Internamente todo se reduce
+ * a estos operadores.
+ */
+
+typedef enum {
+
+    /*
+     * Aritmética
+     */
+
+    OP_ADD,
+    OP_SUBTRACT,
+    OP_MULTIPLY,
+    OP_DIVIDE,
+
+    /*
+     * Comparación
+     */
+
+    OP_GREATER,
+    OP_LESS,
+    OP_GREATER_EQUAL,
+    OP_LESS_EQUAL,
+    OP_EQUAL,
+    OP_NOT_EQUAL,
+
+    /*
+     * Lógicos
+     */
+
+    OP_AND,
+    OP_OR
+
+} BinaryOperator;
+
+/*
+ * ==========================
+ * OPERADORES UNARIOS
+ * ==========================
+ *
+ * "no" → OP_NOT
+ */
+
+typedef enum {
+    OP_NOT
+} UnaryOperator;
 
 typedef struct ASTNode ASTNode;
 
@@ -36,8 +101,13 @@ struct ASTNode {
         struct {
             ASTNode *left;
             ASTNode *right;
-            char operator;
+            BinaryOperator operator;
         } binary;
+
+        struct {
+            ASTNode *operand;
+            UnaryOperator operator;
+        } unary;
 
         struct {
             char *name;
@@ -45,6 +115,12 @@ struct ASTNode {
         } variable;
 
         ASTNode *print;
+
+        struct {
+            ASTNode *condition;
+            ASTNode *then_branch;
+            ASTNode *else_branch;
+        } if_statement;
 
         struct {
             ASTNode **statements;
@@ -57,6 +133,9 @@ struct ASTNode {
 
 /*
  * PROGRAM
+ *
+ * También se usa para los
+ * bloques de 'si' y 'sino'.
  */
 
 ASTNode *ast_program(void);
@@ -78,6 +157,8 @@ ASTNode *ast_string(const char *value);
 
 ASTNode *ast_boolean(int value);
 
+ASTNode *ast_null(void);
+
 ASTNode *ast_identifier(const char *name);
 
 /*
@@ -86,8 +167,13 @@ ASTNode *ast_identifier(const char *name);
 
 ASTNode *ast_binary(
     ASTNode *left,
-    char operator,
+    BinaryOperator operator,
     ASTNode *right
+);
+
+ASTNode *ast_unary(
+    UnaryOperator operator,
+    ASTNode *operand
 );
 
 /*
@@ -101,6 +187,22 @@ ASTNode *ast_variable(
 
 ASTNode *ast_print(
     ASTNode *expression
+);
+
+/*
+ * si (condicion)
+ *     then_branch
+ * sino
+ *     else_branch
+ * fin
+ *
+ * else_branch puede ser NULL.
+ */
+
+ASTNode *ast_if(
+    ASTNode *condition,
+    ASTNode *then_branch,
+    ASTNode *else_branch
 );
 
 /*

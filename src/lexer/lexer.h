@@ -12,6 +12,16 @@ typedef enum {
     TOKEN_EOF,
 
     /*
+     * Fin de instrucción
+     *
+     * TzLang usa el salto de línea
+     * para terminar instrucciones.
+     * El ';' sigue siendo válido.
+     */
+
+    TOKEN_NEWLINE,
+
+    /*
      * Valores
      */
 
@@ -29,6 +39,51 @@ typedef enum {
 
     TOKEN_TRUE,
     TOKEN_FALSE,
+    TOKEN_NULO,
+
+    /*
+     * Control de flujo
+     *
+     * si
+     * sino
+     * fin
+     */
+
+    TOKEN_SI,
+    TOKEN_SINO,
+    TOKEN_FIN,
+
+    /*
+     * Operadores lógicos
+     *
+     * y
+     * o
+     * no
+     */
+
+    TOKEN_Y,
+    TOKEN_O,
+    TOKEN_NO,
+
+    /*
+     * Comparaciones en pseudocódigo
+     *
+     * es mayor que
+     * es menor que
+     * es mayor o igual que
+     * es menor o igual que
+     * es igual a
+     * es diferente de
+     */
+
+    TOKEN_ES,
+    TOKEN_MAYOR,
+    TOKEN_MENOR,
+    TOKEN_IGUAL,
+    TOKEN_DIFERENTE,
+    TOKEN_QUE,
+    TOKEN_A,
+    TOKEN_DE,
 
     /*
      * Operadores
@@ -38,6 +93,20 @@ typedef enum {
     TOKEN_MINUS,
     TOKEN_STAR,
     TOKEN_SLASH,
+
+    /*
+     * Comparación simbólica
+     *
+     * Se mantiene por
+     * compatibilidad.
+     */
+
+    TOKEN_GREATER,
+    TOKEN_LESS,
+    TOKEN_GREATER_EQUAL,
+    TOKEN_LESS_EQUAL,
+    TOKEN_EQUAL_EQUAL,
+    TOKEN_NOT_EQUAL,
 
     /*
      * Símbolos

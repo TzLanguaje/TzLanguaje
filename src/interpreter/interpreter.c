@@ -399,6 +399,19 @@ static int evaluate_expression(
 
     /*
      * ==========================
+     * NULO
+     * ==========================
+     */
+
+    if (node->type == AST_NULL) {
+
+        *result = value_null();
+
+        return 1;
+    }
+
+    /*
+     * ==========================
      * IDENTIFIER
      * ==========================
      */
@@ -423,6 +436,68 @@ static int evaluate_expression(
         }
 
         return 1;
+    }
+
+    /*
+     * ==========================
+     * UNARY
+     * ==========================
+     *
+     * no activo
+     */
+
+    if (node->type == AST_UNARY) {
+
+        Value operand;
+
+        if (
+            !evaluate_expression(
+                node->data.unary.operand,
+                environment,
+                &operand
+            )
+        ) {
+
+            return 0;
+        }
+
+        int success = 0;
+
+        switch (node->data.unary.operator) {
+
+            /*
+             * NO
+             */
+
+            case OP_NOT:
+
+                success =
+                    operation_not(
+                        operand,
+                        result
+                    );
+
+                break;
+
+            /*
+             * OPERADOR DESCONOCIDO
+             */
+
+            default:
+
+                fprintf(
+                    stderr,
+                    "Error: operador unario desconocido.\n"
+                );
+
+                success = 0;
+
+                break;
+        }
+
+        value_free(&operand);
+
+        return success;
     }
 
     /*
@@ -484,7 +559,7 @@ static int evaluate_expression(
              * SUMA
              */
 
-            case '+':
+            case OP_ADD:
 
                 success =
                     operation_add(
@@ -499,7 +574,7 @@ static int evaluate_expression(
              * RESTA
              */
 
-            case '-':
+            case OP_SUBTRACT:
 
                 success =
                     operation_subtract(
@@ -514,7 +589,7 @@ static int evaluate_expression(
              * MULTIPLICACIÓN
              */
 
-            case '*':
+            case OP_MULTIPLY:
 
                 success =
                     operation_multiply(
@@ -529,10 +604,142 @@ static int evaluate_expression(
              * DIVISIÓN
              */
 
-            case '/':
+            case OP_DIVIDE:
 
                 success =
                     operation_divide(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * MAYOR QUE
+             *
+             * es mayor que
+             */
+
+            case OP_GREATER:
+
+                success =
+                    operation_greater(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * MENOR QUE
+             *
+             * es menor que
+             */
+
+            case OP_LESS:
+
+                success =
+                    operation_less(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * MAYOR O IGUAL QUE
+             *
+             * es mayor o igual que
+             */
+
+            case OP_GREATER_EQUAL:
+
+                success =
+                    operation_greater_equal(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * MENOR O IGUAL QUE
+             *
+             * es menor o igual que
+             */
+
+            case OP_LESS_EQUAL:
+
+                success =
+                    operation_less_equal(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * IGUAL A
+             *
+             * es igual a
+             */
+
+            case OP_EQUAL:
+
+                success =
+                    operation_equal(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * DIFERENTE DE
+             *
+             * es diferente de
+             */
+
+            case OP_NOT_EQUAL:
+
+                success =
+                    operation_not_equal(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * Y
+             */
+
+            case OP_AND:
+
+                success =
+                    operation_and(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * O
+             */
+
+            case OP_OR:
+
+                success =
+                    operation_or(
                         left,
                         right,
                         result
@@ -548,8 +755,7 @@ static int evaluate_expression(
 
                 fprintf(
                     stderr,
-                    "Error: operador desconocido '%c'.\n",
-                    node->data.binary.operator
+                    "Error: operador binario desconocido.\n"
                 );
 
                 success = 0;
@@ -589,6 +795,11 @@ static int evaluate_expression(
  * EJECUTAR STATEMENT
  * ==========================
  */
+
+static int execute_block(
+    ASTNode *block,
+    Environment *environment
+);
 
 static int execute_statement(
     ASTNode *node,
@@ -668,6 +879,64 @@ static int execute_statement(
 
     /*
      * ==========================
+     * SI / SINO
+     * ==========================
+     *
+     * si (condicion)
+     *     ...
+     * sino
+     *     ...
+     * fin
+     */
+
+    if (node->type == AST_IF) {
+
+        Value condition;
+
+        if (
+            !evaluate_expression(
+                node->data.if_statement.condition,
+                environment,
+                &condition
+            )
+        ) {
+
+            return 0;
+        }
+
+        int is_true =
+            value_is_truthy(condition);
+
+        value_free(&condition);
+
+        if (is_true) {
+
+            return execute_block(
+                node->data.if_statement.then_branch,
+                environment
+            );
+        }
+
+        /*
+         * El 'sino' es opcional.
+         */
+
+        if (
+            node->data.if_statement.else_branch
+            == NULL
+        ) {
+
+            return 1;
+        }
+
+        return execute_block(
+            node->data.if_statement.else_branch,
+            environment
+        );
+    }
+
+    /*
+     * ==========================
      * STATEMENT DESCONOCIDO
      * ==========================
      */
@@ -678,6 +947,48 @@ static int execute_statement(
     );
 
     return 0;
+}
+
+/*
+ * ==========================
+ * EJECUTAR BLOQUE
+ * ==========================
+ *
+ * Lo usan el programa completo
+ * y los cuerpos de 'si' y 'sino'.
+ */
+
+static int execute_block(
+    ASTNode *block,
+    Environment *environment
+) {
+
+    if (
+        block == NULL ||
+        block->type != AST_PROGRAM
+    ) {
+
+        return 0;
+    }
+
+    for (
+        int i = 0;
+        i < block->data.program.count;
+        i++
+    ) {
+
+        if (
+            !execute_statement(
+                block->data.program.statements[i],
+                environment
+            )
+        ) {
+
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 /*
@@ -721,25 +1032,18 @@ int interpreter_run(
      * ==========================
      */
 
-    for (
-        int i = 0;
-        i < program->data.program.count;
-        i++
+    if (
+        !execute_block(
+            program,
+            environment
+        )
     ) {
 
-        if (
-            !execute_statement(
-                program->data.program.statements[i],
-                environment
-            )
-        ) {
+        environment_free(
+            environment
+        );
 
-            environment_free(
-                environment
-            );
-
-            return 0;
-        }
+        return 0;
     }
 
     /*

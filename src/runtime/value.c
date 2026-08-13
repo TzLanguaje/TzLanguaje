@@ -112,6 +112,33 @@ const char *value_type_name(
     }
 }
 
+int value_is_truthy(Value value) {
+
+    switch (value.type) {
+
+        case VALUE_BOOLEAN:
+            return value.data.boolean ? 1 : 0;
+
+        case VALUE_NUMBER:
+            return value.data.number != 0;
+
+        case VALUE_DECIMAL:
+            return value.data.decimal != 0.0;
+
+        case VALUE_STRING:
+
+            return
+                value.data.string != NULL &&
+                value.data.string[0] != '\0';
+
+        case VALUE_NULL:
+            return 0;
+
+        default:
+            return 0;
+    }
+}
+
 void value_print(Value value) {
 
     switch (value.type) {

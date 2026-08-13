@@ -8,15 +8,32 @@
 int main(void) {
 
 const char *source =
-    "imprimir(10 + 20);\n"
-    "imprimir(10 - 3);\n"
-    "imprimir(5 * 4);\n"
-    "imprimir(20 / 5);\n"
-    "imprimir(10.5 + 2.5);\n"
-    "imprimir(10.5 - 2.5);\n"
-    "imprimir(5 * 2.5);\n"
-    "imprimir(10 / 2.5);\n"
-    "imprimir(\"Hola \" + \"TzLang\");";
+    "variable edad = 20\n"
+    "variable documento = verdadero\n"
+    "\n"
+    "si (edad es mayor que 10)\n"
+    "    imprimir \"Mayor que 10\"\n"
+    "fin\n"
+    "\n"
+    "si (edad es mayor o igual que 18) y (documento)\n"
+    "    imprimir \"Puede entrar\"\n"
+    "fin\n"
+    "\n"
+    "si (edad es menor que 10) o (documento)\n"
+    "    imprimir \"Segunda condición\"\n"
+    "fin\n"
+    "\n"
+    "si (edad es igual a 20)\n"
+    "    imprimir \"Tiene 20\"\n"
+    "fin\n"
+    "\n"
+    "si (edad es diferente de 30)\n"
+    "    imprimir \"No tiene 30\"\n"
+    "fin\n"
+    "\n"
+    "si (edad es mayor o igual que 18) y (documento o falso)\n"
+    "    imprimir \"Condición compleja\"\n"
+    "fin\n";
     /*
      * LEXER
      */

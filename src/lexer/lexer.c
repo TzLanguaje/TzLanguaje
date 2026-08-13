@@ -34,23 +34,88 @@ static char *copy_string(
  * ==========================
  */
 
+/*
+ * Tabla de palabras reservadas.
+ *
+ * Todo lo que no esté aquí
+ * es un IDENTIFIER.
+ */
+
+typedef struct {
+    const char *word;
+    TokenType type;
+} Keyword;
+
+static const Keyword keywords[] = {
+
+    /*
+     * Declaraciones
+     */
+
+    { "variable",  TOKEN_VARIABLE  },
+    { "imprimir",  TOKEN_IMPRIMIR  },
+
+    /*
+     * Literales
+     */
+
+    { "verdadero", TOKEN_TRUE      },
+    { "falso",     TOKEN_FALSE     },
+    { "nulo",      TOKEN_NULO      },
+
+    /*
+     * Control de flujo
+     */
+
+    { "si",        TOKEN_SI        },
+    { "sino",      TOKEN_SINO      },
+    { "fin",       TOKEN_FIN       },
+
+    /*
+     * Lógicos
+     */
+
+    { "y",         TOKEN_Y         },
+    { "o",         TOKEN_O         },
+    { "no",        TOKEN_NO        },
+
+    /*
+     * Comparaciones en pseudocódigo
+     *
+     * es mayor que
+     * es menor o igual que
+     * es igual a
+     * es diferente de
+     */
+
+    { "es",        TOKEN_ES        },
+    { "mayor",     TOKEN_MAYOR     },
+    { "menor",     TOKEN_MENOR     },
+    { "igual",     TOKEN_IGUAL     },
+    { "diferente", TOKEN_DIFERENTE },
+    { "que",       TOKEN_QUE       },
+    { "a",         TOKEN_A         },
+    { "de",        TOKEN_DE        }
+};
+
 static TokenType keyword_type(
     const char *value
 ) {
-    if (strcmp(value, "variable") == 0) {
-        return TOKEN_VARIABLE;
-    }
+    size_t count =
+        sizeof(keywords) /
+        sizeof(keywords[0]);
 
-    if (strcmp(value, "imprimir") == 0) {
-        return TOKEN_IMPRIMIR;
-    }
+    for (size_t i = 0; i < count; i++) {
 
-    if (strcmp(value, "verdadero") == 0) {
-        return TOKEN_TRUE;
-    }
+        if (
+            strcmp(
+                value,
+                keywords[i].word
+            ) == 0
+        ) {
 
-    if (strcmp(value, "falso") == 0) {
-        return TOKEN_FALSE;
+            return keywords[i].type;
+        }
     }
 
     return TOKEN_IDENTIFIER;
@@ -69,6 +134,9 @@ const char *token_type_name(
 
         case TOKEN_EOF:
             return "EOF";
+
+        case TOKEN_NEWLINE:
+            return "NEWLINE";
 
         case TOKEN_IDENTIFIER:
             return "IDENTIFIER";
@@ -94,6 +162,51 @@ const char *token_type_name(
         case TOKEN_FALSE:
             return "FALSE";
 
+        case TOKEN_NULO:
+            return "NULO";
+
+        case TOKEN_SI:
+            return "SI";
+
+        case TOKEN_SINO:
+            return "SINO";
+
+        case TOKEN_FIN:
+            return "FIN";
+
+        case TOKEN_Y:
+            return "Y";
+
+        case TOKEN_O:
+            return "O";
+
+        case TOKEN_NO:
+            return "NO";
+
+        case TOKEN_ES:
+            return "ES";
+
+        case TOKEN_MAYOR:
+            return "MAYOR";
+
+        case TOKEN_MENOR:
+            return "MENOR";
+
+        case TOKEN_IGUAL:
+            return "IGUAL";
+
+        case TOKEN_DIFERENTE:
+            return "DIFERENTE";
+
+        case TOKEN_QUE:
+            return "QUE";
+
+        case TOKEN_A:
+            return "A";
+
+        case TOKEN_DE:
+            return "DE";
+
         case TOKEN_PLUS:
             return "PLUS";
 
@@ -105,6 +218,24 @@ const char *token_type_name(
 
         case TOKEN_SLASH:
             return "SLASH";
+
+        case TOKEN_GREATER:
+            return "GREATER";
+
+        case TOKEN_LESS:
+            return "LESS";
+
+        case TOKEN_GREATER_EQUAL:
+            return "GREATER_EQUAL";
+
+        case TOKEN_LESS_EQUAL:
+            return "LESS_EQUAL";
+
+        case TOKEN_EQUAL_EQUAL:
+            return "EQUAL_EQUAL";
+
+        case TOKEN_NOT_EQUAL:
+            return "NOT_EQUAL";
 
         case TOKEN_EQUAL:
             return "EQUAL";
@@ -151,14 +282,17 @@ Token *lexer_tokenize(
 
         /*
          * ESPACIOS
+         *
+         * El salto de línea NO se
+         * ignora: termina la
+         * instrucción, así que se
+         * convierte en un token.
          */
 
-        if (isspace((unsigned char)*current)) {
-
-            if (*current == '\n') {
-                line++;
-            }
-
+        if (
+            *current != '\n' &&
+            isspace((unsigned char)*current)
+        ) {
             current++;
 
             continue;
@@ -215,6 +349,45 @@ Token *lexer_tokenize(
 
         token.line = line;
         token.value = NULL;
+
+        /*
+         * ==========================
+         * SALTO DE LÍNEA
+         * ==========================
+         *
+         * Marca el final de una
+         * instrucción:
+         *
+         * variable edad = 20
+         * imprimir edad
+         */
+
+        if (*current == '\n') {
+
+            token.type =
+                TOKEN_NEWLINE;
+
+            token.value =
+                copy_string("\n", 1);
+
+            if (token.value == NULL) {
+
+                lexer_free_tokens(
+                    tokens,
+                    count
+                );
+
+                return NULL;
+            }
+
+            current++;
+
+            line++;
+
+            tokens[count++] = token;
+
+            continue;
+        }
 
         /*
          * ==========================
@@ -453,7 +626,88 @@ Token *lexer_tokenize(
 
                 break;
 
+            /*
+             * ==========================
+             * COMPARACIÓN
+             * ==========================
+             *
+             * >
+             * <
+             */
+
+            case '>':
+
+                if (*(current + 1) == '=') {
+
+                    token.type =
+                        TOKEN_GREATER_EQUAL;
+
+                    token.value =
+                        copy_string(">=", 2);
+
+                    current += 2;
+
+                    break;
+                }
+
+                token.type =
+                    TOKEN_GREATER;
+
+                token.value =
+                    copy_string(">", 1);
+
+                current++;
+
+                break;
+
+            case '<':
+
+                if (*(current + 1) == '=') {
+
+                    token.type =
+                        TOKEN_LESS_EQUAL;
+
+                    token.value =
+                        copy_string("<=", 2);
+
+                    current += 2;
+
+                    break;
+                }
+
+                token.type =
+                    TOKEN_LESS;
+
+                token.value =
+                    copy_string("<", 1);
+
+                current++;
+
+                break;
+
+            /*
+             * ==========================
+             * = o ==
+             * ==========================
+             *
+             * =  → asignación
+             * == → comparación
+             */
+
             case '=':
+
+                if (*(current + 1) == '=') {
+
+                    token.type =
+                        TOKEN_EQUAL_EQUAL;
+
+                    token.value =
+                        copy_string("==", 2);
+
+                    current += 2;
+
+                    break;
+                }
 
                 token.type =
                     TOKEN_EQUAL;
@@ -464,6 +718,41 @@ Token *lexer_tokenize(
                 current++;
 
                 break;
+
+            /*
+             * ==========================
+             * !=
+             * ==========================
+             *
+             * '!' por sí solo todavía
+             * no es un operador de TzLang.
+             */
+
+            case '!':
+
+                if (*(current + 1) == '=') {
+
+                    token.type =
+                        TOKEN_NOT_EQUAL;
+
+                    token.value =
+                        copy_string("!=", 2);
+
+                    current += 2;
+
+                    break;
+                }
+
+                fprintf(
+                    stderr,
+                    "Lexer error at line %d: unexpected character '%c'\n",
+                    line,
+                    *current
+                );
+
+                current++;
+
+                continue;
 
             case ';':
 
@@ -533,6 +822,35 @@ Token *lexer_tokenize(
      * EOF
      * ==========================
      */
+
+    /*
+     * El bucle solo crece el array
+     * antes de leer un token nuevo,
+     * así que aquí puede quedar lleno.
+     */
+
+    if (count >= (int)capacity) {
+
+        capacity += 1;
+
+        Token *new_tokens =
+            realloc(
+                tokens,
+                sizeof(Token) * capacity
+            );
+
+        if (new_tokens == NULL) {
+
+            lexer_free_tokens(
+                tokens,
+                count
+            );
+
+            return NULL;
+        }
+
+        tokens = new_tokens;
+    }
 
     Token eof;
 

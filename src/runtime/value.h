@@ -48,6 +48,21 @@ void value_free(Value *value);
 void value_print(Value value);
 
 /*
+ * ¿El valor cuenta como verdadero?
+ *
+ * Lo usan 'si', 'y', 'o' y 'no'.
+ *
+ * verdadero  → 1
+ * falso      → 0
+ * 0 / 0.0    → 0
+ * ""         → 0
+ * nulo       → 0
+ * el resto   → 1
+ */
+
+int value_is_truthy(Value value);
+
+/*
  * Obtener nombre del tipo
  */
 

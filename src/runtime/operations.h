@@ -33,4 +33,82 @@ int operation_divide(
     Value *result
 );
 
+/*
+ * ==========================
+ * OPERACIONES DE COMPARACIÓN
+ * ==========================
+ *
+ * El resultado siempre es
+ * un VALUE_BOOLEAN:
+ *
+ * verdadero
+ * falso
+ */
+
+int operation_greater(
+    Value left,
+    Value right,
+    Value *result
+);
+
+int operation_less(
+    Value left,
+    Value right,
+    Value *result
+);
+
+int operation_equal(
+    Value left,
+    Value right,
+    Value *result
+);
+
+int operation_not_equal(
+    Value left,
+    Value right,
+    Value *result
+);
+
+int operation_greater_equal(
+    Value left,
+    Value right,
+    Value *result
+);
+
+int operation_less_equal(
+    Value left,
+    Value right,
+    Value *result
+);
+
+/*
+ * ==========================
+ * OPERACIONES LÓGICAS
+ * ==========================
+ *
+ * y
+ * o
+ * no
+ *
+ * Trabajan sobre la "verdad"
+ * del valor (value_is_truthy).
+ */
+
+int operation_and(
+    Value left,
+    Value right,
+    Value *result
+);
+
+int operation_or(
+    Value left,
+    Value right,
+    Value *result
+);
+
+int operation_not(
+    Value operand,
+    Value *result
+);
+
 #endif
