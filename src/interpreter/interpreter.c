@@ -1,4 +1,5 @@
 #include "interpreter.h"
+#include "../runtime/operations.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,7 +104,9 @@ Environment *environment_create(void) {
 }
 
 /*
- * Buscar variable
+ * ==========================
+ * BUSCAR VARIABLE
+ * ==========================
  */
 
 static int environment_find(
@@ -132,7 +135,9 @@ static int environment_find(
 }
 
 /*
- * Guardar variable
+ * ==========================
+ * GUARDAR VARIABLE
+ * ==========================
  */
 
 void environment_set(
@@ -152,7 +157,9 @@ void environment_set(
         );
 
     /*
-     * La variable ya existe.
+     * ==========================
+     * VARIABLE YA EXISTENTE
+     * ==========================
      */
 
     if (index >= 0) {
@@ -168,7 +175,9 @@ void environment_set(
     }
 
     /*
-     * Aumentar capacidad.
+     * ==========================
+     * AUMENTAR CAPACIDAD
+     * ==========================
      */
 
     if (
@@ -198,7 +207,9 @@ void environment_set(
     }
 
     /*
-     * Guardar nombre.
+     * ==========================
+     * GUARDAR NOMBRE
+     * ==========================
      */
 
     environment->variables[
@@ -207,7 +218,9 @@ void environment_set(
         copy_string(name);
 
     /*
-     * Guardar Value.
+     * ==========================
+     * GUARDAR VALUE
+     * ==========================
      */
 
     environment->variables[
@@ -219,7 +232,9 @@ void environment_set(
 }
 
 /*
- * Obtener variable
+ * ==========================
+ * OBTENER VARIABLE
+ * ==========================
  */
 
 int environment_get(
@@ -249,8 +264,9 @@ int environment_get(
     /*
      * Devolvemos una copia.
      *
-     * Esto es importante para STRING,
-     * porque contiene memoria dinámica.
+     * Esto es especialmente importante
+     * para STRING porque contiene memoria
+     * dinámica.
      */
 
     *value =
@@ -262,7 +278,9 @@ int environment_get(
 }
 
 /*
- * Liberar Environment
+ * ==========================
+ * LIBERAR ENVIRONMENT
+ * ==========================
  */
 
 void environment_free(
@@ -297,7 +315,7 @@ void environment_free(
 
 /*
  * ==========================
- * EXPRESIONES
+ * EVALUAR EXPRESIONES
  * ==========================
  */
 
@@ -418,6 +436,10 @@ static int evaluate_expression(
         Value left;
         Value right;
 
+        /*
+         * Evaluar izquierda
+         */
+
         if (
             !evaluate_expression(
                 node->data.binary.left,
@@ -428,6 +450,10 @@ static int evaluate_expression(
 
             return 0;
         }
+
+        /*
+         * Evaluar derecha
+         */
 
         if (
             !evaluate_expression(
@@ -442,89 +468,81 @@ static int evaluate_expression(
             return 0;
         }
 
+        int success = 0;
+
         /*
-         * Actualmente las operaciones
-         * matemáticas requieren NUMBER.
+         * ==========================
+         * EJECUTAR OPERACIÓN
+         * ==========================
          */
-
-        if (
-            left.type != VALUE_NUMBER ||
-            right.type != VALUE_NUMBER
-        ) {
-
-            fprintf(
-                stderr,
-                "Error: la operación requiere números.\n"
-            );
-
-            value_free(&left);
-            value_free(&right);
-
-            return 0;
-        }
-
-        int left_number =
-            left.data.number;
-
-        int right_number =
-            right.data.number;
-
-        value_free(&left);
-        value_free(&right);
 
         switch (
             node->data.binary.operator
         ) {
 
+            /*
+             * SUMA
+             */
+
             case '+':
 
-                *result =
-                    value_number(
-                        left_number +
-                        right_number
+                success =
+                    operation_add(
+                        left,
+                        right,
+                        result
                     );
 
-                return 1;
+                break;
+
+            /*
+             * RESTA
+             */
 
             case '-':
 
-                *result =
-                    value_number(
-                        left_number -
-                        right_number
+                success =
+                    operation_subtract(
+                        left,
+                        right,
+                        result
                     );
 
-                return 1;
+                break;
+
+            /*
+             * MULTIPLICACIÓN
+             */
 
             case '*':
 
-                *result =
-                    value_number(
-                        left_number *
-                        right_number
+                success =
+                    operation_multiply(
+                        left,
+                        right,
+                        result
                     );
 
-                return 1;
+                break;
+
+            /*
+             * DIVISIÓN
+             */
 
             case '/':
 
-                if (right_number == 0) {
-
-                    fprintf(
-                        stderr,
-                        "Error: división por cero.\n"
+                success =
+                    operation_divide(
+                        left,
+                        right,
+                        result
                     );
 
-                    return 0;
-                }
+                break;
 
-                *result =
-                    value_number(
-                        left_number /
-                        right_number
-                    );
-
-                return 1;
+            /*
+             * OPERADOR DESCONOCIDO
+             */
 
             default:
 
@@ -534,8 +552,22 @@ static int evaluate_expression(
                     node->data.binary.operator
                 );
 
-                return 0;
+                success = 0;
+
+                break;
         }
+
+        /*
+         * ==========================
+         * LIBERAR OPERANDOS
+         * ==========================
+         */
+
+        value_free(&left);
+
+        value_free(&right);
+
+        return success;
     }
 
     /*
@@ -554,7 +586,7 @@ static int evaluate_expression(
 
 /*
  * ==========================
- * STATEMENTS
+ * EJECUTAR STATEMENT
  * ==========================
  */
 
@@ -636,7 +668,7 @@ static int execute_statement(
 
     /*
      * ==========================
-     * ERROR
+     * STATEMENT DESCONOCIDO
      * ==========================
      */
 
@@ -650,7 +682,7 @@ static int execute_statement(
 
 /*
  * ==========================
- * RUN
+ * EJECUTAR PROGRAMA
  * ==========================
  */
 
@@ -666,6 +698,10 @@ int interpreter_run(
         return 0;
     }
 
+    /*
+     * Crear entorno
+     */
+
     Environment *environment =
         environment_create();
 
@@ -680,7 +716,9 @@ int interpreter_run(
     }
 
     /*
-     * Ejecutar cada statement
+     * ==========================
+     * EJECUTAR STATEMENTS
+     * ==========================
      */
 
     for (
@@ -705,7 +743,9 @@ int interpreter_run(
     }
 
     /*
-     * Liberar entorno
+     * ==========================
+     * LIBERAR ENTORNO
+     * ==========================
      */
 
     environment_free(

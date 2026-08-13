@@ -7,16 +7,16 @@
 
 int main(void) {
 
-    const char *source =
-        "variable edad = 19;\n"
-        "variable altura = 1.78;\n"
-        "variable activo = verdadero;\n"
-        "variable eliminado = falso;\n"
-        "imprimir(edad);\n"
-        "imprimir(altura);\n"
-        "imprimir(activo);\n"
-        "imprimir(eliminado);";
-
+const char *source =
+    "imprimir(10 + 20);\n"
+    "imprimir(10 - 3);\n"
+    "imprimir(5 * 4);\n"
+    "imprimir(20 / 5);\n"
+    "imprimir(10.5 + 2.5);\n"
+    "imprimir(10.5 - 2.5);\n"
+    "imprimir(5 * 2.5);\n"
+    "imprimir(10 / 2.5);\n"
+    "imprimir(\"Hola \" + \"TzLang\");";
     /*
      * LEXER
      */
