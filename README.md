@@ -1,197 +1,417 @@
-# TzLang
+<h1 align="center">TzLang</h1>
 
 <p align="center">
-  <strong>Un lenguaje de programación en español, construido desde cero en C.</strong>
+  <strong>Un lenguaje de programación educativo en español, construido desde cero en C11.</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version">
-  <img src="https://img.shields.io/badge/language-C11-blue" alt="C11">
-  <img src="https://img.shields.io/badge/tests-138%20passed-success" alt="Tests">
-  <img src="https://img.shields.io/badge/status-development-orange" alt="Status">
+  <img src="https://img.shields.io/badge/versión-0.1.0-blue" alt="Versión 0.1.0">
+  <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
+  <img src="https://img.shields.io/badge/tests-138%20passed-success" alt="138 tests">
+  <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
 </p>
 
 ---
 
 ## ¿Qué es TzLang?
 
-**TzLang** es un lenguaje de programación interpretado con sintaxis en español, desarrollado desde cero utilizando **C11**.
+**TzLang** es un lenguaje de programación **interpretado** con sintaxis en **español**, pensado para aprender los conceptos fundamentales de la programación sin la barrera del inglés.
 
-El proyecto implementa su propio:
+Está construido **desde cero en C11**, sin dependencias externas ni generadores de parsers. Todas las piezas son propias:
 
-- Lexer
-- Parser
-- AST
-- Interpreter
-- Runtime
-- Sistema de valores
-- Sistema de funciones
-- CLI
-- Sistema de pruebas
+| Componente | Responsabilidad |
+|---|---|
+| **Lexer** | Convierte el texto fuente en tokens |
+| **Parser** | Analiza los tokens y construye el árbol sintáctico |
+| **AST** | Representa la estructura del programa |
+| **Interpreter** | Recorre el AST y ejecuta el programa |
+| **Runtime** | Gestiona valores, operaciones y memoria |
 
-Los programas escritos en TzLang utilizan la extensión:
+Los programas se escriben en archivos con extensión `.tz` y se ejecutan con el comando `tz`.
 
-```text
-.tz
+```tz
+imprimir "Hola desde TzLang"
 ```
 
-Ejemplo:
-
 ```
-variable nombre = "Carlos"
+Hola desde TzLang
+```
+
+---
+
+## La sintaxis en español es el punto de partida
+
+Lo que distingue a TzLang de un intérprete de juguete cualquiera es que **las comparaciones se escriben como se dicen en voz alta**. Quien está aprendiendo no necesita traducir mentalmente `>=` antes de entender qué hace su programa:
+
+```tz
 variable edad = 20
-si edad >= 18
-    imprimir "Hola " + nombre
+
+si edad es mayor o igual que 18
+    imprimir "Mayor de edad"
+sino
+    imprimir "Menor de edad"
 fin
 ```
 
----
+```
+Mayor de edad
+```
 
-## Características
+Las seis formas comparativas son parte del lenguaje, no azúcar sintáctico añadido después:
 
-### Lenguaje
+| Forma en español | Equivalente simbólico |
+|---|---|
+| `es mayor que` | `>` |
+| `es menor que` | `<` |
+| `es mayor o igual que` | `>=` |
+| `es menor o igual que` | `<=` |
+| `es igual a` | `==` |
+| `es diferente de` | `!=` |
 
-- Variables
-- `numero`
-- `decimal`
-- `texto`
-- `booleano`
-- `nulo`
-- Listas
-- Diccionarios
-- Operadores aritméticos
-- Operadores de comparación
-- Operadores lógicos
-- Menos unario
-- Condicionales `si / sino`
-- Bucles `mientras`
-- Bucles `para cada`
-- `romper`
-- `continuar`
-- Funciones
-- Parámetros
-- Retorno
-- Recursión
-- Scope léxico
-- Indexación anidada
-- Literales multilínea
-- Copia profunda
+Ambas notaciones son intercambiables y se pueden mezclar. La forma simbólica sigue disponible para quien ya la conoce o quiera acostumbrarse a ella:
 
-### Built-ins
+```tz
+variable edad = 20
 
-Actualmente TzLang incluye:
+imprimir edad es mayor que 18
+imprimir edad > 18
+```
 
 ```
-largo()
-tipo()
-texto()
-numero()
-decimal()
-agregar()
-eliminar()
-contiene()
-unir()
-separar()
-mayusculas()
-minusculas()
-absoluto()
-redondear()
-claves()
-valores()
+verdadero
+verdadero
+```
+
+Los operadores lógicos siguen la misma idea: `y`, `o` y `no`.
+
+```tz
+variable edad = 20
+variable tiene_documento = verdadero
+
+si (edad es mayor o igual que 18) y (tiene_documento)
+    imprimir "Puede entrar"
+fin
+
+si no (edad es igual a 30)
+    imprimir "No tiene 30"
+fin
+```
+
+```
+Puede entrar
+No tiene 30
 ```
 
 ---
 
-## Ejemplo
+## Un programa completo
 
-Un programa utilizando varias características del lenguaje:
+Este ejemplo reúne funciones, diccionarios, listas, bucles y condicionales:
 
-```
-funcion mostrar_usuario(usuario)
-    imprimir "Nombre: " + usuario["nombre"]
-    imprimir "Edad: " + texto(usuario["edad"])
-    si usuario["activo"]
-        imprimir "Activo"
-    sino
-        imprimir "Inactivo"
+```tz
+// Clasificar estudiantes por su nota
+
+funcion clasificar(nota)
+    si nota es mayor o igual que 90
+        retornar "Sobresaliente"
+    fin
+    si nota es mayor o igual que 70
+        retornar "Aprobado"
+    fin
+    retornar "Suspenso"
+fin
+
+variable estudiantes = [
+    {"nombre": "Ana", "nota": 95},
+    {"nombre": "Carlos", "nota": 72},
+    {"nombre": "Lucia", "nota": 48}
+]
+
+variable aprobados = 0
+
+para cada estudiante en estudiantes
+
+    variable nombre = estudiante["nombre"]
+    variable nota = estudiante["nota"]
+    variable resultado = clasificar(nota)
+
+    imprimir nombre + ": " + resultado
+
+    si nota es mayor o igual que 70
+        aprobados = aprobados + 1
     fin
 fin
 
-variable usuarios = [
-    {
-        "nombre": "Ana",
-        "edad": 20,
-        "activo": verdadero
-    },
-    {
-        "nombre": "Carlos",
-        "edad": 25,
-        "activo": falso
-    }
-]
+imprimir "Aprobados: " + texto(aprobados) + " de " + texto(largo(estudiantes))
+```
 
-para cada usuario en usuarios
-    mostrar_usuario(usuario)
+```
+Ana: Sobresaliente
+Carlos: Aprobado
+Lucia: Suspenso
+Aprobados: 2 de 3
+```
+
+---
+
+## Instalación
+
+### Requisitos
+
+TzLang se compila con un compilador de C11, `make` y una shell POSIX. No necesita ninguna biblioteca externa.
+
+El desarrollo y la validación se han realizado sobre **macOS con Apple Clang**. El código está escrito siguiendo el estándar **C11** sin extensiones de compilador, y el `Makefile` usa reglas explícitas en lugar de patrones de GNU Make, por lo que se espera que funcione en otros entornos, pero **la compatibilidad con Linux, Windows y GCC todavía no está validada** en la práctica.
+
+En macOS, las herramientas de línea de órdenes se instalan con:
+
+```bash
+xcode-select --install
+```
+
+### Compilar
+
+```bash
+git clone https://github.com/tzerk-last/TzLanguaje.git
+cd TzLanguaje
+make
+```
+
+El ejecutable se genera en `build/tzc` y ya se puede usar directamente:
+
+```bash
+./build/tzc examples/hola.tz
+```
+
+### Instalar el comando `tz`
+
+Para disponer de TzLang desde cualquier directorio:
+
+```bash
+sudo make install
+```
+
+Esto copia `build/tzc` a `/usr/local/bin/tz`. A partir de ese momento:
+
+```bash
+tz programa.tz
+```
+
+El destino se puede cambiar con `PREFIX`, lo que además evita necesitar privilegios de administrador:
+
+```bash
+make PREFIX=$HOME/.local install
+```
+
+En ese caso el comando queda en `~/.local/bin/tz`, que debe estar en tu `PATH`.
+
+Para desinstalarlo:
+
+```bash
+sudo make uninstall
+```
+
+> El `Makefile` nunca invoca `sudo` por su cuenta: eres tú quien decide si hace falta según el `PREFIX` elegido.
+
+---
+
+## Uso de la línea de órdenes
+
+```bash
+tz programa.tz          # ejecutar un programa
+tz --help               # mostrar la ayuda   (o -h)
+tz --version            # mostrar la versión (o -v)
+```
+
+```
+TzLang 0.1.0
+```
+
+> Nota: la ayuda integrada todavía se refiere al ejecutable por su nombre de compilación, `tzc`, aunque lo hayas instalado como `tz`. Es una diferencia cosmética pendiente de unificar.
+
+Solo se aceptan archivos con extensión `.tz`.
+
+### Códigos de salida
+
+Están separados en familias para que un script pueda distinguir **qué** falló:
+
+| Código | Significado |
+|---|---|
+| `0` | Ejecución correcta |
+| `1` | Error de argumentos u opciones |
+| `2` | Error de archivo o extensión |
+| `3` | Error de lexer, parser o interpreter |
+
+---
+
+## El lenguaje
+
+### Variables
+
+Se declaran con `variable` y se reasignan directamente por su nombre:
+
+```tz
+variable nombre = "Carlos"
+variable edad = 20
+
+edad = edad + 1
+imprimir edad
+```
+
+```
+21
+```
+
+Los comentarios empiezan por `//`.
+
+### Tipos de datos
+
+TzLang tiene siete tipos, y `tipo()` devuelve el nombre de cada uno en español:
+
+```tz
+imprimir tipo(42)
+imprimir tipo(3.14)
+imprimir tipo("Hola")
+imprimir tipo(verdadero)
+imprimir tipo(nulo)
+imprimir tipo([1, 2, 3])
+imprimir tipo({"a": 1})
+```
+
+```
+numero
+decimal
+texto
+booleano
+nulo
+lista
+diccionario
+```
+
+Los booleanos son `verdadero` y `falso`, y la ausencia de valor es `nulo`.
+
+### Operadores aritméticos
+
+```tz
+imprimir 7 + 3
+imprimir 7 - 3
+imprimir 7 * 3
+imprimir 7 / 3
+imprimir 7.0 / 2
+imprimir -5
+imprimir 2 + 3 * 4
+imprimir (2 + 3) * 4
+```
+
+```
+10
+4
+21
+2
+3.5
+-5
+14
+20
+```
+
+La división entre dos `numero` trunca hacia cero (`7 / 3` da `2`); si algún operando es `decimal`, el resultado es `decimal`. El operador `+` también concatena textos.
+
+### Condicionales
+
+```tz
+variable nota = 85
+
+si nota es mayor o igual que 90
+    imprimir "Sobresaliente"
+sino
+    imprimir "Puede mejorar"
 fin
 ```
 
----
+Los valores `0`, `""`, `[]`, `{}`, `falso` y `nulo` se consideran falsos; el resto, verdaderos.
 
-## Diccionarios
+### Bucles
 
-Los diccionarios utilizan claves de texto:
+`mientras` repite mientras la condición se cumpla:
 
-```
-variable persona = {
-    "nombre": "Carlos",
-    "edad": 20,
-    "pais": "Colombia"
-}
-imprimir persona["nombre"]
-persona["edad"] = 21
-persona["profesion"] = "Developer"
+```tz
+variable i = 1
+
+mientras i es menor o igual que 3
+    imprimir i
+    i = i + 1
+fin
 ```
 
-También pueden anidarse:
-
 ```
-variable usuario = {
-    "datos": {
-        "nombre": "Carlos",
-        "edad": 20
-    },
-    "roles": [
-        "admin",
-        "developer"
-    ]
-}
-imprimir usuario["datos"]["edad"]
+1
+2
+3
 ```
 
----
+`para cada` recorre listas y diccionarios:
 
-## Funciones
+```tz
+variable frutas = ["manzana", "pera", "uva"]
+
+para cada fruta en frutas
+    imprimir fruta
+fin
+```
 
 ```
+manzana
+pera
+uva
+```
+
+Sobre un diccionario, `para cada` recorre sus **claves**.
+
+### Romper y continuar
+
+`romper` abandona el bucle y `continuar` salta a la siguiente vuelta:
+
+```tz
+variable n = 0
+
+mientras verdadero
+    n = n + 1
+    si n es igual a 2
+        continuar
+    fin
+    si n es mayor que 4
+        romper
+    fin
+    imprimir n
+fin
+```
+
+```
+1
+3
+4
+```
+
+### Funciones
+
+Se definen con `funcion` y devuelven un valor con `retornar`:
+
+```tz
 funcion sumar(a, b)
     retornar a + b
 fin
 
-variable resultado = sumar(10, 20)
-imprimir resultado
+imprimir sumar(10, 20)
 ```
-
-Resultado:
 
 ```
 30
 ```
 
-También soporta recursión:
+Una función sin `retornar` devuelve `nulo`. La recursión funciona con normalidad:
 
-```
+```tz
 funcion factorial(n)
-    si n <= 1
+    si n es menor o igual que 1
         retornar 1
     fin
     retornar n * factorial(n - 1)
@@ -200,62 +420,219 @@ fin
 imprimir factorial(5)
 ```
 
-Resultado:
-
 ```
 120
+```
+
+El **scope es léxico**: una variable declarada dentro de una función no se ve fuera de ella, y no pisa a la global del mismo nombre.
+
+```tz
+variable mensaje = "global"
+
+funcion prueba()
+    variable mensaje = "local"
+    imprimir mensaje
+fin
+
+prueba()
+imprimir mensaje
+```
+
+```
+local
+global
+```
+
+### Listas
+
+```tz
+variable numeros = [1, 2, 3]
+
+imprimir numeros[0]
+imprimir largo(numeros)
+
+numeros[1] = 99
+agregar(numeros, 4)
+imprimir numeros
+
+eliminar(numeros, 0)
+imprimir numeros
+```
+
+```
+1
+3
+[1, 99, 3, 4]
+[99, 3, 4]
+```
+
+Una lista puede contener valores de distinto tipo, incluidas otras listas:
+
+```tz
+variable mixta = [1, "texto", verdadero, nulo, [2, 3]]
+
+imprimir mixta
+imprimir mixta[4][1]
+```
+
+```
+[1, "texto", verdadero, nulo, [2, 3]]
+3
+```
+
+### Diccionarios
+
+Las claves son de tipo `texto` y se conserva el orden de inserción:
+
+```tz
+variable persona = {
+    "nombre": "Carlos",
+    "edad": 20
+}
+
+imprimir persona["nombre"]
+
+persona["edad"] = 21
+persona["pais"] = "Colombia"
+
+imprimir persona
+imprimir claves(persona)
+imprimir valores(persona)
+```
+
+```
+Carlos
+{"nombre": "Carlos", "edad": 21, "pais": "Colombia"}
+["nombre", "edad", "pais"]
+["Carlos", 21, "Colombia"]
+```
+
+Se pueden anidar libremente con listas:
+
+```tz
+variable usuario = {
+    "datos": {"edad": 20},
+    "roles": ["admin", "dev"]
+}
+
+imprimir usuario["datos"]["edad"]
+imprimir usuario["roles"][0]
+```
+
+```
+20
+admin
+```
+
+### Copia profunda
+
+Asignar una estructura crea una **copia independiente**, no una referencia compartida. Es una decisión deliberada: evita que un principiante modifique un valor sin darse cuenta desde otro sitio.
+
+```tz
+variable a = {"datos": {"edad": 20}}
+variable b = a
+
+b["datos"]["edad"] = 99
+
+imprimir a["datos"]["edad"]
+imprimir b["datos"]["edad"]
+```
+
+```
+20
+99
+```
+
+---
+
+## Funciones incorporadas
+
+TzLang incluye 16 funciones integradas:
+
+| Función | Descripción | Ejemplo | Resultado |
+|---|---|---|---|
+| `largo(x)` | Longitud de texto, lista o diccionario | `largo("Hola")` | `4` |
+| `tipo(x)` | Nombre del tipo | `tipo(3.14)` | `decimal` |
+| `texto(x)` | Convierte a texto | `texto(42)` | `"42"` |
+| `numero(x)` | Convierte a número entero | `numero("42")` | `42` |
+| `decimal(x)` | Convierte a decimal | `decimal(7)` | `7` |
+| `agregar(lista, x)` | Añade un elemento al final | `agregar(l, 4)` | — |
+| `eliminar(x, k)` | Borra por índice o por clave | `eliminar(l, 0)` | — |
+| `contiene(x, v)` | ¿Contiene el valor o la clave? | `contiene(l, 99)` | `verdadero` |
+| `unir(lista, sep)` | Une una lista de textos | `unir(["a","b"], "-")` | `"a-b"` |
+| `separar(txt, sep)` | Parte un texto en lista | `separar("a,b", ",")` | `["a", "b"]` |
+| `mayusculas(txt)` | Pasa a mayúsculas | `mayusculas("hola")` | `"HOLA"` |
+| `minusculas(txt)` | Pasa a minúsculas | `minusculas("HOLA")` | `"hola"` |
+| `absoluto(x)` | Valor absoluto | `absoluto(-7)` | `7` |
+| `redondear(x)` | Redondea a `numero` | `redondear(3.7)` | `4` |
+| `claves(dic)` | Lista de claves | `claves(p)` | `["nombre"]` |
+| `valores(dic)` | Lista de valores | `valores(p)` | `["Carlos"]` |
+
+`agregar` y `eliminar` modifican la estructura que reciben; el resto devuelven un valor nuevo.
+
+---
+
+## Errores
+
+Los errores se informan en español, van a `stderr` y detienen la ejecución con código `3`:
+
+```tz
+imprimir 10 / 0
+```
+
+```
+Error: división por cero.
+La ejecución falló.
+```
+
+```tz
+imprimir desconocida
+```
+
+```
+Error: variable 'desconocida' no existe.
+La ejecución falló.
 ```
 
 ---
 
 ## Arquitectura
 
-TzLang procesa un programa mediante varias etapas:
+El intérprete procesa cada programa en una tubería de etapas bien separadas, cada una en su propio directorio dentro de `src/`:
 
 ```
-             TzLang Source
-                  │
-                  ▼
-               Lexer
-                  │
-                  ▼
-                Tokens
-                  │
-                  ▼
-                Parser
-                  │
-                  ▼
-                 AST
-                  │
-                  ▼
-             Interpreter
-                  │
-                  ▼
-               Runtime
-                  │
-                  ▼
-               Output
+  archivo .tz
+       │
+       ▼
+   ┌────────┐
+   │ Lexer  │   texto  ──►  tokens
+   └────────┘
+       │
+       ▼
+   ┌────────┐
+   │ Parser │   tokens ──►  AST
+   └────────┘
+       │
+       ▼
+   ┌────────┐
+   │  AST   │   estructura del programa
+   └────────┘
+       │
+       ▼
+   ┌─────────────┐
+   │ Interpreter │   recorre y ejecuta
+   └─────────────┘
+       │
+       ▼
+   ┌─────────┐
+   │ Runtime │   valores, operaciones, memoria
+   └─────────┘
+       │
+       ▼
+    salida
 ```
 
-### Lexer
-
-Convierte el código fuente en tokens.
-
-### Parser
-
-Analiza los tokens y construye el AST.
-
-### AST
-
-Representa la estructura del programa.
-
-### Interpreter
-
-Evalúa el AST y ejecuta el programa.
-
-### Runtime
-
-Gestiona valores, operaciones, listas, diccionarios y memoria.
+La memoria se gestiona de forma explícita, sin recolector de basura. Los diccionarios usan un array dinámico de pares con búsqueda lineal: para el tamaño de los programas educativos a los que apunta el proyecto, esa simplicidad prima sobre el rendimiento y mantiene el código legible para quien quiera estudiarlo.
 
 ---
 
@@ -265,150 +642,55 @@ Gestiona valores, operaciones, listas, diccionarios y memoria.
 TzLang/
 │
 ├── src/
-│   ├── ast/
-│   │   ├── ast.c
-│   │   └── ast.h
-│   │
-│   ├── interpreter/
-│   │   ├── interpreter.c
-│   │   └── interpreter.h
-│   │
-│   ├── io/
-│   │   ├── file.c
-│   │   └── file.h
-│   │
-│   ├── lexer/
-│   │   ├── lexer.c
-│   │   └── lexer.h
-│   │
-│   ├── parser/
-│   │   ├── parser.c
-│   │   └── parser.h
-│   │
-│   ├── runtime/
-│   │   ├── operations.c
-│   │   ├── operations.h
-│   │   ├── value.c
-│   │   └── value.h
-│   │
-│   ├── main.c
-│   └── version.h
+│   ├── lexer/          lexer.c / lexer.h
+│   ├── parser/         parser.c / parser.h
+│   ├── ast/            ast.c / ast.h
+│   ├── interpreter/    interpreter.c / interpreter.h
+│   ├── runtime/        value.c / operations.c
+│   ├── io/             file.c / file.h
+│   ├── main.c          punto de entrada y CLI
+│   └── version.h       número de versión
 │
-├── examples/
-├── tests/
+├── examples/           programas de ejemplo
+├── education/          lecciones con salida esperada
 ├── docs/
+│   └── language.md     referencia completa del lenguaje
+│
+├── tests/
+│   ├── run_tests.sh              suite principal
+│   └── run_education_tests.sh    suite educativa
+│
 ├── Makefile
-├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
 ---
 
-## Requisitos
+## Desarrollo
 
-Actualmente el proyecto utiliza:
+El `Makefile` reúne todo el flujo de trabajo:
 
-- C11
-- Clang o GCC
-- Make
-- POSIX shell para ejecutar la suite de tests
+| Orden | Qué hace |
+|---|---|
+| `make` | Compila `build/tzc` |
+| `make test` | Compila y ejecuta la suite principal |
+| `make test-education` | Valida el material de `education/` |
+| `make debug` | Genera `build/tzc-debug` con `-g -O0` |
+| `make asan` | Genera `build/tzc-asan` y pasa la suite con sanitizers |
+| `make install` | Instala el comando `tz` |
+| `make uninstall` | Desinstala el comando `tz` |
+| `make clean` | Borra todo lo generado en `build/` |
 
-En macOS:
+El compilador se puede elegir pasando la variable `CC`, por ejemplo `make CC=clang`.
 
-```bash
-xcode-select --install
-```
+### Pruebas
 
----
-
-## Compilar
-
-Clona el repositorio:
-
-```bash
-git clone https://github.com/tzerk-last/TzLanguaje.git
-cd TzLanguaje
-```
-
-Compila:
-
-```bash
-make
-```
-
-El ejecutable se genera en:
-
-```
-build/tzc
-```
-
----
-
-## Ejecutar un programa
-
-```bash
-./build/tzc examples/hola.tz
-```
-
-Salida:
-
-```
-Hola desde TzLang
-```
-
-Otro ejemplo:
-
-```bash
-./build/tzc examples/diccionarios.tz
-```
-
----
-
-## CLI
-
-Mostrar ayuda:
-
-```bash
-./build/tzc --help
-```
-
-o:
-
-```bash
-./build/tzc -h
-```
-
-Mostrar versión:
-
-```bash
-./build/tzc --version
-```
-
-o:
-
-```bash
-./build/tzc -v
-```
-
-Versión actual:
-
-```
-TzLang 0.1.0
-```
-
----
-
-## Tests
-
-TzLang cuenta actualmente con **138 pruebas automatizadas**.
-
-Ejecutar la suite:
+La suite principal ejecuta el binario real sobre archivos `.tz` y compara la salida y el código de salida con lo esperado. No enlaza contra funciones internas de C: prueba el lenguaje tal y como lo ve un usuario.
 
 ```bash
 make test
 ```
-
-Resultado esperado:
 
 ```
 ========================================
@@ -416,275 +698,97 @@ Tests:  138
 Passed: 138
 Failed: 0
 ========================================
+
 All tests passed.
 ```
 
-Las pruebas cubren:
+Las 138 pruebas cubren aritmética, desbordamiento de enteros, conversiones, textos, listas, diccionarios, indexación anidada, control de flujo, funciones, recursión, scope, errores de lexer, parser e intérprete, y el comportamiento de la CLI (BOM UTF-8, CRLF, archivos vacíos, extensiones y argumentos inválidos).
 
-- Aritmética
-- Conversión de tipos
-- Decimales
-- Overflow
-- Menos unario
-- Built-ins
-- Strings
-- Listas
-- Diccionarios
-- Indexación
-- Control de flujo
-- Funciones
-- Recursión
-- Scope
-- Errores del lexer
-- Errores del parser
-- Errores del interpreter
-- CLI
-- Archivos
-- BOM UTF-8
-- CRLF
-- Archivos vacíos
-- Ejemplos completos
-
----
-
-## Debug
-
-Para generar una versión de depuración:
-
-```bash
-make debug
-```
-
-Genera:
-
-```
-build/tzc-debug
-```
-
-Ejecutar:
-
-```bash
-./build/tzc-debug examples/hola.tz
-```
-
----
-
-## AddressSanitizer y UBSan
-
-TzLang puede compilarse con sanitizers:
+### Sanitizers
 
 ```bash
 make asan
 ```
 
-Esto genera:
+Compila un binario aparte con **AddressSanitizer** y **UndefinedBehaviorSanitizer**, y pasa por él la misma suite completa, sin duplicarla. Sirve para detectar use-after-free, dobles liberaciones, desbordamientos de búfer y comportamiento indefinido.
 
-```
-build/tzc-asan
-```
-
-y ejecuta automáticamente la suite de pruebas.
-
-Se utilizan:
-
-```
-AddressSanitizer
-UndefinedBehaviorSanitizer
-```
-
-para detectar problemas como:
-
-- Use-after-free
-- Double-free
-- Buffer overflow
-- Undefined behavior
-- Problemas de memoria
+Los tres binarios conviven sin pisarse: `build/tzc`, `build/tzc-debug` y `build/tzc-asan`.
 
 ---
 
-## Limpiar el proyecto
+## Education
+
+El directorio `education/` contiene lecciones progresivas. Cada una es un programa `.tz` acompañado de un archivo `.expected` con su salida exacta, de modo que el material didáctico se verifica automáticamente y no puede quedar desactualizado respecto al lenguaje:
 
 ```bash
-make clean
+make test-education
 ```
 
-Esto elimina los artefactos generados dentro de:
-
 ```
-build/
-```
+=== TzLang Education Suite ===
 
-Los binarios y archivos objeto no forman parte del repositorio.
+[PASS] 01_variables
 
----
+========================================
+Tests:  1
+Passed: 1
+Failed: 0
+========================================
 
-## Códigos de salida
-
-El CLI utiliza los siguientes códigos:
-
-| Código | Significado |
-|--------|-------------|
-| `0` | Ejecución correcta |
-| `1` | Error de argumentos u opciones |
-| `2` | Error de archivo o extensión |
-| `3` | Error de lexer, parser o interpreter |
-
----
-
-## Filosofía del proyecto
-
-TzLang busca mantener una implementación pequeña y comprensible.
-
-Algunas decisiones actuales son deliberadamente simples.
-
-Por ejemplo, los diccionarios utilizan un array dinámico de pares:
-
-```
-Dictionary
-├── key
-├── value
-├── key
-├── value
-└── ...
+All education tests passed.
 ```
 
-La búsqueda es lineal y conserva el orden de inserción.
-
-Para el tamaño esperado de los programas educativos actuales, esta solución prioriza:
-
-- Simplicidad
-- Código fácil de leer
-- Comportamiento determinista
-- Facilidad de depuración
-- Gestión de memoria explícita
-
----
-
-## Gestión de memoria
-
-TzLang utiliza gestión explícita de memoria en C.
-
-Los valores estructurados utilizan copia profunda.
-
-Por ejemplo:
-
-```
-variable a = {
-    "datos": {
-        "edad": 20
-    }
-}
-variable b = a
-b["datos"]["edad"] = 99
-imprimir a["datos"]["edad"]
-```
-
-El resultado es:
-
-```
-20
-```
-
-La modificación de `b` no modifica `a`.
-
-La implementación ha sido probada con AddressSanitizer, UndefinedBehaviorSanitizer y herramientas de detección de fugas durante el desarrollo.
+Esta suite es independiente de la principal y es más estricta: exige código de salida `0`, `stderr` vacío y coincidencia exacta de `stdout`. Ahora mismo hay **una lección**; ampliar el temario es una de las prioridades del proyecto.
 
 ---
 
 ## Limitaciones actuales
 
-TzLang todavía está en desarrollo.
+TzLang está en desarrollo temprano y es honesto sobre lo que todavía no hace.
 
-Actualmente no incluye:
+**Unicode.** Los textos se tratan como bytes, no como caracteres. Esto se nota en cuanto aparecen tildes o eñes:
 
-- Unicode completo
-- Sistema de módulos
-- Clases
-- Lambdas
-- Generadores
-- Sets
-- Tuplas
-- Garbage Collector
-- Enteros grandes
+```tz
+imprimir largo("año")
+imprimir mayusculas("año")
+```
 
-Los textos actualmente tienen algunas limitaciones relacionadas con Unicode y `largo()` cuenta bytes en lugar de caracteres.
+```
+4
+AñO
+```
+
+`largo("año")` devuelve `4` en lugar de `3`, y `mayusculas` deja intacta la `ñ` porque ocupa dos bytes. Es la limitación más visible para un lenguaje pensado en español, y la primera de la lista para arreglar.
+
+**Ausencias del lenguaje.** No hay módulos ni importaciones, clases, funciones anónimas, generadores, conjuntos, tuplas, recolector de basura ni enteros de precisión arbitraria. Tampoco existe el operador de módulo (`%`).
+
+**Plataformas.** Solo se ha validado sobre macOS con Apple Clang.
 
 ---
 
 ## Roadmap
 
-### TzLang 0.1
+Lo que ya está terminado en la **0.1.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; suite de 138 pruebas; compilación con sanitizers e instalación mediante `make install`.
 
-- Lexer
-- Parser
-- AST
-- Interpreter
-- Runtime
-- Variables
-- Control de flujo
-- Funciones
-- Recursión
-- Listas
-- Diccionarios
-- Built-ins
-- CLI
-- Sistema de tests
-- Makefile
-- Debug build
-- ASan / UBSan
+Lo siguiente, por orden de prioridad:
 
-### Próximas versiones
+- Soporte real de Unicode en textos y funciones de cadena.
+- Ampliar el temario de `education/` con más lecciones.
+- Mensajes de error con número de línea y contexto en todas las etapas.
+- Validar de verdad la compilación en Linux y con GCC.
+- Unificar el nombre del comando en la ayuda integrada.
+- Sistema de módulos.
 
-- Mejor soporte Unicode
-- Sistema de módulos
-- Mejor diagnóstico de errores
-- Documentación ampliada
-- CMake
-- Compatibilidad Windows
-- Compatibilidad Linux/GCC
+No hay fechas comprometidas: es un proyecto en desarrollo.
 
 ---
 
 ## Documentación
 
-La referencia completa del lenguaje está disponible en:
-
-```
-docs/language.md
-```
-
-Ahí se documentan:
-
-- Sintaxis
-- Tipos
-- Operadores
-- Control de flujo
-- Funciones
-- Listas
-- Diccionarios
-- Built-ins
-- CLI
-- Arquitectura
-- Limitaciones
-
----
-
-## Estado
-
-**TzLang 0.1.0**
-
-Proyecto en desarrollo.
-
-La implementación actual cuenta con:
-
-```
-138 tests
-138 passed
-0 failed
-```
+La referencia completa del lenguaje, sección por sección, está en **[docs/language.md](docs/language.md)**.
 
 ---
 
 ## Licencia
 
-Este proyecto utiliza la licencia **MIT**. Ver [LICENSE](LICENSE) para más detalles.
+TzLang se distribuye bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para el texto completo.
