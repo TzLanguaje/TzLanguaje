@@ -6,6 +6,8 @@
 #
 #   make / make all   compilar build/tzc
 #   make test         compilar y ejecutar la suite
+#   make test-education
+#                     compilar y validar education/
 #   make debug        build/tzc-debug con -g -O0
 #   make asan         build/tzc-asan con ASan+UBSan
 #                     y ejecutar la suite con el
@@ -63,6 +65,12 @@ OBJ = \
 TARGET = build/tzc
 
 RUNNER = tests/run_tests.sh
+
+# Suite APARTE para el material de
+# education/. No sustituye a RUNNER:
+# las dos conviven.
+
+EDU_RUNNER = tests/run_education_tests.sh
 
 # ==========================
 # COMPILAR
@@ -140,6 +148,19 @@ test: $(TARGET)
 	@$(RUNNER)
 
 # ==========================
+# PROBAR EDUCATION
+# ==========================
+#
+# Valida SOLO el material de
+# education/. Es independiente de
+# 'make test': ninguna toca a la
+# otra, y 'make test' sigue dando
+# el mismo resultado de siempre.
+
+test-education: all
+	@$(EDU_RUNNER)
+
+# ==========================
 # DEBUG
 # ==========================
 #
@@ -209,4 +230,4 @@ uninstall:
 clean:
 	rm -rf build
 
-.PHONY: all clean test debug asan install uninstall
+.PHONY: all clean test test-education debug asan install uninstall

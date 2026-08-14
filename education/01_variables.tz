@@ -1,0 +1,5 @@
+variable nombre = "Carlos"
+variable edad = 20
+
+imprimir nombre
+imprimir edad
