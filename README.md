@@ -687,4 +687,4 @@ La implementación actual cuenta con:
 
 ## Licencia
 
-Este proyecto todavía no tiene una licencia pública definida.
+Este proyecto utiliza la licencia **MIT**. Ver [LICENSE](LICENSE) para más detalles.

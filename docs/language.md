@@ -1265,4 +1265,4 @@ El lenguaje actualmente dispone de:
 - builds de debug
 - builds con sanitizers
 
-El objetivo de las siguientes versiones es ampliar las capacidades del lenguaje sin romper la compatibilidad existente. La siguiente etapa puede ser **Unicode**, después **módulos**, y ahí sí empieza la versión 0.2 de verdad.
+El objetivo de las siguientes versiones es ampliar las capacidades del lenguaje sin romper la compatibilidad existente. La siguiente etapa puede ser **Unicode**, seguida de **módulos**, marcando el inicio de **TzLang 0.2**.
