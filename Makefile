@@ -10,14 +10,27 @@
 #   make asan         build/tzc-asan con ASan+UBSan
 #                     y ejecutar la suite con el
 #   make clean        borrar todo lo generado
+#   make install      instalar el comando tz
+#   make uninstall    desinstalar el comando tz
 #
 # El compilador se puede elegir:
 #
 #   make CC=clang
 #   make CC=gcc
+#
+# Y el destino de la instalacion:
+#
+#   make PREFIX=/otra/ruta install
 
 CC      ?= cc
 CFLAGS  ?= -Wall -Wextra -std=c11
+
+# Destino de la instalacion. PREFIX
+# se puede sobrescribir desde la
+# linea de ordenes.
+
+PREFIX      ?= /usr/local
+INSTALL_BIN  = $(PREFIX)/bin
 
 # Flags propios de cada variante.
 # No ocultan warnings: siempre -Wall -Wextra.
@@ -162,6 +175,31 @@ asan:
 	TZC="`pwd`/build/tzc-asan" $(RUNNER)
 
 # ==========================
+# INSTALAR
+# ==========================
+#
+# Copia el binario normal a
+# $(INSTALL_BIN) con el nombre
+# publico 'tz'. build/tzc no se
+# toca ni se renombra: se copia.
+#
+# El Makefile NO llama a sudo. Si
+# $(PREFIX) necesita permisos, es
+# quien invoca quien decide:
+#
+#   sudo make install
+#   make PREFIX=$$HOME/.local install
+
+install: all
+	@mkdir -p $(INSTALL_BIN)
+	@cp build/tzc $(INSTALL_BIN)/tz
+	@echo "Installed TzLang to $(INSTALL_BIN)/tz"
+
+uninstall:
+	@rm -f $(INSTALL_BIN)/tz
+	@echo "Uninstalled TzLang"
+
+# ==========================
 # LIMPIAR
 # ==========================
 #
@@ -171,4 +209,4 @@ asan:
 clean:
 	rm -rf build
 
-.PHONY: all clean test debug asan
+.PHONY: all clean test debug asan install uninstall
