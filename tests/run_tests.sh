@@ -25,7 +25,13 @@ set -u
 SCRIPT_DIR=$(dirname "$0")
 ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 
-TZC="$ROOT/build/tzc"
+# El binario a probar. Se puede apuntar a otro
+# (por ejemplo el instrumentado con ASan):
+#
+#   TZC=build/tzc-asan tests/run_tests.sh
+#
+# Sin variable, el normal.
+TZC="${TZC:-$ROOT/build/tzc}"
 TESTS_DIR="$ROOT/tests"
 
 if [ ! -x "$TZC" ]; then
@@ -92,11 +98,40 @@ check() {
 }
 
 # ------------------------------------------
+# Recorrer archivos con seguridad
+# ------------------------------------------
+#
+# 'for x in $(find ...)' parte las rutas por
+# espacios, asi que no se usa.
+#
+# En su lugar la lista se vuelca a un archivo
+# y se lee linea a linea:
+#
+#   IFS=      no recorta espacios al principio
+#             ni al final del nombre
+#   read -r   no interpreta las barras
+#             invertidas
+#
+# El bucle recibe la lista por REDIRECCION y
+# no por tuberia. Es importante: una tuberia
+# ejecutaria el while en una subshell y los
+# contadores TOTAL/PASSED/FAILED se perderian
+# al terminar.
+#
+# Limitacion asumida: un nombre de archivo que
+# contenga un salto de linea no se soporta.
+# Distinguirlo exigiria -print0 / -d '', que
+# NO son POSIX.
+
+# ------------------------------------------
 # Tests basados en archivos .tz
 # ------------------------------------------
 
 run_file_tests() {
-    for tz in $(find "$TESTS_DIR" -name '*.tz' | sort); do
+
+    find "$TESTS_DIR" -name '*.tz' | sort > "$TMP/lista_tests"
+
+    while IFS= read -r tz; do
 
         base=${tz%.tz}
         name=${base#"$TESTS_DIR"/}
@@ -127,7 +162,8 @@ run_file_tests() {
         cp "$expected" "$TMP/expected"
 
         check "$name" "$want_code" "$got_code"
-    done
+
+    done < "$TMP/lista_tests"
 }
 
 # ------------------------------------------
@@ -206,7 +242,10 @@ cli_extra_tests() {
 # ------------------------------------------
 
 example_tests() {
-    for tz in $(find "$ROOT/examples" -name '*.tz' | sort); do
+
+    find "$ROOT/examples" -name '*.tz' | sort > "$TMP/lista_examples"
+
+    while IFS= read -r tz; do
 
         name="examples/$(basename "$tz")"
 
@@ -225,7 +264,8 @@ example_tests() {
             sed 's/^/  /' "$TMP/err"
             printf '\n'
         fi
-    done
+
+    done < "$TMP/lista_examples"
 }
 
 # ------------------------------------------
