@@ -1,0 +1,50 @@
+// Diccionarios: claves, anidamiento y recorrido
+
+variable persona = {
+    "nombre": "Carlos",
+    "edad": 20,
+    "activo": verdadero
+}
+
+imprimir persona
+imprimir persona["nombre"]
+imprimir largo(persona)
+
+// actualizar y crear claves
+persona["edad"] = 21
+persona["pais"] = "Colombia"
+imprimir persona
+
+// recorrido: para cada da las claves, en orden de insercion
+para cada clave en persona
+    imprimir clave + " -> " + texto(persona[clave])
+fin
+
+imprimir claves(persona)
+imprimir contiene(persona, "edad")
+
+// anidamiento con listas
+variable usuarios = [
+    {
+        "nombre": "Ana",
+        "edad": 20
+    },
+    {
+        "nombre": "Carlos",
+        "edad": 25
+    }
+]
+
+imprimir usuarios[0]["nombre"]
+imprimir usuarios[1]["edad"]
+
+// funcion que devuelve un diccionario
+funcion crear_usuario(nombre, edad)
+    retornar {
+        "nombre": nombre,
+        "edad": edad
+    }
+fin
+
+variable nuevo = crear_usuario("Tz", 1)
+imprimir nuevo

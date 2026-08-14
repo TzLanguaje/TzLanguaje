@@ -1,28 +1,78 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "io/file.h"
 
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "ast/ast.h"
 #include "interpreter/interpreter.h"
 
-int main(void) {
+/*
+ * ==========================
+ * CODIGOS DE SALIDA
+ * ==========================
+ *
+ * 0              todo fue bien
+ * distinto de 0  hubo un error
+ *
+ * Se distinguen las tres familias
+ * para que un script pueda saber
+ * QUE fallo.
+ */
 
-const char *source =
-    "// limites validos\n"
-    "imprimir 2147483647\n"
-    "imprimir -2147483648\n"
-    "\n"
-    "// aritmetica valida en el borde\n"
-    "imprimir 2147483647 + -1\n"
-    "imprimir -2147483648 + 1\n"
-    "imprimir -2147483648 / 1\n"
-    "imprimir 46340 * 46340\n"
-    "\n"
-    "// conversiones en el borde\n"
-    "imprimir numero(\"2147483647\")\n"
-    "imprimir numero(\"-2147483648\")\n"
-    "imprimir redondear(2147483647.4)\n"
-    "imprimir redondear(-2147483648.4)\n";
+#define SALIDA_OK                0
+#define SALIDA_ERROR_ARGUMENTOS  1
+#define SALIDA_ERROR_ARCHIVO     2
+#define SALIDA_ERROR_PROGRAMA    3
+
+/*
+ * ==========================
+ * EXTENSION
+ * ==========================
+ *
+ * La validacion vive aqui, en la
+ * entrada de archivos, NO en el
+ * lexer: el lenguaje no sabe nada
+ * de nombres de archivo.
+ */
+
+static int tiene_extension_tz(
+    const char *path
+) {
+
+    size_t length = strlen(path);
+
+    if (length < 3) {
+        return 0;
+    }
+
+    return
+        strcmp(path + length - 3, ".tz") == 0;
+}
+
+/*
+ * ==========================
+ * PIPELINE
+ * ==========================
+ *
+ * Exactamente el mismo flujo de
+ * siempre:
+ *
+ * lexer -> parser -> AST -> interpreter
+ *
+ * Lo unico que cambio es de donde
+ * sale 'source'.
+ *
+ * Devuelve 1 si el programa se
+ * ejecuto entero, 0 si fallo en
+ * cualquier etapa.
+ */
+
+static int ejecutar_fuente(
+    const char *source
+) {
 
     /*
      * LEXER
@@ -43,7 +93,7 @@ const char *source =
             "Error ejecutando Lexer.\n"
         );
 
-        return 1;
+        return 0;
     }
 
     /*
@@ -68,7 +118,7 @@ const char *source =
             token_count
         );
 
-        return 1;
+        return 0;
     }
 
     /*
@@ -88,14 +138,12 @@ const char *source =
         parser_free(parser);
         lexer_free_tokens(tokens, token_count);
 
-        return 1;
+        return 0;
     }
 
     /*
      * INTERPRETER
      */
-
-    printf("=== TzLang ===\n\n");
 
     if (!interpreter_run(program)) {
 
@@ -108,7 +156,7 @@ const char *source =
         parser_free(parser);
         lexer_free_tokens(tokens, token_count);
 
-        return 1;
+        return 0;
     }
 
     /*
@@ -124,5 +172,71 @@ const char *source =
         token_count
     );
 
-    return 0;
+    return 1;
+}
+
+/*
+ * ==========================
+ * ENTRADA
+ * ==========================
+ *
+ * tzc <archivo.tz>
+ */
+
+int main(int argc, char **argv) {
+
+    /*
+     * Ni de menos ni de mas: un
+     * unico archivo.
+     */
+
+    if (argc != 2) {
+
+        fprintf(
+            stderr,
+            "Uso: tzc <archivo.tz>\n"
+        );
+
+        return SALIDA_ERROR_ARGUMENTOS;
+    }
+
+    const char *path = argv[1];
+
+    if (!tiene_extension_tz(path)) {
+
+        fprintf(
+            stderr,
+            "Error: '%s' no es un archivo .tz.\n",
+            path
+        );
+
+        return SALIDA_ERROR_ARCHIVO;
+    }
+
+    char *source = read_file(path);
+
+    if (source == NULL) {
+
+        fprintf(
+            stderr,
+            "Error: no se pudo abrir el archivo '%s'.\n",
+            path
+        );
+
+        return SALIDA_ERROR_ARCHIVO;
+    }
+
+    int ok = ejecutar_fuente(source);
+
+    /*
+     * El buffer se libera SIEMPRE,
+     * haya ido bien o mal.
+     */
+
+    free(source);
+
+    return
+        ok
+            ? SALIDA_OK
+            : SALIDA_ERROR_PROGRAMA;
 }

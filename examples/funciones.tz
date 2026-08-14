@@ -1,0 +1,43 @@
+// Funciones: parametros, retorno y recursion
+
+funcion saludar(nombre)
+    imprimir "Hola " + nombre
+fin
+
+saludar("Carlos")
+
+funcion sumar(a, b)
+    retornar a + b
+fin
+
+imprimir sumar(10, 20)
+imprimir sumar(10, 20) * 2
+
+// las llamadas son expresiones
+funcion doble(x)
+    retornar x * 2
+fin
+
+imprimir sumar(doble(5), doble(10))
+
+// recursion
+funcion factorial(n)
+    si n es menor o igual que 1
+        retornar 1
+    fin
+
+    retornar n * factorial(n - 1)
+fin
+
+imprimir factorial(5)
+
+// el scope es lexico: la local tapa a la global
+variable mensaje = "global"
+
+funcion prueba()
+    variable mensaje = "local"
+    retornar mensaje
+fin
+
+imprimir prueba()
+imprimir mensaje

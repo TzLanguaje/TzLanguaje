@@ -1,0 +1,23 @@
+// Condiciones y logica
+
+variable edad = 20
+
+si edad es mayor o igual que 18
+    imprimir "Mayor de edad"
+sino
+    imprimir "Menor de edad"
+fin
+
+variable tiene_documento = verdadero
+
+si (edad es mayor o igual que 18) y (tiene_documento)
+    imprimir "Puede entrar"
+fin
+
+si (edad es menor que 10) o (tiene_documento)
+    imprimir "Acceso permitido"
+fin
+
+si no (edad es igual a 30)
+    imprimir "No tiene 30"
+fin

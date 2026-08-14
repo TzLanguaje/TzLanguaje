@@ -1,0 +1,53 @@
+// Listas: indexacion, recorrido y biblioteca estandar
+
+variable numeros = [10, 20, 30, 40]
+
+imprimir numeros
+imprimir numeros[0]
+imprimir largo(numeros)
+
+// asignacion por indice
+numeros[1] = 50
+imprimir numeros
+
+// recorrido con para cada, romper y continuar
+variable total = 0
+
+para cada numero en numeros
+    si numero es igual a 50
+        continuar
+    fin
+
+    total = total + numero
+fin
+
+imprimir total
+
+// mientras con romper
+variable i = 0
+
+mientras verdadero
+    i = i + 1
+
+    si i es igual a 3
+        romper
+    fin
+fin
+
+imprimir i
+
+// listas anidadas
+variable matriz = [
+    [1, 2],
+    [3, 4]
+]
+
+imprimir matriz[1][0]
+
+// biblioteca estandar
+agregar(numeros, 60)
+imprimir numeros
+imprimir eliminar(numeros, 0)
+imprimir contiene(numeros, 30)
+imprimir unir(["a", "b", "c"], "-")
+imprimir separar("uno,dos,tres", ",")

@@ -1,0 +1,25 @@
+// Variables, tipos y asignacion
+
+variable edad = 20
+variable altura = 1.78
+variable nombre = "Tz"
+variable activo = verdadero
+variable vacio = nulo
+
+imprimir edad
+imprimir altura
+imprimir nombre
+imprimir activo
+imprimir vacio
+
+// las variables se pueden reasignar
+edad = edad + 1
+imprimir edad
+
+// aritmetica con precedencia
+imprimir 10 + 2 * 3
+imprimir (10 + 2) * 3
+imprimir -5 + 10
+
+// concatenacion de texto
+imprimir "Hola " + nombre
