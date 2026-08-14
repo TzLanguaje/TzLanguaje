@@ -1,0 +1,24 @@
+funcion saludar(nombre)
+    imprimir "Hola " + nombre
+fin
+saludar("Carlos")
+funcion sumar(a, b)
+    imprimir a + b
+fin
+sumar(10, 20)
+funcion tres(a, b, c)
+    imprimir a
+    imprimir b
+    imprimir c
+fin
+tres(1, "dos", verdadero)
+variable base = 10
+sumar(base + 5, base * 2)
+funcion mostrar(v)
+    imprimir v
+fin
+mostrar(verdadero)
+mostrar(nulo)
+mostrar(3.14)
+mostrar([1, 2])
+mostrar({"a": 1})

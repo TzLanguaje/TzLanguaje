@@ -1,0 +1,35 @@
+variable p = {"a": 1, "b": 2}
+variable cantidad = largo([1, 2, 3])
+variable nombre = texto(20)
+variable existe = contiene(p, "a")
+imprimir cantidad
+imprimir nombre
+imprimir existe
+imprimir texto(largo(p))
+imprimir largo(texto(12345))
+imprimir numero(texto(99)) + 1
+imprimir mayusculas(unir(claves(p), "-"))
+imprimir largo(separar(minusculas("A-B"), "-"))
+imprimir absoluto(redondear(-2.6))
+si largo(claves({"a": 1})) es igual a 1
+    imprimir "una clave"
+fin
+funcion resumen(d)
+    retornar texto(largo(d)) + " claves"
+fin
+imprimir resumen({"a": 1, "b": 2})
+funcion mete(l)
+    agregar(l, 99)
+    retornar largo(l)
+fin
+variable G = [1]
+imprimir mete(G)
+imprimir G
+para cada c en claves({"x": 1, "y": 2})
+    imprimir mayusculas(c)
+fin
+variable L = [1, 2, 3, 4]
+mientras largo(L) es mayor que 1
+    eliminar(L, 0)
+fin
+imprimir L

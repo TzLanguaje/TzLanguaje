@@ -1,0 +1,4 @@
+Lexer error at line 1: unexpected character '@'
+Lexer error at line 2: unexpected character '#'
+Lexer error at line 3: unexpected character '$'
+Error ejecutando Lexer.

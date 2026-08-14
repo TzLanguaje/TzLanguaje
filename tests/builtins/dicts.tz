@@ -1,0 +1,22 @@
+variable D = {"a": 1, "b": [2, 3], "c": 3}
+imprimir contiene(D, "a")
+imprimir contiene(D, "z")
+imprimir eliminar(D, "b")
+imprimir D
+imprimir claves(D)
+imprimir valores(D)
+imprimir claves({})
+imprimir valores({})
+variable E = {"l": [1, 2], "d": {"x": 1}}
+variable v = valores(E)
+v[0][0] = 99
+imprimir v
+imprimir E
+variable K = {"a": 1, "b": 2, "c": 3}
+variable ks = claves(K)
+variable vs = valores(K)
+variable i = 0
+mientras i es menor que largo(ks)
+    imprimir ks[i] + "=" + texto(vs[i])
+    i = i + 1
+fin

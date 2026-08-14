@@ -1,0 +1,23 @@
+variable i = 0
+mientras i es menor que 5
+    i = i + 1
+    si i es igual a 5
+        romper
+    fin
+    imprimir i
+fin
+variable j = 0
+mientras j es menor que 5
+    j = j + 1
+    si j es igual a 3
+        continuar
+    fin
+    imprimir j
+fin
+mientras verdadero
+    si verdadero
+        romper
+    fin
+    imprimir "NUNCA"
+fin
+imprimir "tras romper"

@@ -1,0 +1,31 @@
+para cada x en []
+    imprimir "NUNCA"
+fin
+para cada x en [1, 2, 3]
+    imprimir x
+fin
+para cada s en ["a", "bb"]
+    imprimir largo(s)
+fin
+para cada v en [1, "dos", verdadero, 3.5, nulo]
+    imprimir v
+fin
+para cada fila en [[1, 2], [3, 4]]
+    para cada c en fila
+        imprimir c
+    fin
+fin
+variable total = 0
+para cada n en [10, 20, 30, 40]
+    si n es igual a 20
+        continuar
+    fin
+    total = total + n
+fin
+imprimir total
+para cada n en [1, 2, 3, 4, 5]
+    si n es igual a 3
+        romper
+    fin
+    imprimir n
+fin

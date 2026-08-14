@@ -1,0 +1,21 @@
+variable L = [10, 20, 30]
+imprimir L[0]
+imprimir L[2]
+imprimir L[1 + 1]
+variable i = 1
+imprimir L[i]
+imprimir L[0] + L[2]
+L[1] = 50
+imprimir L
+L[i + 1] = 77
+imprimir L
+variable M = [[1, 2], [3, 4]]
+imprimir M[0][1]
+imprimir M[1][0]
+M[1][1] = 99
+imprimir M
+variable T = [[[1, 2], [3, 4]], [[5, 6]]]
+imprimir T[0][1][0]
+imprimir T[1][0][1]
+T[0][0][1] = 42
+imprimir T[0][0][1]

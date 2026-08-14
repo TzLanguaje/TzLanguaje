@@ -1,0 +1,61 @@
+20
+1.78
+TzLang
+verdadero
+nulo
+50
+16
+36
+-50
+13
+verdadero
+verdadero
+verdadero
+verdadero
+Mayor de edad
+18
+[10, 20, 30, 40]
+10
+[10, 50, 30, 40]
+10
+3
+verdadero
+3
+[[1, 2], [3, 99]]
+70
+{"nombre": "Ana", "edad": 30, "activa": verdadero}
+Ana
+{"nombre": "Ana", "edad": 31, "activa": verdadero, "pais": "CO"}
+["nombre", "edad", "activa", "pais"]
+["Ana", 31, verdadero, "CO"]
+verdadero
+verdadero
+3
+nombre: Ana
+edad: 31
+pais: CO
+Ana
+25
+{"nombre": "Beto", "edad": 26}
+Hola Carlos
+30
+10
+720
+encontrado
+no esta
+global
+global
+[999, 2, 3]
+[1, 2, 3]
+4
+decimal
+42
+7
+2.5
+9
+3
+TZ
+tz
+a-b-c
+["x", "y", "z"]
+fin del programa

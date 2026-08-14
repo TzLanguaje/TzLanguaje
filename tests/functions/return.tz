@@ -1,0 +1,50 @@
+funcion sumar(a, b)
+    retornar a + b
+fin
+imprimir sumar(10, 20)
+imprimir sumar(10, 20) * 2
+imprimir sumar(10, 5) + sumar(20, 5)
+variable r = sumar(2, 3) * 4 + 1
+imprimir r
+funcion corta()
+    imprimir "A"
+    retornar 10
+    imprimir "NUNCA"
+fin
+imprimir corta()
+funcion sin_retorno()
+    imprimir "cuerpo"
+fin
+imprimir sin_retorno()
+funcion vacio_ret()
+    retornar
+fin
+imprimir vacio_ret()
+funcion t_num()
+    retornar 10
+fin
+funcion t_dec()
+    retornar 3.14
+fin
+funcion t_txt()
+    retornar "TzLang"
+fin
+funcion t_bool()
+    retornar verdadero
+fin
+funcion t_nulo()
+    retornar nulo
+fin
+funcion t_lista()
+    retornar [1, 2]
+fin
+funcion t_dicc()
+    retornar {"a": 1}
+fin
+imprimir t_num()
+imprimir t_dec()
+imprimir t_txt()
+imprimir t_bool()
+imprimir t_nulo()
+imprimir t_lista()
+imprimir t_dicc()

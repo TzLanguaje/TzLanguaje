@@ -1,0 +1,6 @@
+funcion f()
+    imprimir "A"
+fin
+funcion f()
+    imprimir "B"
+fin

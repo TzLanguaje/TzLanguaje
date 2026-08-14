@@ -1,0 +1,23 @@
+funcion factorial(n)
+    si n es menor o igual que 1
+        retornar 1
+    fin
+    retornar n * factorial(n - 1)
+fin
+imprimir factorial(5)
+imprimir factorial(10)
+funcion repite(n)
+    si n es menor o igual que 0
+        retornar ""
+    fin
+    retornar "ab" + repite(n - 1)
+fin
+imprimir repite(4)
+funcion baja(n)
+    si n es mayor que 0
+        imprimir n
+        baja(n - 1)
+        imprimir n
+    fin
+fin
+baja(3)

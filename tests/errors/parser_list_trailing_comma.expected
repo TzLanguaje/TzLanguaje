@@ -1,0 +1,2 @@
+Error del Parser en línea 1: Se esperaba un número, decimal, texto, booleano o identificador.
+Error construyendo AST.

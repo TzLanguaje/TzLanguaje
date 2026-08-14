@@ -1,0 +1,43 @@
+variable x = "global"
+funcion interna()
+    imprimir x
+fin
+funcion externa()
+    variable x = "externa"
+    interna()
+fin
+externa()
+variable saludo = "global"
+funcion prueba2()
+    variable saludo = "local"
+    imprimir saludo
+fin
+prueba2()
+imprimir saludo
+variable z = 10
+funcion prueba3()
+    z = 20
+fin
+prueba3()
+imprimir z
+variable w = 10
+funcion prueba4()
+    variable w = 20
+    w = 30
+    imprimir w
+fin
+prueba4()
+imprimir w
+variable nombre = "Global"
+funcion mostrar(nombre)
+    imprimir nombre
+fin
+mostrar("Local")
+imprimir nombre
+funcion muta(lista)
+    lista[0] = 555
+    retornar lista[0]
+fin
+variable L = [1, 2]
+imprimir muta(L)
+imprimir L

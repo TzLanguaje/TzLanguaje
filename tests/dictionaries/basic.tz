@@ -1,0 +1,10 @@
+imprimir {}
+imprimir {"a": 1}
+imprimir {"nombre": "Tz", "edad": 20}
+imprimir {"x": "20"}
+imprimir {"n": 1, "d": 2.5, "s": "t", "b": verdadero, "z": nulo}
+imprimir {"l": [1, 2], "d": {"k": "v"}}
+variable n = 5
+imprimir {"x": n * 2}
+variable k = "clave"
+imprimir {k: 1}

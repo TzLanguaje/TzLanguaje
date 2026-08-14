@@ -1,0 +1,13 @@
+[1, 2, 3, "x", [9]]
+5
+[1]
+{"l": [1, 2]}
+20
+[10, 30]
+10
+[30]
+verdadero
+verdadero
+verdadero
+verdadero
+falso

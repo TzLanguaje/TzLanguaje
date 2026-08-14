@@ -1,0 +1,2 @@
+variable z = nulo
+imprimir z[0]

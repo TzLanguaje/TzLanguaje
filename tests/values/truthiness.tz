@@ -1,0 +1,37 @@
+si 0
+    imprimir "NUNCA"
+sino
+    imprimir "cero es falso"
+fin
+si 1
+    imprimir "uno es verdadero"
+fin
+si ""
+    imprimir "NUNCA"
+sino
+    imprimir "vacio es falso"
+fin
+si "x"
+    imprimir "texto es verdadero"
+fin
+si nulo
+    imprimir "NUNCA"
+sino
+    imprimir "nulo es falso"
+fin
+si []
+    imprimir "NUNCA"
+sino
+    imprimir "lista vacia es falso"
+fin
+si [1]
+    imprimir "lista con datos es verdadero"
+fin
+si {}
+    imprimir "NUNCA"
+sino
+    imprimir "dicc vacio es falso"
+fin
+si {"a": 1}
+    imprimir "dicc con datos es verdadero"
+fin

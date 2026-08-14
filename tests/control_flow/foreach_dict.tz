@@ -1,0 +1,35 @@
+variable p = {"nombre": "Tz", "edad": 20, "pais": "CO"}
+para cada clave en p
+    imprimir clave
+fin
+para cada clave en p
+    imprimir p[clave]
+fin
+para cada k en {}
+    imprimir "NUNCA"
+fin
+funcion crear()
+    retornar [7, 8]
+fin
+para cada x en crear()
+    imprimir x
+fin
+variable m = [[9, 10]]
+para cada x en m[0]
+    imprimir x
+fin
+variable i = 0
+mientras i es menor que 2
+    para cada x en [1, 2]
+        imprimir x
+    fin
+    i = i + 1
+fin
+para cada x en [1, 2]
+    variable k = 0
+    mientras verdadero
+        k = k + 1
+        romper
+    fin
+    imprimir x + k
+fin

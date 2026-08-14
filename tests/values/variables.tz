@@ -1,0 +1,20 @@
+variable edad = 20
+imprimir edad
+edad = 25
+imprimir edad
+edad = edad + 1
+imprimir edad
+variable s = "a"
+s = "texto mas largo"
+imprimir s
+s = 42
+imprimir s
+s = nulo
+imprimir s
+s = [1, 2]
+imprimir s
+s = {"k": 1}
+imprimir s
+variable d = 1.5
+d = d + 0.25
+imprimir d

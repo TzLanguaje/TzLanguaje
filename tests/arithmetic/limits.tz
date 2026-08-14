@@ -1,0 +1,8 @@
+imprimir 2147483647
+imprimir -2147483648
+imprimir 2147483647 + 0
+imprimir 2147483647 + -1
+imprimir -2147483648 + 1
+imprimir -2147483648 / 1
+imprimir -2147483648 / 2
+imprimir 46340 * 46340

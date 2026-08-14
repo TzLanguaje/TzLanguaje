@@ -1,0 +1,178 @@
+// Prueba de integracion: todo el lenguaje junto
+
+// --- variables y tipos ---
+variable entero = 20
+variable decimal_v = 1.78
+variable texto_v = "TzLang"
+variable bool_v = verdadero
+variable nulo_v = nulo
+
+imprimir entero
+imprimir decimal_v
+imprimir texto_v
+imprimir bool_v
+imprimir nulo_v
+
+// --- asignacion y expresiones ---
+entero = entero + 5
+entero = entero * 2
+imprimir entero
+imprimir 10 + 2 * 3
+imprimir (10 + 2) * 3
+imprimir -entero
+imprimir 10 - -3
+
+// --- comparaciones y logica ---
+imprimir entero es mayor que 10
+imprimir entero es menor o igual que 50
+imprimir (entero es mayor que 10) y (bool_v)
+imprimir no (entero es igual a 1)
+
+// --- si / sino ---
+si entero es mayor o igual que 18
+    imprimir "Mayor de edad"
+sino
+    imprimir "Menor de edad"
+fin
+
+// --- mientras con romper y continuar ---
+variable i = 0
+variable suma = 0
+mientras verdadero
+    i = i + 1
+    si i es igual a 3
+        continuar
+    fin
+    si i es mayor que 6
+        romper
+    fin
+    suma = suma + i
+fin
+imprimir suma
+
+// --- listas ---
+variable numeros = [10, 20, 30]
+agregar(numeros, 40)
+imprimir numeros
+imprimir numeros[0]
+numeros[1] = 50
+imprimir numeros
+imprimir eliminar(numeros, 0)
+imprimir largo(numeros)
+imprimir contiene(numeros, 30)
+
+variable matriz = [
+    [1, 2],
+    [3, 4]
+]
+imprimir matriz[1][0]
+matriz[1][1] = 99
+imprimir matriz
+
+// --- para cada ---
+variable total = 0
+para cada n en numeros
+    si n es igual a 50
+        continuar
+    fin
+    total = total + n
+fin
+imprimir total
+
+// --- diccionarios ---
+variable persona = {
+    "nombre": "Ana",
+    "edad": 30,
+    "activa": verdadero
+}
+imprimir persona
+imprimir persona["nombre"]
+persona["edad"] = 31
+persona["pais"] = "CO"
+imprimir persona
+imprimir claves(persona)
+imprimir valores(persona)
+imprimir contiene(persona, "edad")
+imprimir eliminar(persona, "activa")
+imprimir largo(persona)
+
+para cada clave en persona
+    imprimir clave + ": " + texto(persona[clave])
+fin
+
+// --- estructuras mezcladas ---
+variable datos = {
+    "usuarios": [
+        {"nombre": "Ana", "edad": 20},
+        {"nombre": "Beto", "edad": 25}
+    ]
+}
+imprimir datos["usuarios"][0]["nombre"]
+imprimir datos["usuarios"][1]["edad"]
+datos["usuarios"][1]["edad"] = 26
+imprimir datos["usuarios"][1]
+
+// --- funciones ---
+funcion saludar(nombre)
+    retornar "Hola " + nombre
+fin
+imprimir saludar("Carlos")
+
+funcion sumar(a, b)
+    retornar a + b
+fin
+imprimir sumar(10, 20)
+imprimir sumar(sumar(1, 2), sumar(3, 4))
+
+funcion factorial(n)
+    si n es menor o igual que 1
+        retornar 1
+    fin
+    retornar n * factorial(n - 1)
+fin
+imprimir factorial(6)
+
+funcion buscar(lista, objetivo)
+    para cada v en lista
+        si v es igual a objetivo
+            retornar "encontrado"
+        fin
+    fin
+    retornar "no esta"
+fin
+imprimir buscar([1, 2, 3], 2)
+imprimir buscar([1, 2, 3], 9)
+
+// --- scope lexico ---
+variable ambito = "global"
+funcion lee_ambito()
+    retornar ambito
+fin
+funcion tapa_ambito()
+    variable ambito = "local"
+    retornar lee_ambito()
+fin
+imprimir tapa_ambito()
+imprimir ambito
+
+// --- copia profunda ---
+variable original = {"l": [1, 2, 3]}
+variable copia = original
+copia["l"][0] = 999
+imprimir copia["l"]
+imprimir original["l"]
+
+// --- built-ins ---
+imprimir largo("hola")
+imprimir tipo(3.14)
+imprimir texto(42)
+imprimir numero("7")
+imprimir decimal("2.5")
+imprimir absoluto(-9)
+imprimir redondear(2.6)
+imprimir mayusculas("tz")
+imprimir minusculas("TZ")
+imprimir unir(["a", "b", "c"], "-")
+imprimir separar("x,y,z", ",")
+
+imprimir "fin del programa"

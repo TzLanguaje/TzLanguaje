@@ -1,0 +1,14 @@
+imprimir 10 es mayor que 5
+imprimir 10 es menor que 5
+imprimir 10 es mayor o igual que 10
+imprimir 10 es menor o igual que 9
+imprimir 10 es igual a 10
+imprimir 10 es diferente de 5
+imprimir 10 > 5
+imprimir 10 < 5
+imprimir 10 >= 10
+imprimir 10 <= 9
+imprimir 10 == 10
+imprimir 10 != 5
+imprimir 10.5 es mayor que 5
+imprimir "a" es igual a "a"

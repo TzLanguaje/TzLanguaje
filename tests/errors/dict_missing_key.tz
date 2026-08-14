@@ -1,0 +1,2 @@
+variable d = {"a": 1}
+imprimir d["zzz"]

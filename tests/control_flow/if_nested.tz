@@ -1,0 +1,25 @@
+variable edad = 20
+variable doc = verdadero
+si edad es mayor que 10
+    si doc
+        imprimir "anidado ok"
+    sino
+        imprimir "NUNCA"
+    fin
+fin
+si (edad es mayor o igual que 18) y (doc)
+    imprimir "compleja y"
+fin
+si (edad es menor que 10) o (doc)
+    imprimir "compleja o"
+fin
+si no (edad es igual a 30)
+    imprimir "compleja no"
+fin
+variable r = 0
+si edad es mayor que 10
+    r = 1
+sino
+    r = 2
+fin
+imprimir r

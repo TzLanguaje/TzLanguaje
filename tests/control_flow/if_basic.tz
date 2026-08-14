@@ -1,0 +1,18 @@
+si verdadero
+    imprimir "entra"
+fin
+si falso
+    imprimir "NUNCA"
+fin
+variable edad = 20
+si edad es mayor o igual que 18
+    imprimir "Mayor de edad"
+sino
+    imprimir "Menor de edad"
+fin
+variable joven = 15
+si joven es mayor o igual que 18
+    imprimir "NUNCA"
+sino
+    imprimir "Menor de edad"
+fin

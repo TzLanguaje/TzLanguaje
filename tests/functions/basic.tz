@@ -1,0 +1,17 @@
+funcion saludar()
+    imprimir "Hola"
+fin
+saludar()
+saludar()
+funcion uno()
+    imprimir "Uno"
+fin
+funcion dos()
+    imprimir "Dos"
+    uno()
+fin
+dos()
+funcion vacia()
+fin
+vacia()
+imprimir "fin"

@@ -1,0 +1,4 @@
+funcion crear()
+    retornar {"a": 1}
+fin
+crear()["a"] = 2

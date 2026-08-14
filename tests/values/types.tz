@@ -1,0 +1,7 @@
+imprimir tipo(10)
+imprimir tipo(3.14)
+imprimir tipo("x")
+imprimir tipo(verdadero)
+imprimir tipo(nulo)
+imprimir tipo([1])
+imprimir tipo({"a": 1})

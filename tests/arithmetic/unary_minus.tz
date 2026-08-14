@@ -1,0 +1,9 @@
+imprimir -5
+imprimir -3.14
+imprimir -(5 + 3)
+imprimir -5 + 10
+imprimir 2 * -4
+imprimir -5 * 2
+imprimir 10 - -3
+imprimir --5
+imprimir ---5

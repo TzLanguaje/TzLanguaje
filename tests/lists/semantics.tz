@@ -1,0 +1,24 @@
+variable orig = [1, 2, 3]
+variable copia = orig
+copia[0] = 999
+imprimir copia[0]
+imprimir orig[0]
+variable a1 = [[1, 2]]
+variable a2 = a1
+a2[0][0] = 777
+imprimir a2[0][0]
+imprimir a1[0][0]
+funcion primero(lista)
+    retornar lista[0]
+fin
+imprimir primero([100, 200])
+imprimir primero(orig)
+funcion crear()
+    retornar [10, 20, 30]
+fin
+variable c = crear()
+imprimir c[2]
+imprimir crear()[1]
+imprimir [1, 2] es igual a [1, 2]
+imprimir [1, 2] es igual a [1, 3]
+imprimir [] es igual a []

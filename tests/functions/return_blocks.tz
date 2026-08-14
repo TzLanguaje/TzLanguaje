@@ -1,0 +1,44 @@
+funcion clasifica(edad)
+    si edad es mayor o igual que 18
+        retornar "Mayor"
+    fin
+    retornar "Menor"
+fin
+imprimir clasifica(20)
+imprimir clasifica(15)
+funcion busca()
+    variable k = 0
+    mientras k es menor que 10
+        si k es igual a 5
+            retornar k
+        fin
+        k = k + 1
+    fin
+    retornar nulo
+fin
+imprimir busca()
+funcion busca_lista(l, objetivo)
+    para cada v en l
+        si v es igual a objetivo
+            retornar "encontrado"
+        fin
+    fin
+    retornar "no esta"
+fin
+imprimir busca_lista([1, 2, 3], 2)
+imprimir busca_lista([1, 2, 3], 9)
+funcion anidado()
+    variable a = 0
+    mientras a es menor que 5
+        a = a + 1
+        variable b = 0
+        mientras b es menor que 5
+            b = b + 1
+            si b es igual a 2
+                retornar a * 100 + b
+            fin
+        fin
+    fin
+    retornar nulo
+fin
+imprimir anidado()

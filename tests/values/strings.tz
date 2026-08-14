@@ -1,0 +1,8 @@
+imprimir "Hola " + "TzLang"
+variable s = "abc"
+imprimir s + s
+imprimir largo(s)
+imprimir mayusculas(s)
+imprimir minusculas("ABC")
+imprimir s es igual a "abc"
+imprimir s es diferente de "xyz"

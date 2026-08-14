@@ -1,0 +1,9 @@
+variable a = 10
+variable b = 3
+imprimir a + b
+imprimir a - b
+imprimir a * b
+imprimir a / b
+imprimir -a
+variable c = (a + b) * 2
+imprimir c

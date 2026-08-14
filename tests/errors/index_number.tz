@@ -1,0 +1,2 @@
+variable x = 10
+imprimir x[0]

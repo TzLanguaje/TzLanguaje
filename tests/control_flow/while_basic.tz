@@ -1,0 +1,18 @@
+variable i = 0
+mientras i es menor que 5
+    imprimir i
+    i = i + 1
+fin
+mientras falso
+    imprimir "NUNCA"
+fin
+variable k = 10
+mientras k es menor que 5
+    imprimir "NUNCA"
+fin
+imprimir k
+variable u = 0
+mientras u es menor que 1
+    u = u + 1
+fin
+imprimir u

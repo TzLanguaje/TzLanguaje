@@ -1,0 +1,8 @@
+imprimir 10
+imprimir 3.14
+imprimir "texto"
+imprimir verdadero
+imprimir falso
+imprimir nulo
+imprimir [1, 2]
+imprimir {"a": 1}

@@ -1,0 +1,3 @@
+imprimir "antes"
+imprimir 1 / 0
+imprimir "nunca"

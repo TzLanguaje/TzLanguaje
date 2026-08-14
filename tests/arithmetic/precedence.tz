@@ -1,0 +1,5 @@
+imprimir 10 + 2 * 3
+imprimir (10 + 2) * 3
+imprimir 20 - 6 / 2
+imprimir 2 + 3 * 4 - 6 / 3
+imprimir 2 * (3 + 4)

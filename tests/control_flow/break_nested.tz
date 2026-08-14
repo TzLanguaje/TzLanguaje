@@ -1,0 +1,24 @@
+variable ex = 0
+mientras ex es menor que 3
+    ex = ex + 1
+    variable inn = 0
+    mientras inn es menor que 5
+        inn = inn + 1
+        si inn es igual a 3
+            romper
+        fin
+        imprimir inn
+    fin
+fin
+variable e2 = 0
+mientras e2 es menor que 2
+    e2 = e2 + 1
+    variable i2 = 0
+    mientras i2 es menor que 4
+        i2 = i2 + 1
+        si i2 es igual a 2
+            continuar
+        fin
+        imprimir i2
+    fin
+fin

@@ -1,0 +1,23 @@
+variable orig = {"nombre": "Tz", "datos": {"edad": 20}}
+variable copia = orig
+copia["datos"]["edad"] = 99
+imprimir copia["datos"]["edad"]
+imprimir orig["datos"]["edad"]
+variable a = {"x": [1, 2, 3]}
+variable b = a
+b["x"][0] = 999
+imprimir b["x"]
+imprimir a["x"]
+funcion crear_usuario(nombre, edad)
+    retornar {"nombre": nombre, "edad": edad}
+fin
+variable nuevo = crear_usuario("Carlos", 20)
+imprimir nuevo["nombre"]
+funcion obtener_edad(u)
+    retornar u["edad"]
+fin
+imprimir obtener_edad(nuevo)
+imprimir claves({"a": 1, "b": 2, "c": 3})
+imprimir valores({"a": 1, "b": 2, "c": 3})
+imprimir contiene({"edad": 20}, "edad")
+imprimir contiene({"edad": 20}, "pais")

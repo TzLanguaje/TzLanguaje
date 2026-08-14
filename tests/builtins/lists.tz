@@ -1,0 +1,23 @@
+variable L = [1, 2]
+agregar(L, 3)
+agregar(L, "x")
+agregar(L, [9])
+imprimir L
+imprimir largo(L)
+variable V = []
+agregar(V, 1)
+imprimir V
+variable D = {"l": [1]}
+agregar(D["l"], 2)
+imprimir D
+variable E = [10, 20, 30]
+imprimir eliminar(E, 1)
+imprimir E
+imprimir eliminar(E, 0)
+imprimir E
+variable C = [1, "dos", [3], {"a": 1}]
+imprimir contiene(C, 1)
+imprimir contiene(C, "dos")
+imprimir contiene(C, [3])
+imprimir contiene(C, {"a": 1})
+imprimir contiene(C, 99)

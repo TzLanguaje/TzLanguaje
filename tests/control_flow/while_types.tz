@@ -1,0 +1,26 @@
+variable d = 0.0
+mientras d es menor que 1.0
+    d = d + 0.25
+fin
+imprimir d
+variable s = ""
+variable t = 0
+mientras t es menor que 3
+    s = s + "ab"
+    t = t + 1
+fin
+imprimir s
+variable L = [0, 0, 0]
+variable j = 0
+mientras j es menor que 3
+    L[j] = j * 10
+    j = j + 1
+fin
+imprimir L
+variable D = {"n": 0}
+variable m = 0
+mientras m es menor que 3
+    D["n"] = D["n"] + 1
+    m = m + 1
+fin
+imprimir D

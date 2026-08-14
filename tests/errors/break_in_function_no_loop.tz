@@ -1,0 +1,5 @@
+mientras verdadero
+    funcion f()
+        romper
+    fin
+fin

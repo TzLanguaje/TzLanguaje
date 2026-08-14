@@ -1,0 +1,4 @@
+funcion sumar(a, b)
+    retornar a + b
+fin
+imprimir sumar(1, 2, 3)

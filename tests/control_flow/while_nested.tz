@@ -1,0 +1,35 @@
+variable a = 0
+variable total = 0
+mientras a es menor que 3
+    variable b = 0
+    mientras b es menor que 2
+        total = total + 1
+        b = b + 1
+    fin
+    a = a + 1
+fin
+imprimir total
+variable n = 0
+mientras n es menor que 4
+    si n es igual a 2
+        imprimir "dos"
+    sino
+        imprimir n
+    fin
+    n = n + 1
+fin
+variable p = 0
+mientras (p es menor que 5) y (p es diferente de 3)
+    p = p + 1
+fin
+imprimir p
+variable q = 0
+mientras no (q es mayor o igual que 2)
+    q = q + 1
+fin
+imprimir q
+variable cd = 3
+mientras cd
+    cd = cd - 1
+fin
+imprimir cd

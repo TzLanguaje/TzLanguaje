@@ -1,0 +1,20 @@
+variable p = {"nombre": "Carlos", "edad": 20, "activo": verdadero}
+imprimir p["nombre"]
+imprimir p["edad"]
+p["edad"] = 21
+imprimir p["edad"]
+p["pais"] = "Colombia"
+imprimir p
+variable u = {"nombre": "Tz", "datos": {"edad": 20, "pais": "CO"}}
+imprimir u["datos"]["edad"]
+u["datos"]["edad"] = 25
+imprimir u["datos"]["edad"]
+variable us = [{"nombre": "Ana", "edad": 20}, {"nombre": "Carlos", "edad": 25}]
+imprimir us[0]["nombre"]
+imprimir us[1]["edad"]
+us[0]["edad"] = 99
+imprimir us[0]
+variable mix = {"u": [{"p": {"e": 20}}]}
+imprimir mix["u"][0]["p"]["e"]
+mix["u"][0]["p"]["e"] = 30
+imprimir mix["u"][0]["p"]["e"]

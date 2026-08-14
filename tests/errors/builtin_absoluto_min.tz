@@ -1,0 +1,2 @@
+variable m = -2147483648
+imprimir absoluto(m)

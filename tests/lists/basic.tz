@@ -1,0 +1,11 @@
+imprimir []
+imprimir [1]
+imprimir [1, 2, 3]
+imprimir ["a", "b"]
+imprimir [verdadero, falso]
+imprimir [nulo]
+imprimir [1.5, 2.5]
+imprimir [10, 3.14, "Hola", verdadero, nulo]
+imprimir [1 + 2, 3 * 4]
+variable base = 5
+imprimir [base, base * 2]

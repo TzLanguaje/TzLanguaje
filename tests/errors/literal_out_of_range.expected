@@ -1,0 +1,2 @@
+Error del Parser en línea 1: el número 2147483648 está fuera del rango permitido (de -2147483648 a 2147483647).
+Error construyendo AST.
