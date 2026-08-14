@@ -344,6 +344,16 @@ Token *lexer_tokenize(
 
     int line = 1;
 
+    /*
+     * Se sigue leyendo despues de un
+     * caracter desconocido para poder
+     * informar de todos, pero al final
+     * la tokenizacion se considera
+     * fallida.
+     */
+
+    int had_error = 0;
+
     while (*current != '\0') {
 
         /*
@@ -816,6 +826,8 @@ Token *lexer_tokenize(
                     *current
                 );
 
+                had_error = 1;
+
                 current++;
 
                 continue;
@@ -937,6 +949,8 @@ Token *lexer_tokenize(
                     *current
                 );
 
+                had_error = 1;
+
                 current++;
 
                 continue;
@@ -1012,6 +1026,20 @@ Token *lexer_tokenize(
     }
 
     tokens[count++] = eof;
+
+    /*
+     * Hubo caracteres desconocidos:
+     * ya se informo de todos, y ahora
+     * se falla para que el programa
+     * NO se ejecute.
+     */
+
+    if (had_error) {
+
+        lexer_free_tokens(tokens, count);
+
+        return NULL;
+    }
 
     *token_count = count;
 

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 char *read_file(const char *path) {
 
@@ -96,6 +97,50 @@ char *read_file(const char *path) {
     buffer[leidos] = '\0';
 
     fclose(file);
+
+    /*
+     * ==========================
+     * BOM UTF-8
+     * ==========================
+     *
+     * Muchos editores guardan los
+     * archivos empezando por
+     *
+     *     EF BB BF
+     *
+     * Esos tres bytes no son parte
+     * del programa, asi que se
+     * descartan aqui y el lexer no
+     * llega a verlos.
+     *
+     * Se desplaza el contenido en
+     * vez de devolver buffer + 3,
+     * porque quien llama tiene que
+     * poder hacer free() del mismo
+     * puntero que recibio.
+     *
+     * El resto del contenido queda
+     * byte a byte igual.
+     */
+
+    if (
+        leidos >= 3 &&
+        (unsigned char)buffer[0] == 0xEF &&
+        (unsigned char)buffer[1] == 0xBB &&
+        (unsigned char)buffer[2] == 0xBF
+    ) {
+
+        /*
+         * +1 para arrastrar tambien
+         * el terminador.
+         */
+
+        memmove(
+            buffer,
+            buffer + 3,
+            leidos - 3 + 1
+        );
+    }
 
     return buffer;
 }

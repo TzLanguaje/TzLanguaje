@@ -211,6 +211,25 @@ typedef struct {
 /*
  * Convierte código TzLang
  * en una lista de tokens.
+ *
+ * Devuelve NULL si la
+ * tokenizacion FALLA, ya sea por
+ * falta de memoria o porque el
+ * archivo contiene caracteres que
+ * TzLang no reconoce.
+ *
+ * En el caso de los caracteres
+ * desconocidos se recorre el
+ * archivo ENTERO y se informa de
+ * todos antes de devolver NULL,
+ * para no obligar a corregirlos
+ * de uno en uno.
+ *
+ * Devolver NULL es lo que impide
+ * que un programa con errores
+ * lexicos llegue a ejecutarse:
+ * quien llama ya trataba ese caso
+ * como fallo.
  */
 Token *lexer_tokenize(
     const char *source,
