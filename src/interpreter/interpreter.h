@@ -91,6 +91,30 @@ int environment_has(
 );
 
 /*
+ * Puntero al Value ALMACENADO.
+ *
+ * A diferencia de environment_get,
+ * NO devuelve una copia: apunta al
+ * valor real dentro del scope que
+ * lo contiene.
+ *
+ * Es lo que permite modificar una
+ * lista en el sitio:
+ *
+ * numeros[1] = 99
+ *
+ * Devuelve NULL si no existe.
+ *
+ * El puntero deja de ser válido si
+ * se destruye ese entorno o si se
+ * redeclara la variable.
+ */
+Value *environment_get_ref(
+    Environment *environment,
+    const char *name
+);
+
+/*
  * ASIGNAR a una variable EXISTENTE.
  *
  * edad = 25
@@ -137,6 +161,18 @@ int environment_assign(
 
 typedef struct {
     char *name;
+
+    /*
+     * Nombres de los parámetros.
+     *
+     * Referencia al AST igual que
+     * 'body': la tabla no los copia
+     * ni los libera.
+     */
+
+    char **parameters;
+    int parameter_count;
+
     ASTNode *body;
     Environment *closure;
 } Function;
@@ -176,6 +212,8 @@ void function_table_free(
 int function_table_declare(
     FunctionTable *table,
     const char *name,
+    char **parameters,
+    int parameter_count,
     ASTNode *body,
     Environment *closure
 );

@@ -295,6 +295,122 @@ ASTNode *ast_print(ASTNode *expression) {
     return node;
 }
 
+ASTNode *ast_return(ASTNode *value) {
+    ASTNode *node = create_node(AST_RETURN);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.return_value = value;
+
+    return node;
+}
+
+ASTNode *ast_break(void) {
+    return create_node(AST_BREAK);
+}
+
+ASTNode *ast_continue(void) {
+    return create_node(AST_CONTINUE);
+}
+
+ASTNode *ast_list(
+    ASTNode **elements,
+    int element_count
+) {
+    ASTNode *node = create_node(AST_LIST);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.list.elements = elements;
+    node->data.list.element_count =
+        element_count;
+
+    return node;
+}
+
+ASTNode *ast_index(
+    ASTNode *object,
+    ASTNode *index
+) {
+    ASTNode *node = create_node(AST_INDEX);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.index.object = object;
+    node->data.index.index = index;
+
+    return node;
+}
+
+ASTNode *ast_index_assignment(
+    ASTNode *target,
+    ASTNode *value
+) {
+    ASTNode *node =
+        create_node(AST_INDEX_ASSIGNMENT);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.index_assignment.target =
+        target;
+
+    node->data.index_assignment.value =
+        value;
+
+    return node;
+}
+
+ASTNode *ast_for_each(
+    const char *variable,
+    ASTNode *iterable,
+    ASTNode *body
+) {
+    ASTNode *node = create_node(AST_FOR_EACH);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.for_each.variable =
+        copy_string(variable);
+
+    if (node->data.for_each.variable == NULL) {
+        free(node);
+        return NULL;
+    }
+
+    node->data.for_each.iterable = iterable;
+    node->data.for_each.body = body;
+
+    return node;
+}
+
+ASTNode *ast_dictionary(
+    ASTNode **keys,
+    ASTNode **values,
+    int pair_count
+) {
+    ASTNode *node = create_node(AST_DICTIONARY);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->data.dictionary.keys = keys;
+    node->data.dictionary.values = values;
+    node->data.dictionary.pair_count = pair_count;
+
+    return node;
+}
+
 ASTNode *ast_if(
     ASTNode *condition,
     ASTNode *then_branch,
@@ -339,6 +455,8 @@ ASTNode *ast_while(
 
 ASTNode *ast_function_declaration(
     const char *name,
+    char **parameters,
+    int parameter_count,
     ASTNode *body
 ) {
     ASTNode *node =
@@ -359,6 +477,12 @@ ASTNode *ast_function_declaration(
         return NULL;
     }
 
+    node->data.function_declaration.parameters =
+        parameters;
+
+    node->data.function_declaration.parameter_count =
+        parameter_count;
+
     node->data.function_declaration.body =
         body;
 
@@ -366,7 +490,9 @@ ASTNode *ast_function_declaration(
 }
 
 ASTNode *ast_function_call(
-    const char *name
+    const char *name,
+    ASTNode **arguments,
+    int argument_count
 ) {
     ASTNode *node =
         create_node(AST_FUNCTION_CALL);
@@ -385,6 +511,12 @@ ASTNode *ast_function_call(
         free(node);
         return NULL;
     }
+
+    node->data.function_call.arguments =
+        arguments;
+
+    node->data.function_call.argument_count =
+        argument_count;
 
     return node;
 }
@@ -450,6 +582,9 @@ static const char *unary_operator_name(
 
         case OP_NOT:
             return "no";
+
+        case OP_NEGATE:
+            return "-";
 
         default:
             return "?";
@@ -675,6 +810,170 @@ void ast_print_tree(
             break;
 
         /*
+         * RETURN
+         */
+
+        case AST_RETURN:
+
+            if (node->data.return_value == NULL) {
+
+                printf("RETURN: nulo\n");
+
+                break;
+            }
+
+            printf("RETURN\n");
+
+            ast_print_tree(
+                node->data.return_value,
+                indentation + 1
+            );
+
+            break;
+
+        /*
+         * BREAK / CONTINUE
+         */
+
+        case AST_BREAK:
+
+            printf("BREAK\n");
+
+            break;
+
+        case AST_CONTINUE:
+
+            printf("CONTINUE\n");
+
+            break;
+
+        /*
+         * LIST
+         */
+
+        case AST_LIST:
+
+            printf(
+                "LIST (%d)\n",
+                node->data.list.element_count
+            );
+
+            for (
+                int i = 0;
+                i < node->data.list.element_count;
+                i++
+            ) {
+                ast_print_tree(
+                    node->data.list.elements[i],
+                    indentation + 1
+                );
+            }
+
+            break;
+
+        /*
+         * DICTIONARY
+         */
+
+        case AST_DICTIONARY:
+
+            printf(
+                "DICTIONARY (%d)\n",
+                node->data.dictionary.pair_count
+            );
+
+            for (
+                int i = 0;
+                i < node->data.dictionary.pair_count;
+                i++
+            ) {
+
+                print_indent(indentation + 1);
+                printf("PAIR\n");
+
+                ast_print_tree(
+                    node->data.dictionary.keys[i],
+                    indentation + 2
+                );
+
+                ast_print_tree(
+                    node->data.dictionary.values[i],
+                    indentation + 2
+                );
+            }
+
+            break;
+
+        /*
+         * INDEX
+         */
+
+        case AST_INDEX:
+
+            printf("INDEX\n");
+
+            ast_print_tree(
+                node->data.index.object,
+                indentation + 1
+            );
+
+            ast_print_tree(
+                node->data.index.index,
+                indentation + 1
+            );
+
+            break;
+
+        /*
+         * INDEX ASSIGNMENT
+         */
+
+        case AST_INDEX_ASSIGNMENT:
+
+            printf("INDEX_ASSIGNMENT\n");
+
+            ast_print_tree(
+                node->data.index_assignment.target,
+                indentation + 1
+            );
+
+            ast_print_tree(
+                node->data.index_assignment.value,
+                indentation + 1
+            );
+
+            break;
+
+        /*
+         * FOR EACH
+         */
+
+        case AST_FOR_EACH:
+
+            printf(
+                "FOR_EACH: %s\n",
+                node->data.for_each.variable
+            );
+
+            print_indent(indentation + 1);
+            printf("IN\n");
+
+            ast_print_tree(
+                node->data.for_each.iterable,
+                indentation + 2
+            );
+
+            print_indent(indentation + 1);
+            printf("BODY\n");
+
+            ast_print_tree(
+                node->data.for_each.body,
+                indentation + 2
+            );
+
+            break;
+
+        /*
          * IF
          */
 
@@ -752,6 +1051,25 @@ void ast_print_tree(
             );
 
             print_indent(indentation + 1);
+            printf("PARAMS (%d)",
+                node->data.function_declaration.parameter_count
+            );
+
+            for (
+                int i = 0;
+                i < node->data.function_declaration.parameter_count;
+                i++
+            ) {
+                printf(
+                    "%s %s",
+                    i == 0 ? ":" : ",",
+                    node->data.function_declaration.parameters[i]
+                );
+            }
+
+            printf("\n");
+
+            print_indent(indentation + 1);
             printf("BODY\n");
 
             ast_print_tree(
@@ -768,9 +1086,21 @@ void ast_print_tree(
         case AST_FUNCTION_CALL:
 
             printf(
-                "CALL: %s\n",
-                node->data.function_call.name
+                "CALL: %s (%d args)\n",
+                node->data.function_call.name,
+                node->data.function_call.argument_count
             );
+
+            for (
+                int i = 0;
+                i < node->data.function_call.argument_count;
+                i++
+            ) {
+                ast_print_tree(
+                    node->data.function_call.arguments[i],
+                    indentation + 1
+                );
+            }
 
             break;
 
@@ -915,6 +1245,21 @@ void ast_free(ASTNode *node) {
             break;
 
         /*
+         * RETURN
+         *
+         * return_value puede ser NULL
+         * y ast_free lo tolera.
+         */
+
+        case AST_RETURN:
+
+            ast_free(
+                node->data.return_value
+            );
+
+            break;
+
+        /*
          * IF
          */
 
@@ -964,6 +1309,25 @@ void ast_free(ASTNode *node) {
                 node->data.function_declaration.name
             );
 
+            /*
+             * Los nombres de los
+             * parámetros son nuestros.
+             */
+
+            for (
+                int i = 0;
+                i < node->data.function_declaration.parameter_count;
+                i++
+            ) {
+                free(
+                    node->data.function_declaration.parameters[i]
+                );
+            }
+
+            free(
+                node->data.function_declaration.parameters
+            );
+
             ast_free(
                 node->data.function_declaration.body
             );
@@ -980,6 +1344,122 @@ void ast_free(ASTNode *node) {
                 node->data.function_call.name
             );
 
+            /*
+             * Los argumentos son
+             * expresiones nuestras.
+             */
+
+            for (
+                int i = 0;
+                i < node->data.function_call.argument_count;
+                i++
+            ) {
+                ast_free(
+                    node->data.function_call.arguments[i]
+                );
+            }
+
+            free(
+                node->data.function_call.arguments
+            );
+
+            break;
+
+        /*
+         * LIST
+         */
+
+        case AST_LIST:
+
+            for (
+                int i = 0;
+                i < node->data.list.element_count;
+                i++
+            ) {
+                ast_free(
+                    node->data.list.elements[i]
+                );
+            }
+
+            free(node->data.list.elements);
+
+            break;
+
+        /*
+         * DICTIONARY
+         */
+
+        case AST_DICTIONARY:
+
+            for (
+                int i = 0;
+                i < node->data.dictionary.pair_count;
+                i++
+            ) {
+                ast_free(
+                    node->data.dictionary.keys[i]
+                );
+
+                ast_free(
+                    node->data.dictionary.values[i]
+                );
+            }
+
+            free(node->data.dictionary.keys);
+            free(node->data.dictionary.values);
+
+            break;
+
+        /*
+         * INDEX
+         */
+
+        case AST_INDEX:
+
+            ast_free(
+                node->data.index.object
+            );
+
+            ast_free(
+                node->data.index.index
+            );
+
+            break;
+
+        /*
+         * INDEX ASSIGNMENT
+         */
+
+        case AST_INDEX_ASSIGNMENT:
+
+            ast_free(
+                node->data.index_assignment.target
+            );
+
+            ast_free(
+                node->data.index_assignment.value
+            );
+
+            break;
+
+        /*
+         * FOR EACH
+         */
+
+        case AST_FOR_EACH:
+
+            free(
+                node->data.for_each.variable
+            );
+
+            ast_free(
+                node->data.for_each.iterable
+            );
+
+            ast_free(
+                node->data.for_each.body
+            );
+
             break;
 
         /*
@@ -987,6 +1467,8 @@ void ast_free(ASTNode *node) {
          * DECIMAL
          * BOOLEAN
          * NULL
+         * BREAK
+         * CONTINUE
          *
          * No necesitan free().
          */
@@ -995,6 +1477,8 @@ void ast_free(ASTNode *node) {
         case AST_DECIMAL:
         case AST_BOOLEAN:
         case AST_NULL:
+        case AST_BREAK:
+        case AST_CONTINUE:
 
             break;
 

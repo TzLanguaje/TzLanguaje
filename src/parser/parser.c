@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
  * Verifica cuál es el token actual.
@@ -132,6 +133,31 @@ static void parser_error(
  * compatibilidad.
  */
 
+/*
+ * Salta SOLO saltos de linea.
+ *
+ * Se usa dentro de delimitadores
+ * -- [ ] { } ( ) -- donde el salto
+ * de linea NO termina nada, para
+ * poder escribir literales
+ * multilinea:
+ *
+ * variable persona = {
+ *     "nombre": "Carlos",
+ *     "edad": 20
+ * }
+ *
+ * Fuera de ahi el salto de linea
+ * sigue terminando la instruccion.
+ */
+
+static void skip_newlines(Parser *parser) {
+
+    while (check(parser, TOKEN_NEWLINE)) {
+        advance(parser);
+    }
+}
+
 static void skip_terminators(Parser *parser) {
 
     while (
@@ -140,6 +166,25 @@ static void skip_terminators(Parser *parser) {
     ) {
         advance(parser);
     }
+}
+
+/*
+ * ¿Estamos al final de una
+ * instrucción?
+ *
+ * Vale tanto un terminador real
+ * como 'fin', 'sino' o el final
+ * del archivo.
+ */
+static int at_statement_end(Parser *parser) {
+
+    return
+        check(parser, TOKEN_NEWLINE) ||
+        check(parser, TOKEN_SEMICOLON) ||
+        check(parser, TOKEN_EOF) ||
+        check(parser, TOKEN_FIN) ||
+        check(parser, TOKEN_SINO) ||
+        current_token(parser) == NULL;
 }
 
 /*
@@ -152,20 +197,15 @@ static void skip_terminators(Parser *parser) {
 static int expect_terminator(Parser *parser) {
 
     if (
-        check(parser, TOKEN_EOF) ||
-        check(parser, TOKEN_FIN) ||
-        check(parser, TOKEN_SINO) ||
-        current_token(parser) == NULL
-    ) {
-        return 1;
-    }
-
-    if (
         check(parser, TOKEN_NEWLINE) ||
         check(parser, TOKEN_SEMICOLON)
     ) {
         skip_terminators(parser);
 
+        return 1;
+    }
+
+    if (at_statement_end(parser)) {
         return 1;
     }
 
@@ -211,7 +251,20 @@ static int is_contextual_name(
         type == TOKEN_DIFERENTE ||
         type == TOKEN_QUE ||
         type == TOKEN_A ||
-        type == TOKEN_DE;
+        type == TOKEN_DE ||
+
+        /*
+         * 'cada' y 'en' solo son
+         * especiales en la cabecera
+         * del 'para cada', así que
+         * fuera de ella siguen
+         * siendo nombres válidos:
+         *
+         * variable en = 5
+         */
+
+        type == TOKEN_CADA ||
+        type == TOKEN_EN;
 }
 
 /*
@@ -269,6 +322,8 @@ Parser *parser_create(
     parser->tokens = tokens;
     parser->token_count = token_count;
     parser->current = 0;
+    parser->function_depth = 0;
+    parser->loop_depth = 0;
 
     return parser;
 }
@@ -300,6 +355,41 @@ void parser_free(Parser *parser) {
  */
 
 static ASTNode *parse_expression(Parser *parser);
+
+/*
+ * Una llamada también es una
+ * expresión primaria:
+ *
+ * imprimir sumar(10, 20) * 2
+ *
+ * Se define más abajo, junto al
+ * resto de lo relativo a funciones.
+ */
+static ASTNode *parse_call_expression(Parser *parser);
+
+/*
+ * Indexación:
+ *
+ * numeros[0]
+ * matriz[1][0]
+ *
+ * Se define junto al resto de la
+ * cadena de precedencia.
+ */
+static ASTNode *parse_postfix(Parser *parser);
+
+/*
+ * Libera una lista de expresiones
+ * a medio construir.
+ *
+ * La comparten los argumentos de
+ * una llamada y los elementos de
+ * un literal de lista.
+ */
+static void free_argument_list(
+    ASTNode **arguments,
+    int count
+);
 
 /*
  * NIVEL 1
@@ -341,12 +431,16 @@ static ASTNode *parse_primary(Parser *parser) {
 
     if (match(parser, TOKEN_LPAREN)) {
 
+        skip_newlines(parser);
+
         ASTNode *expression =
             parse_expression(parser);
 
         if (expression == NULL) {
             return NULL;
         }
+
+        skip_newlines(parser);
 
         if (!match(parser, TOKEN_RPAREN)) {
 
@@ -361,6 +455,317 @@ static ASTNode *parse_primary(Parser *parser) {
         }
 
         return expression;
+    }
+
+    /*
+     * ==========================
+     * LITERAL DE DICCIONARIO
+     * ==========================
+     *
+     * {}
+     * {"nombre": "Carlos"}
+     * {"a": 1, "b": {"c": 2}}
+     *
+     * Claves y valores usan
+     * parse_expression, asi que el
+     * anidamiento con listas y con
+     * otros diccionarios sale solo.
+     *
+     * La clave debe producir un
+     * texto al evaluarse; eso se
+     * comprueba en ejecucion.
+     */
+
+    if (check(parser, TOKEN_LBRACE)) {
+
+        advance(parser);
+
+        skip_newlines(parser);
+
+        ASTNode **keys = NULL;
+        ASTNode **values = NULL;
+        int count = 0;
+        int capacity = 0;
+
+        /*
+         * Diccionario vacio
+         */
+
+        if (match(parser, TOKEN_RBRACE)) {
+
+            return ast_dictionary(NULL, NULL, 0);
+        }
+
+        for (;;) {
+
+            ASTNode *key =
+                parse_expression(parser);
+
+            if (key == NULL) {
+
+                free_argument_list(keys, count);
+                free_argument_list(values, count);
+
+                return NULL;
+            }
+
+            skip_newlines(parser);
+
+            if (!match(parser, TOKEN_COLON)) {
+
+                parser_error(
+                    parser,
+                    "Se esperaba ':' entre la clave y el valor."
+                );
+
+                ast_free(key);
+
+                free_argument_list(keys, count);
+                free_argument_list(values, count);
+
+                return NULL;
+            }
+
+            skip_newlines(parser);
+
+            ASTNode *value =
+                parse_expression(parser);
+
+            if (value == NULL) {
+
+                ast_free(key);
+
+                free_argument_list(keys, count);
+                free_argument_list(values, count);
+
+                return NULL;
+            }
+
+            if (count >= capacity) {
+
+                int new_capacity =
+                    capacity == 0
+                        ? 4
+                        : capacity * 2;
+
+                ASTNode **grown_keys =
+                    realloc(
+                        keys,
+                        sizeof(ASTNode *) *
+                        new_capacity
+                    );
+
+                if (grown_keys != NULL) {
+                    keys = grown_keys;
+                }
+
+                ASTNode **grown_values =
+                    grown_keys == NULL
+                        ? NULL
+                        : realloc(
+                              values,
+                              sizeof(ASTNode *) *
+                              new_capacity
+                          );
+
+                if (
+                    grown_keys == NULL ||
+                    grown_values == NULL
+                ) {
+
+                    ast_free(key);
+                    ast_free(value);
+
+                    free_argument_list(keys, count);
+                    free_argument_list(values, count);
+
+                    return NULL;
+                }
+
+                values = grown_values;
+                capacity = new_capacity;
+            }
+
+            keys[count] = key;
+            values[count] = value;
+
+            count++;
+
+            skip_newlines(parser);
+
+            /*
+             * Una coma obliga a que
+             * venga otro par, asi que
+             * {"a":1,} y {,"a":1}
+             * fallan solos.
+             */
+
+            if (match(parser, TOKEN_COMMA)) {
+
+                skip_newlines(parser);
+
+                continue;
+            }
+
+            break;
+        }
+
+        if (!match(parser, TOKEN_RBRACE)) {
+
+            parser_error(
+                parser,
+                "Se esperaba ',' o '}' en el diccionario."
+            );
+
+            free_argument_list(keys, count);
+            free_argument_list(values, count);
+
+            return NULL;
+        }
+
+        ASTNode *node =
+            ast_dictionary(keys, values, count);
+
+        if (node == NULL) {
+
+            free_argument_list(keys, count);
+            free_argument_list(values, count);
+        }
+
+        return node;
+    }
+
+    /*
+     * ==========================
+     * LITERAL DE LISTA
+     * ==========================
+     *
+     * []
+     * [10, 20, 30]
+     * [1 + 2, 3 * 4]
+     * [[1, 2], [3, 4]]
+     *
+     * Los elementos usan
+     * parse_expression, así que no
+     * hace falta lógica propia de
+     * operadores ni de anidamiento.
+     */
+
+    if (check(parser, TOKEN_LBRACKET)) {
+
+        advance(parser);
+
+        skip_newlines(parser);
+
+        ASTNode **elements = NULL;
+        int count = 0;
+        int capacity = 0;
+
+        /*
+         * Lista vacía
+         */
+
+        if (match(parser, TOKEN_RBRACKET)) {
+
+            return ast_list(NULL, 0);
+        }
+
+        for (;;) {
+
+            ASTNode *element =
+                parse_expression(parser);
+
+            if (element == NULL) {
+
+                free_argument_list(
+                    elements,
+                    count
+                );
+
+                return NULL;
+            }
+
+            if (count >= capacity) {
+
+                int new_capacity =
+                    capacity == 0
+                        ? 4
+                        : capacity * 2;
+
+                ASTNode **grown =
+                    realloc(
+                        elements,
+                        sizeof(ASTNode *) *
+                        new_capacity
+                    );
+
+                if (grown == NULL) {
+
+                    ast_free(element);
+
+                    free_argument_list(
+                        elements,
+                        count
+                    );
+
+                    return NULL;
+                }
+
+                elements = grown;
+                capacity = new_capacity;
+            }
+
+            elements[count] = element;
+
+            count++;
+
+            /*
+             * Una coma obliga a que
+             * venga otro elemento, así
+             * que [1,] y [1,,2] fallan
+             * solos al intentar leer
+             * la expresión siguiente.
+             */
+
+            skip_newlines(parser);
+
+            if (match(parser, TOKEN_COMMA)) {
+
+                skip_newlines(parser);
+
+                continue;
+            }
+
+            break;
+        }
+
+        if (!match(parser, TOKEN_RBRACKET)) {
+
+            parser_error(
+                parser,
+                "Se esperaba ',' o ']' en la lista."
+            );
+
+            free_argument_list(
+                elements,
+                count
+            );
+
+            return NULL;
+        }
+
+        ASTNode *node =
+            ast_list(elements, count);
+
+        if (node == NULL) {
+
+            free_argument_list(
+                elements,
+                count
+            );
+        }
+
+        return node;
     }
 
     /*
@@ -449,6 +854,36 @@ static ASTNode *parse_primary(Parser *parser) {
 
     /*
      * ==========================
+     * LLAMADA A FUNCIÓN
+     * ==========================
+     *
+     * sumar(10, 20)
+     *
+     * Un nombre seguido de '(' es
+     * una llamada, y produce un
+     * valor como cualquier otra
+     * expresión primaria.
+     */
+
+    if (
+        check(parser, TOKEN_IDENTIFIER) ||
+        is_contextual_name(token->type)
+    ) {
+
+        Token *next =
+            peek_token(parser, 1);
+
+        if (
+            next != NULL &&
+            next->type == TOKEN_LPAREN
+        ) {
+
+            return parse_call_expression(parser);
+        }
+    }
+
+    /*
+     * ==========================
      * IDENTIFIER
      * ==========================
      *
@@ -485,12 +920,112 @@ static ASTNode *parse_primary(Parser *parser) {
 }
 
 /*
+ * NIVEL 1.5
+ *
+ * Indexación
+ *
+ * numeros[0]
+ * matriz[1][0]
+ *
+ * Es el nivel MÁS prioritario
+ * después de los valores, por
+ * encima de 'no':
+ *
+ * no lista[0]
+ *      ↓
+ * no (lista[0])
+ *
+ * El bucle es lo que permite
+ * encadenar sin ningún caso
+ * especial para matrices: cada
+ * '[' envuelve lo anterior en un
+ * AST_INDEX más.
+ */
+static ASTNode *parse_postfix(Parser *parser) {
+
+    ASTNode *node =
+        parse_primary(parser);
+
+    if (node == NULL) {
+        return NULL;
+    }
+
+    while (check(parser, TOKEN_LBRACKET)) {
+
+        advance(parser);
+
+        skip_newlines(parser);
+
+        ASTNode *index =
+            parse_expression(parser);
+
+        if (index == NULL) {
+
+            ast_free(node);
+
+            return NULL;
+        }
+
+        skip_newlines(parser);
+
+        if (!match(parser, TOKEN_RBRACKET)) {
+
+            parser_error(
+                parser,
+                "Se esperaba ']' para cerrar el índice."
+            );
+
+            ast_free(node);
+            ast_free(index);
+
+            return NULL;
+        }
+
+        ASTNode *indexed =
+            ast_index(node, index);
+
+        if (indexed == NULL) {
+
+            ast_free(node);
+            ast_free(index);
+
+            return NULL;
+        }
+
+        node = indexed;
+    }
+
+    return node;
+}
+
+/*
  * NIVEL 2
  *
  * no
+ * -  (menos unario)
  *
  * no activo
  * no (edad es mayor que 18)
+ * -5
+ * -(5 + 3)
+ *
+ * Este nivel esta POR ENCIMA de
+ * '* /', asi que:
+ *
+ * -5 * 2   →  (-5) * 2
+ * 2 * -4   →  2 * (-4)
+ * -5 + 10  →  (-5) + 10
+ *
+ * Y como se llama a si mismo, los
+ * signos se pueden encadenar:
+ *
+ * --5  →  -(-5)  →  5
+ *
+ * La resta binaria NO se ve
+ * afectada: parse_additive mira el
+ * '-' DESPUES de tener un operando
+ * a la izquierda, y aqui solo se
+ * mira al empezar uno.
  */
 static ASTNode *parse_unary(Parser *parser) {
 
@@ -506,7 +1041,19 @@ static ASTNode *parse_unary(Parser *parser) {
         return make_unary(OP_NOT, operand);
     }
 
-    return parse_primary(parser);
+    if (match(parser, TOKEN_MINUS)) {
+
+        ASTNode *operand =
+            parse_unary(parser);
+
+        if (operand == NULL) {
+            return NULL;
+        }
+
+        return make_unary(OP_NEGATE, operand);
+    }
+
+    return parse_postfix(parser);
 }
 
 /*
@@ -1348,10 +1895,17 @@ static ASTNode *parse_while(
 
     /*
      * Cuerpo
+     *
+     * Dentro de él 'romper' y
+     * 'continuar' son legales.
      */
+
+    parser->loop_depth++;
 
     ASTNode *body =
         parse_block(parser);
+
+    parser->loop_depth--;
 
     if (body == NULL) {
 
@@ -1392,10 +1946,316 @@ static ASTNode *parse_while(
 }
 
 /*
+ * ==========================
+ * LISTAS DE PARÁMETROS
+ * ==========================
+ */
+
+static void free_parameter_list(
+    char **parameters,
+    int count
+) {
+
+    if (parameters == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        free(parameters[i]);
+    }
+
+    free(parameters);
+}
+
+static void free_argument_list(
+    ASTNode **arguments,
+    int count
+) {
+
+    if (arguments == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        ast_free(arguments[i]);
+    }
+
+    free(arguments);
+}
+
+/*
+ * Copia el texto de un token.
+ */
+static char *duplicate_token_text(
+    const Token *token
+) {
+    size_t length =
+        strlen(token->value);
+
+    char *result =
+        malloc(length + 1);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    memcpy(result, token->value, length + 1);
+
+    return result;
+}
+
+/*
+ * PARÁMETROS
+ *
+ * ()
+ * (nombre)
+ * (a, b)
+ *
+ * Se consume desde '(' hasta ')'.
+ *
+ * Devuelve 0 si hay error de
+ * sintaxis; en ese caso no deja
+ * nada reservado.
+ */
+static int parse_parameter_list(
+    Parser *parser,
+    char ***out_parameters,
+    int *out_count
+) {
+
+    *out_parameters = NULL;
+    *out_count = 0;
+
+    if (!match(parser, TOKEN_LPAREN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba '(' después del nombre de la función."
+        );
+
+        return 0;
+    }
+
+    skip_newlines(parser);
+
+    /*
+     * Sin parámetros
+     */
+
+    if (match(parser, TOKEN_RPAREN)) {
+        return 1;
+    }
+
+    char **parameters = NULL;
+    int count = 0;
+    int capacity = 0;
+
+    for (;;) {
+
+        Token *token =
+            current_token(parser);
+
+        if (
+            token == NULL ||
+            (
+                token->type != TOKEN_IDENTIFIER &&
+                !is_contextual_name(token->type)
+            )
+        ) {
+
+            parser_error(
+                parser,
+                "Se esperaba el nombre de un parámetro."
+            );
+
+            free_parameter_list(parameters, count);
+
+            return 0;
+        }
+
+        advance(parser);
+
+        /*
+         * Crecer la lista
+         */
+
+        if (count >= capacity) {
+
+            int new_capacity =
+                capacity == 0 ? 4 : capacity * 2;
+
+            char **grown =
+                realloc(
+                    parameters,
+                    sizeof(char *) * new_capacity
+                );
+
+            if (grown == NULL) {
+
+                free_parameter_list(parameters, count);
+
+                return 0;
+            }
+
+            parameters = grown;
+            capacity = new_capacity;
+        }
+
+        parameters[count] =
+            duplicate_token_text(token);
+
+        if (parameters[count] == NULL) {
+
+            free_parameter_list(parameters, count);
+
+            return 0;
+        }
+
+        count++;
+
+        skip_newlines(parser);
+
+        /*
+         * , → sigue otro parámetro
+         */
+
+        if (match(parser, TOKEN_COMMA)) {
+
+            skip_newlines(parser);
+
+            continue;
+        }
+
+        break;
+    }
+
+    if (!match(parser, TOKEN_RPAREN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba ',' o ')' en la lista de parámetros."
+        );
+
+        free_parameter_list(parameters, count);
+
+        return 0;
+    }
+
+    *out_parameters = parameters;
+    *out_count = count;
+
+    return 1;
+}
+
+/*
+ * ARGUMENTOS
+ *
+ * ()
+ * ("Carlos")
+ * (10 + 5, edad * 2)
+ *
+ * Cada argumento es una EXPRESIÓN
+ * sin evaluar: se guarda tal cual
+ * y se evalúa al ejecutar.
+ */
+static int parse_argument_list(
+    Parser *parser,
+    ASTNode ***out_arguments,
+    int *out_count
+) {
+
+    *out_arguments = NULL;
+    *out_count = 0;
+
+    /*
+     * El '(' ya se consumió.
+     */
+
+    skip_newlines(parser);
+
+    if (match(parser, TOKEN_RPAREN)) {
+        return 1;
+    }
+
+    ASTNode **arguments = NULL;
+    int count = 0;
+    int capacity = 0;
+
+    for (;;) {
+
+        ASTNode *argument =
+            parse_expression(parser);
+
+        if (argument == NULL) {
+
+            free_argument_list(arguments, count);
+
+            return 0;
+        }
+
+        if (count >= capacity) {
+
+            int new_capacity =
+                capacity == 0 ? 4 : capacity * 2;
+
+            ASTNode **grown =
+                realloc(
+                    arguments,
+                    sizeof(ASTNode *) * new_capacity
+                );
+
+            if (grown == NULL) {
+
+                ast_free(argument);
+
+                free_argument_list(arguments, count);
+
+                return 0;
+            }
+
+            arguments = grown;
+            capacity = new_capacity;
+        }
+
+        arguments[count] = argument;
+
+        count++;
+
+        skip_newlines(parser);
+
+        if (match(parser, TOKEN_COMMA)) {
+
+            skip_newlines(parser);
+
+            continue;
+        }
+
+        break;
+    }
+
+    if (!match(parser, TOKEN_RPAREN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba ',' o ')' en la lista de argumentos."
+        );
+
+        free_argument_list(arguments, count);
+
+        return 0;
+    }
+
+    *out_arguments = arguments;
+    *out_count = count;
+
+    return 1;
+}
+
+/*
  * DECLARACIÓN DE FUNCIÓN
  *
- * funcion saludar()
- *     imprimir "Hola"
+ * funcion saludar(nombre)
+ *     imprimir "Hola " + nombre
  * fin
  *
  * Declarar no ejecuta nada: el
@@ -1433,45 +2293,65 @@ static ASTNode *parse_function_declaration(
     advance(parser);
 
     /*
-     * (
+     * (parametros)
      */
 
-    if (!match(parser, TOKEN_LPAREN)) {
+    char **parameters = NULL;
+    int parameter_count = 0;
 
-        parser_error(
+    if (
+        !parse_parameter_list(
             parser,
-            "Se esperaba '(' después del nombre de la función."
-        );
-
-        return NULL;
-    }
-
-    /*
-     * )
-     */
-
-    if (!match(parser, TOKEN_RPAREN)) {
-
-        parser_error(
-            parser,
-            "Se esperaba ')'. Las funciones todavía no admiten parámetros."
-        );
-
+            &parameters,
+            &parameter_count
+        )
+    ) {
         return NULL;
     }
 
     if (!expect_terminator(parser)) {
+
+        free_parameter_list(
+            parameters,
+            parameter_count
+        );
+
         return NULL;
     }
 
     /*
      * Cuerpo
+     *
+     * Dentro de él 'retornar' es
+     * legal.
+     *
+     * El contador de bucles se
+     * reinicia: si esta declaración
+     * está dentro de un 'mientras',
+     * su cuerpo NO puede romperlo,
+     * porque la función puede
+     * llamarse desde cualquier sitio.
      */
+
+    int saved_loop_depth =
+        parser->loop_depth;
+
+    parser->loop_depth = 0;
+    parser->function_depth++;
 
     ASTNode *body =
         parse_block(parser);
 
+    parser->function_depth--;
+    parser->loop_depth = saved_loop_depth;
+
     if (body == NULL) {
+
+        free_parameter_list(
+            parameters,
+            parameter_count
+        );
+
         return NULL;
     }
 
@@ -1486,6 +2366,11 @@ static ASTNode *parse_function_declaration(
             "Se esperaba 'fin' para cerrar la función."
         );
 
+        free_parameter_list(
+            parameters,
+            parameter_count
+        );
+
         ast_free(body);
 
         return NULL;
@@ -1493,28 +2378,60 @@ static ASTNode *parse_function_declaration(
 
     if (!expect_terminator(parser)) {
 
+        free_parameter_list(
+            parameters,
+            parameter_count
+        );
+
         ast_free(body);
 
         return NULL;
     }
 
-    return ast_function_declaration(
-        name->value,
-        body
-    );
+    ASTNode *node =
+        ast_function_declaration(
+            name->value,
+            parameters,
+            parameter_count,
+            body
+        );
+
+    /*
+     * Si el nodo no se pudo crear,
+     * la lista sigue siendo nuestra.
+     */
+
+    if (node == NULL) {
+
+        free_parameter_list(
+            parameters,
+            parameter_count
+        );
+
+        ast_free(body);
+    }
+
+    return node;
 }
 
 /*
- * LLAMADA A FUNCIÓN
+ * LLAMADA COMO EXPRESIÓN
  *
  * saludar()
+ * sumar(10, 20)
  *
- * parse_statement ya comprobó
- * que venimos de:
+ * NO consume el fin de instrucción,
+ * porque puede estar en medio de
+ * una expresión:
+ *
+ * sumar(1, 2) * 3
+ *
+ * Quien llama ya comprobó que
+ * venimos de:
  *
  * IDENTIFIER '('
  */
-static ASTNode *parse_function_call(
+static ASTNode *parse_call_expression(
     Parser *parser
 ) {
 
@@ -1534,14 +2451,314 @@ static ASTNode *parse_function_call(
     advance(parser);
 
     /*
-     * )
+     * argumentos)
      */
 
-    if (!match(parser, TOKEN_RPAREN)) {
+    ASTNode **arguments = NULL;
+    int argument_count = 0;
+
+    if (
+        !parse_argument_list(
+            parser,
+            &arguments,
+            &argument_count
+        )
+    ) {
+        return NULL;
+    }
+
+    ASTNode *node =
+        ast_function_call(
+            name->value,
+            arguments,
+            argument_count
+        );
+
+    if (node == NULL) {
+
+        free_argument_list(
+            arguments,
+            argument_count
+        );
+    }
+
+    return node;
+}
+
+/*
+ * LLAMADA COMO INSTRUCCIÓN
+ *
+ * saludar()
+ *
+ * Es la misma llamada más el fin
+ * de instrucción. El valor que
+ * devuelva se descarta.
+ */
+static ASTNode *parse_function_call(
+    Parser *parser
+) {
+
+    ASTNode *call =
+        parse_call_expression(parser);
+
+    if (call == NULL) {
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(call);
+
+        return NULL;
+    }
+
+    return call;
+}
+
+/*
+ * RETORNAR
+ *
+ * retornar
+ * retornar 10
+ * retornar a + b
+ * retornar sumar(1, 2)
+ */
+static ASTNode *parse_return(
+    Parser *parser
+) {
+
+    /*
+     * Ya consumimos:
+     *
+     * retornar
+     */
+
+    if (parser->function_depth <= 0) {
 
         parser_error(
             parser,
-            "Se esperaba ')'. Las llamadas todavía no admiten argumentos."
+            "'retornar' solo puede utilizarse dentro de una función."
+        );
+
+        return NULL;
+    }
+
+    /*
+     * 'retornar' a secas devuelve
+     * nulo.
+     */
+
+    if (at_statement_end(parser)) {
+
+        if (!expect_terminator(parser)) {
+            return NULL;
+        }
+
+        return ast_return(NULL);
+    }
+
+    ASTNode *value =
+        parse_expression(parser);
+
+    if (value == NULL) {
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(value);
+
+        return NULL;
+    }
+
+    ASTNode *node =
+        ast_return(value);
+
+    if (node == NULL) {
+        ast_free(value);
+    }
+
+    return node;
+}
+
+/*
+ * PARA CADA / FIN
+ *
+ * para cada numero en numeros
+ *     imprimir numero
+ * fin
+ *
+ * La lista puede ser cualquier
+ * expresión, así que también vale:
+ *
+ * para cada x en crear()
+ * para cada x en [1, 2, 3]
+ * para cada x en matriz[0]
+ */
+static ASTNode *parse_for_each(
+    Parser *parser
+) {
+
+    /*
+     * Ya consumimos:
+     *
+     * para
+     */
+
+    if (!match(parser, TOKEN_CADA)) {
+
+        parser_error(
+            parser,
+            "Se esperaba 'cada' después de 'para'."
+        );
+
+        return NULL;
+    }
+
+    /*
+     * Nombre de la variable del
+     * bucle.
+     */
+
+    Token *name =
+        current_token(parser);
+
+    if (
+        name == NULL ||
+        (
+            name->type != TOKEN_IDENTIFIER &&
+            !is_contextual_name(name->type)
+        )
+    ) {
+
+        parser_error(
+            parser,
+            "Se esperaba el nombre de la variable del bucle."
+        );
+
+        return NULL;
+    }
+
+    advance(parser);
+
+    if (!match(parser, TOKEN_EN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba 'en' después del nombre en el 'para cada'."
+        );
+
+        return NULL;
+    }
+
+    /*
+     * La lista a recorrer
+     */
+
+    ASTNode *iterable =
+        parse_expression(parser);
+
+    if (iterable == NULL) {
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(iterable);
+
+        return NULL;
+    }
+
+    /*
+     * Cuerpo
+     *
+     * Es un bucle, así que dentro
+     * 'romper' y 'continuar' son
+     * legales.
+     */
+
+    parser->loop_depth++;
+
+    ASTNode *body =
+        parse_block(parser);
+
+    parser->loop_depth--;
+
+    if (body == NULL) {
+
+        ast_free(iterable);
+
+        return NULL;
+    }
+
+    /*
+     * fin
+     */
+
+    if (!match(parser, TOKEN_FIN)) {
+
+        parser_error(
+            parser,
+            "Se esperaba 'fin' para cerrar el 'para cada'."
+        );
+
+        ast_free(iterable);
+        ast_free(body);
+
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+
+        ast_free(iterable);
+        ast_free(body);
+
+        return NULL;
+    }
+
+    ASTNode *node =
+        ast_for_each(
+            name->value,
+            iterable,
+            body
+        );
+
+    if (node == NULL) {
+
+        ast_free(iterable);
+        ast_free(body);
+    }
+
+    return node;
+}
+
+/*
+ * ROMPER / CONTINUAR
+ *
+ * romper
+ * continuar
+ *
+ * También con ';'.
+ *
+ * Solo son válidos dentro de un
+ * 'mientras', y se comprueba aquí
+ * —en el análisis— para que
+ * incluso una línea inalcanzable
+ * como esta se rechace:
+ *
+ * si falso
+ *     romper
+ * fin
+ */
+static ASTNode *parse_break(
+    Parser *parser
+) {
+
+    if (parser->loop_depth <= 0) {
+
+        parser_error(
+            parser,
+            "'romper' solo puede utilizarse dentro de un 'mientras'."
         );
 
         return NULL;
@@ -1551,9 +2768,28 @@ static ASTNode *parse_function_call(
         return NULL;
     }
 
-    return ast_function_call(
-        name->value
-    );
+    return ast_break();
+}
+
+static ASTNode *parse_continue(
+    Parser *parser
+) {
+
+    if (parser->loop_depth <= 0) {
+
+        parser_error(
+            parser,
+            "'continuar' solo puede utilizarse dentro de un 'mientras'."
+        );
+
+        return NULL;
+    }
+
+    if (!expect_terminator(parser)) {
+        return NULL;
+    }
+
+    return ast_continue();
 }
 
 /*
@@ -1596,11 +2832,43 @@ static ASTNode *parse_statement(
     }
 
     /*
+     * para cada
+     */
+    if (match(parser, TOKEN_PARA)) {
+
+        return parse_for_each(parser);
+    }
+
+    /*
      * funcion
      */
     if (match(parser, TOKEN_FUNCION)) {
 
         return parse_function_declaration(parser);
+    }
+
+    /*
+     * retornar
+     */
+    if (match(parser, TOKEN_RETORNAR)) {
+
+        return parse_return(parser);
+    }
+
+    /*
+     * romper
+     */
+    if (match(parser, TOKEN_ROMPER)) {
+
+        return parse_break(parser);
+    }
+
+    /*
+     * continuar
+     */
+    if (match(parser, TOKEN_CONTINUAR)) {
+
+        return parse_continue(parser);
     }
 
     /*
@@ -1638,6 +2906,80 @@ static ASTNode *parse_statement(
         if (next->type == TOKEN_LPAREN) {
 
             return parse_function_call(parser);
+        }
+
+        /*
+         * ASIGNACIÓN POR ÍNDICE
+         *
+         * numeros[1] = 99
+         * matriz[1][0] = 5
+         * numeros[i + 1] = 50
+         *
+         * El índice es una expresión
+         * cualquiera, así que no se
+         * puede decidir mirando dos
+         * tokens: se analiza la parte
+         * indexada entera y luego se
+         * exige '='.
+         *
+         * Como se exige '=' y no
+         * '==', numeros[1] == 99 no
+         * se confunde con una
+         * asignación.
+         */
+
+        if (next->type == TOKEN_LBRACKET) {
+
+            ASTNode *target =
+                parse_postfix(parser);
+
+            if (target == NULL) {
+                return NULL;
+            }
+
+            if (!match(parser, TOKEN_EQUAL)) {
+
+                parser_error(
+                    parser,
+                    "Se esperaba '=' después del índice."
+                );
+
+                ast_free(target);
+
+                return NULL;
+            }
+
+            ASTNode *value =
+                parse_expression(parser);
+
+            if (value == NULL) {
+
+                ast_free(target);
+
+                return NULL;
+            }
+
+            if (!expect_terminator(parser)) {
+
+                ast_free(target);
+                ast_free(value);
+
+                return NULL;
+            }
+
+            ASTNode *node =
+                ast_index_assignment(
+                    target,
+                    value
+                );
+
+            if (node == NULL) {
+
+                ast_free(target);
+                ast_free(value);
+            }
+
+            return node;
         }
     }
 

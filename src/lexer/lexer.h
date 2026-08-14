@@ -56,6 +56,28 @@ typedef enum {
     TOKEN_FIN,
 
     /*
+     * Control del bucle
+     *
+     * romper
+     * continuar
+     */
+
+    TOKEN_ROMPER,
+    TOKEN_CONTINUAR,
+
+    /*
+     * Recorrido de listas
+     *
+     * para cada numero en numeros
+     *     ...
+     * fin
+     */
+
+    TOKEN_PARA,
+    TOKEN_CADA,
+    TOKEN_EN,
+
+    /*
      * Funciones
      *
      * funcion nombre()
@@ -64,6 +86,7 @@ typedef enum {
      */
 
     TOKEN_FUNCION,
+    TOKEN_RETORNAR,
 
     /*
      * Operadores lógicos
@@ -127,8 +150,37 @@ typedef enum {
     TOKEN_EQUAL,
     TOKEN_SEMICOLON,
 
+    /*
+     * Separa parámetros y
+     * argumentos:
+     *
+     * sumar(a, b)
+     */
+
+    TOKEN_COMMA,
+
     TOKEN_LPAREN,
-    TOKEN_RPAREN
+    TOKEN_RPAREN,
+
+    /*
+     * Listas e indexación
+     *
+     * [10, 20, 30]
+     * numeros[0]
+     */
+
+    TOKEN_LBRACKET,
+    TOKEN_RBRACKET,
+
+    /*
+     * Diccionarios
+     *
+     * {"nombre": "Carlos"}
+     */
+
+    TOKEN_LBRACE,
+    TOKEN_RBRACE,
+    TOKEN_COLON
 
 } TokenType;
 

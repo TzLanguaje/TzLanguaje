@@ -1,6 +1,8 @@
 #include "interpreter.h"
 #include "../runtime/operations.h"
 
+#include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -990,6 +992,20 @@ static int evaluate_expression(
                 break;
 
             /*
+             * MENOS UNARIO
+             */
+
+            case OP_NEGATE:
+
+                success =
+                    operation_negate(
+                        operand,
+                        result
+                    );
+
+                break;
+
+            /*
              * OPERADOR DESCONOCIDO
              */
 
@@ -1768,7 +1784,30 @@ static const Builtin builtins[] = {
     { "decimal",  1, 0 },
     { "contiene", 2, 0 },
     { "agregar",  2, 1 },
-    { "eliminar", 2, 1 }
+    { "eliminar", 2, 1 },
+
+    /*
+     * Texto
+     */
+
+    { "unir",       2, 0 },
+    { "separar",    2, 0 },
+    { "mayusculas", 1, 0 },
+    { "minusculas", 1, 0 },
+
+    /*
+     * Numeros
+     */
+
+    { "absoluto",   1, 0 },
+    { "redondear",  1, 0 },
+
+    /*
+     * Diccionarios
+     */
+
+    { "claves",     1, 0 },
+    { "valores",    1, 0 }
 };
 
 static const Builtin *builtin_find(
@@ -1928,6 +1967,8 @@ static int builtin_texto(
     }
 }
 
+static int decimal_cabe_en_numero(double value);
+
 /*
  * numero(valor) y decimal(valor)
  *
@@ -1947,6 +1988,18 @@ static int builtin_numero(
     }
 
     if (value.type == VALUE_DECIMAL) {
+
+        if (!decimal_cabe_en_numero(value.data.decimal)) {
+
+            fprintf(
+                stderr,
+                "Error: numero() no puede convertir %g.\n",
+                value.data.decimal
+            );
+
+            return 0;
+        }
+
         *result =
             value_number((int)value.data.decimal);
         return 1;
@@ -2204,6 +2257,507 @@ static int builtin_contiene(
     );
 
     return 0;
+}
+
+/*
+ * ==========================
+ * TEXTO
+ * ==========================
+ */
+
+/*
+ * unir(lista, separador)
+ *
+ * Todos los elementos deben ser
+ * texto: unir() no convierte por su
+ * cuenta, para eso esta texto().
+ */
+
+static int builtin_unir(
+    Value list,
+    Value separator,
+    Value *result
+) {
+
+    if (list.type != VALUE_LIST) {
+
+        fprintf(
+            stderr,
+            "Error: unir() necesita una lista, no %s.\n",
+            value_type_name(list.type)
+        );
+
+        return 0;
+    }
+
+    if (separator.type != VALUE_STRING) {
+
+        fprintf(
+            stderr,
+            "Error: el separador de unir() debe ser un texto, no %s.\n",
+            value_type_name(separator.type)
+        );
+
+        return 0;
+    }
+
+    int count = value_list_count(list);
+
+    /*
+     * Primero comprobamos que TODOS
+     * sean texto, para no construir
+     * nada a medias.
+     */
+
+    for (int i = 0; i < count; i++) {
+
+        Value *item = value_list_at(list, i);
+
+        if (item->type != VALUE_STRING) {
+
+            fprintf(
+                stderr,
+                "Error: unir() necesita una lista de textos, "
+                "pero el elemento %d es %s.\n",
+                i,
+                value_type_name(item->type)
+            );
+
+            return 0;
+        }
+    }
+
+    size_t separator_length =
+        strlen(separator.data.string);
+
+    size_t total = 1;
+
+    for (int i = 0; i < count; i++) {
+
+        total +=
+            strlen(
+                value_list_at(list, i)->data.string
+            );
+
+        if (i > 0) {
+            total += separator_length;
+        }
+    }
+
+    char *joined = malloc(total);
+
+    if (joined == NULL) {
+
+        fprintf(
+            stderr,
+            "Error: no se pudo unir el texto.\n"
+        );
+
+        return 0;
+    }
+
+    joined[0] = '\0';
+
+    for (int i = 0; i < count; i++) {
+
+        if (i > 0) {
+            strcat(joined, separator.data.string);
+        }
+
+        strcat(
+            joined,
+            value_list_at(list, i)->data.string
+        );
+    }
+
+    *result = value_string(joined);
+
+    free(joined);
+
+    return 1;
+}
+
+/*
+ * separar(texto, separador)
+ *
+ * "a,b,c" con ","  →  ["a", "b", "c"]
+ *
+ * Si el separador no aparece, sale
+ * una lista con el texto entero.
+ * El separador vacio es un error:
+ * no habria forma de trocear.
+ */
+
+static int builtin_separar(
+    Value text,
+    Value separator,
+    Value *result
+) {
+
+    if (text.type != VALUE_STRING) {
+
+        fprintf(
+            stderr,
+            "Error: separar() necesita un texto, no %s.\n",
+            value_type_name(text.type)
+        );
+
+        return 0;
+    }
+
+    if (separator.type != VALUE_STRING) {
+
+        fprintf(
+            stderr,
+            "Error: el separador de separar() debe ser un texto, no %s.\n",
+            value_type_name(separator.type)
+        );
+
+        return 0;
+    }
+
+    const char *source = text.data.string;
+    const char *mark = separator.data.string;
+
+    size_t mark_length = strlen(mark);
+
+    if (mark_length == 0) {
+
+        fprintf(
+            stderr,
+            "Error: el separador de separar() no puede estar vacío.\n"
+        );
+
+        return 0;
+    }
+
+    Value pieces = value_list();
+
+    if (pieces.data.list == NULL) {
+
+        fprintf(
+            stderr,
+            "Error: no se pudo crear la lista.\n"
+        );
+
+        return 0;
+    }
+
+    const char *start = source;
+
+    for (;;) {
+
+        const char *found = strstr(start, mark);
+
+        size_t length =
+            found == NULL
+                ? strlen(start)
+                : (size_t)(found - start);
+
+        char *piece = malloc(length + 1);
+
+        if (piece == NULL) {
+
+            fprintf(
+                stderr,
+                "Error: no se pudo separar el texto.\n"
+            );
+
+            value_free(&pieces);
+
+            return 0;
+        }
+
+        memcpy(piece, start, length);
+
+        piece[length] = '\0';
+
+        Value item = value_string(piece);
+
+        free(piece);
+
+        if (!value_list_push(&pieces, item)) {
+
+            fprintf(
+                stderr,
+                "Error: no se pudo ampliar la lista.\n"
+            );
+
+            value_free(&item);
+            value_free(&pieces);
+
+            return 0;
+        }
+
+        if (found == NULL) {
+            break;
+        }
+
+        start = found + mark_length;
+    }
+
+    *result = pieces;
+
+    return 1;
+}
+
+/*
+ * mayusculas(texto) / minusculas(texto)
+ *
+ * Solo ASCII: las letras acentuadas
+ * son varios bytes en UTF-8 y se
+ * dejan tal cual.
+ */
+
+static int builtin_cambiar_caja(
+    const char *name,
+    Value text,
+    int a_mayusculas,
+    Value *result
+) {
+
+    if (text.type != VALUE_STRING) {
+
+        fprintf(
+            stderr,
+            "Error: %s() solo funciona con texto, no %s.\n",
+            name,
+            value_type_name(text.type)
+        );
+
+        return 0;
+    }
+
+    Value copy = value_copy(text);
+
+    if (copy.data.string == NULL) {
+        *result = copy;
+        return 1;
+    }
+
+    for (char *c = copy.data.string; *c != '\0'; c++) {
+
+        *c =
+            a_mayusculas
+                ? (char)toupper((unsigned char)*c)
+                : (char)tolower((unsigned char)*c);
+    }
+
+    *result = copy;
+
+    return 1;
+}
+
+/*
+ * ==========================
+ * NUMEROS
+ * ==========================
+ */
+
+/*
+ * Un double solo se puede convertir
+ * a numero si cabe: pasarse es
+ * comportamiento indefinido en C.
+ */
+
+static int decimal_cabe_en_numero(double value) {
+
+    return
+        value >= (double)INT_MIN &&
+        value <= (double)INT_MAX;
+}
+
+/*
+ * absoluto(valor)
+ *
+ * CONSERVA el tipo:
+ *
+ * absoluto(-5)    → 5     (numero)
+ * absoluto(-2.5)  → 2.5   (decimal)
+ */
+
+static int builtin_absoluto(
+    Value value,
+    Value *result
+) {
+
+    if (value.type == VALUE_NUMBER) {
+
+        int n = value.data.number;
+
+        if (n == INT_MIN) {
+
+            fprintf(
+                stderr,
+                "Error: absoluto() no puede representar el opuesto de %d.\n",
+                n
+            );
+
+            return 0;
+        }
+
+        *result = value_number(n < 0 ? -n : n);
+
+        return 1;
+    }
+
+    if (value.type == VALUE_DECIMAL) {
+
+        double d = value.data.decimal;
+
+        *result = value_decimal(d < 0.0 ? -d : d);
+
+        return 1;
+    }
+
+    fprintf(
+        stderr,
+        "Error: absoluto() solo funciona con numero o decimal, no %s.\n",
+        value_type_name(value.type)
+    );
+
+    return 0;
+}
+
+/*
+ * redondear(valor)
+ *
+ * Siempre devuelve NUMERO: redondear
+ * sirve justo para obtener un entero.
+ *
+ * redondear(5)    → 5
+ * redondear(2.4)  → 2
+ * redondear(2.5)  → 3
+ * redondear(-2.5) → -3
+ *
+ * Medio hacia afuera del cero, sin
+ * math.h.
+ */
+
+static int builtin_redondear(
+    Value value,
+    Value *result
+) {
+
+    if (value.type == VALUE_NUMBER) {
+
+        *result = value_number(value.data.number);
+
+        return 1;
+    }
+
+    if (value.type == VALUE_DECIMAL) {
+
+        double d = value.data.decimal;
+
+        double rounded =
+            d >= 0.0
+                ? (double)(long long)(d + 0.5)
+                : (double)(long long)(d - 0.5);
+
+        if (!decimal_cabe_en_numero(rounded)) {
+
+            fprintf(
+                stderr,
+                "Error: redondear() no puede convertir %g a numero.\n",
+                d
+            );
+
+            return 0;
+        }
+
+        *result = value_number((int)rounded);
+
+        return 1;
+    }
+
+    fprintf(
+        stderr,
+        "Error: redondear() solo funciona con numero o decimal, no %s.\n",
+        value_type_name(value.type)
+    );
+
+    return 0;
+}
+
+/*
+ * ==========================
+ * DICCIONARIOS
+ * ==========================
+ *
+ * claves() y valores() devuelven
+ * listas nuevas en ORDEN DE
+ * INSERCION, el mismo que recorre
+ * 'para cada'. Asi claves(d)[i] y
+ * valores(d)[i] se corresponden.
+ */
+
+static int builtin_claves_valores(
+    const char *name,
+    Value dictionary,
+    int solo_claves,
+    Value *result
+) {
+
+    if (dictionary.type != VALUE_DICTIONARY) {
+
+        fprintf(
+            stderr,
+            "Error: %s() solo funciona con diccionarios, no %s.\n",
+            name,
+            value_type_name(dictionary.type)
+        );
+
+        return 0;
+    }
+
+    Value out = value_list();
+
+    if (out.data.list == NULL) {
+
+        fprintf(
+            stderr,
+            "Error: no se pudo crear la lista.\n"
+        );
+
+        return 0;
+    }
+
+    int count =
+        value_dictionary_count(dictionary);
+
+    for (int i = 0; i < count; i++) {
+
+        const char *key =
+            value_dictionary_key_at(dictionary, i);
+
+        Value item =
+            solo_claves
+                ? value_string(key)
+                : value_copy(
+                      *value_dictionary_at(
+                          dictionary,
+                          key
+                      )
+                  );
+
+        if (!value_list_push(&out, item)) {
+
+            fprintf(
+                stderr,
+                "Error: no se pudo ampliar la lista.\n"
+            );
+
+            value_free(&item);
+            value_free(&out);
+
+            return 0;
+        }
+    }
+
+    *result = out;
+
+    return 1;
 }
 
 /*
@@ -2496,6 +3050,74 @@ static int call_builtin(
             builtin_contiene(
                 arguments[0],
                 arguments[1],
+                result
+            );
+    }
+    else if (strcmp(builtin->name, "unir") == 0) {
+
+        success =
+            builtin_unir(
+                arguments[0],
+                arguments[1],
+                result
+            );
+    }
+    else if (strcmp(builtin->name, "separar") == 0) {
+
+        success =
+            builtin_separar(
+                arguments[0],
+                arguments[1],
+                result
+            );
+    }
+    else if (strcmp(builtin->name, "mayusculas") == 0) {
+
+        success =
+            builtin_cambiar_caja(
+                "mayusculas",
+                arguments[0],
+                1,
+                result
+            );
+    }
+    else if (strcmp(builtin->name, "minusculas") == 0) {
+
+        success =
+            builtin_cambiar_caja(
+                "minusculas",
+                arguments[0],
+                0,
+                result
+            );
+    }
+    else if (strcmp(builtin->name, "absoluto") == 0) {
+
+        success =
+            builtin_absoluto(arguments[0], result);
+    }
+    else if (strcmp(builtin->name, "redondear") == 0) {
+
+        success =
+            builtin_redondear(arguments[0], result);
+    }
+    else if (strcmp(builtin->name, "claves") == 0) {
+
+        success =
+            builtin_claves_valores(
+                "claves",
+                arguments[0],
+                1,
+                result
+            );
+    }
+    else if (strcmp(builtin->name, "valores") == 0) {
+
+        success =
+            builtin_claves_valores(
+                "valores",
+                arguments[0],
+                0,
                 result
             );
     }

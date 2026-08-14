@@ -8,6 +8,37 @@ typedef struct {
     Token *tokens;
     int token_count;
     int current;
+
+    /*
+     * >0 mientras se analiza el
+     * cuerpo de una función.
+     *
+     * Sirve para rechazar
+     * 'retornar' fuera de una
+     * función en tiempo de
+     * análisis, incluso si esa
+     * línea nunca llegara a
+     * ejecutarse.
+     */
+    int function_depth;
+
+    /*
+     * >0 mientras se analiza el
+     * cuerpo de un 'mientras'.
+     *
+     * Permite rechazar 'romper' y
+     * 'continuar' fuera de un bucle
+     * durante el análisis, aunque
+     * esa línea nunca se ejecutase.
+     *
+     * Se reinicia al entrar en el
+     * cuerpo de una función: una
+     * función declarada dentro de
+     * un bucle no puede romperlo,
+     * porque se la puede llamar
+     * desde cualquier sitio.
+     */
+    int loop_depth;
 } Parser;
 
 /*

@@ -71,12 +71,29 @@ static const Keyword keywords[] = {
     { "sino",      TOKEN_SINO      },
     { "mientras",  TOKEN_MIENTRAS  },
     { "fin",       TOKEN_FIN       },
+    { "romper",    TOKEN_ROMPER    },
+    { "continuar", TOKEN_CONTINUAR },
+
+    /*
+     * para cada X en LISTA
+     *
+     * 'cada' y 'en' solo son
+     * especiales dentro de esa
+     * cabecera, así que el parser
+     * las acepta como nombres
+     * normales fuera de ella.
+     */
+
+    { "para",      TOKEN_PARA      },
+    { "cada",      TOKEN_CADA      },
+    { "en",        TOKEN_EN        },
 
     /*
      * Funciones
      */
 
     { "funcion",   TOKEN_FUNCION   },
+    { "retornar",  TOKEN_RETORNAR  },
 
     /*
      * Lógicos
@@ -184,8 +201,26 @@ const char *token_type_name(
         case TOKEN_FIN:
             return "FIN";
 
+        case TOKEN_ROMPER:
+            return "ROMPER";
+
+        case TOKEN_CONTINUAR:
+            return "CONTINUAR";
+
+        case TOKEN_PARA:
+            return "PARA";
+
+        case TOKEN_CADA:
+            return "CADA";
+
+        case TOKEN_EN:
+            return "EN";
+
         case TOKEN_FUNCION:
             return "FUNCION";
+
+        case TOKEN_RETORNAR:
+            return "RETORNAR";
 
         case TOKEN_Y:
             return "Y";
@@ -256,11 +291,29 @@ const char *token_type_name(
         case TOKEN_SEMICOLON:
             return "SEMICOLON";
 
+        case TOKEN_COMMA:
+            return "COMMA";
+
         case TOKEN_LPAREN:
             return "LPAREN";
 
         case TOKEN_RPAREN:
             return "RPAREN";
+
+        case TOKEN_LBRACKET:
+            return "LBRACKET";
+
+        case TOKEN_RBRACKET:
+            return "RBRACKET";
+
+        case TOKEN_LBRACE:
+            return "LBRACE";
+
+        case TOKEN_RBRACE:
+            return "RBRACE";
+
+        case TOKEN_COLON:
+            return "COLON";
 
         default:
             return "UNKNOWN";
@@ -779,6 +832,18 @@ Token *lexer_tokenize(
 
                 break;
 
+            case ',':
+
+                token.type =
+                    TOKEN_COMMA;
+
+                token.value =
+                    copy_string(",", 1);
+
+                current++;
+
+                break;
+
             case '(':
 
                 token.type =
@@ -798,6 +863,66 @@ Token *lexer_tokenize(
 
                 token.value =
                     copy_string(")", 1);
+
+                current++;
+
+                break;
+
+            case '[':
+
+                token.type =
+                    TOKEN_LBRACKET;
+
+                token.value =
+                    copy_string("[", 1);
+
+                current++;
+
+                break;
+
+            case ']':
+
+                token.type =
+                    TOKEN_RBRACKET;
+
+                token.value =
+                    copy_string("]", 1);
+
+                current++;
+
+                break;
+
+            case '{':
+
+                token.type =
+                    TOKEN_LBRACE;
+
+                token.value =
+                    copy_string("{", 1);
+
+                current++;
+
+                break;
+
+            case '}':
+
+                token.type =
+                    TOKEN_RBRACE;
+
+                token.value =
+                    copy_string("}", 1);
+
+                current++;
+
+                break;
+
+            case ':':
+
+                token.type =
+                    TOKEN_COLON;
+
+                token.value =
+                    copy_string(":", 1);
 
                 current++;
 

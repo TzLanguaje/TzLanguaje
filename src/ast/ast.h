@@ -20,7 +20,49 @@ typedef enum {
     AST_IF,
     AST_WHILE,
     AST_FUNCTION_DECLARATION,
-    AST_FUNCTION_CALL
+    AST_FUNCTION_CALL,
+    AST_RETURN,
+
+    /*
+     * romper / continuar
+     *
+     * No guardan datos: toda la
+     * información está en el tipo.
+     */
+
+    AST_BREAK,
+    AST_CONTINUE,
+
+    /*
+     * Listas
+     *
+     * [10, 20, 30]     → AST_LIST
+     * numeros[0]       → AST_INDEX
+     * numeros[0] = 99  → AST_INDEX_ASSIGNMENT
+     */
+
+    AST_LIST,
+    AST_INDEX,
+    AST_INDEX_ASSIGNMENT,
+
+    /*
+     * para cada X en LISTA
+     */
+
+    AST_FOR_EACH,
+
+    /*
+     * {"nombre": "Carlos"}
+     *
+     * El acceso persona["nombre"]
+     * y la asignacion reutilizan
+     * AST_INDEX / AST_INDEX_ASSIGNMENT:
+     * la diferencia entre lista y
+     * diccionario se resuelve en
+     * runtime, no en la gramatica.
+     */
+
+    AST_DICTIONARY
 } ASTNodeType;
 
 /*
@@ -79,10 +121,12 @@ typedef enum {
  * ==========================
  *
  * "no" → OP_NOT
+ * "-"  → OP_NEGATE
  */
 
 typedef enum {
-    OP_NOT
+    OP_NOT,
+    OP_NEGATE
 } UnaryOperator;
 
 typedef struct ASTNode ASTNode;
@@ -125,6 +169,15 @@ struct ASTNode {
 
         ASTNode *print;
 
+        /*
+         * retornar expresion
+         *
+         * NULL cuando es 'retornar'
+         * a secas: devuelve nulo.
+         */
+
+        ASTNode *return_value;
+
         struct {
             ASTNode *condition;
             ASTNode *then_branch;
@@ -138,12 +191,89 @@ struct ASTNode {
 
         struct {
             char *name;
+            char **parameters;
+            int parameter_count;
             ASTNode *body;
         } function_declaration;
 
         struct {
             char *name;
+            ASTNode **arguments;
+            int argument_count;
         } function_call;
+
+        /*
+         * [10, 20, 30]
+         *
+         * Los elementos son
+         * expresiones SIN evaluar.
+         */
+
+        struct {
+            ASTNode **elements;
+            int element_count;
+        } list;
+
+        /*
+         * numeros[0]
+         *
+         * 'object' puede ser a su vez
+         * otro AST_INDEX, y así
+         * matriz[1][0] funciona sin
+         * ningún caso especial.
+         */
+
+        struct {
+            ASTNode *object;
+            ASTNode *index;
+        } index;
+
+        /*
+         * numeros[0] = 99
+         *
+         * 'target' es siempre un
+         * AST_INDEX.
+         */
+
+        struct {
+            ASTNode *target;
+            ASTNode *value;
+        } index_assignment;
+
+        /*
+         * para cada numero en numeros
+         *     ...
+         * fin
+         *
+         * 'iterable' es una expresión
+         * cualquiera que produzca una
+         * lista.
+         *
+         * El body reutiliza AST_PROGRAM.
+         */
+
+        struct {
+            char *variable;
+            ASTNode *iterable;
+            ASTNode *body;
+        } for_each;
+
+        /*
+         * {"a": 1, "b": 2}
+         *
+         * Claves y valores son
+         * expresiones SIN evaluar,
+         * en arrays paralelos.
+         *
+         * La clave debe producir un
+         * texto al evaluarse.
+         */
+
+        struct {
+            ASTNode **keys;
+            ASTNode **values;
+            int pair_count;
+        } dictionary;
 
         struct {
             ASTNode **statements;
@@ -231,6 +361,103 @@ ASTNode *ast_print(
 );
 
 /*
+ * retornar expresion
+ *
+ * 'value' puede ser NULL:
+ *
+ * retornar        → nulo
+ * retornar 10     → 10
+ */
+
+ASTNode *ast_return(
+    ASTNode *value
+);
+
+/*
+ * romper    → sale del mientras
+ * continuar → siguiente vuelta
+ *
+ * Solo válidos dentro de un
+ * 'mientras' (lo comprueba el
+ * parser).
+ */
+
+ASTNode *ast_break(void);
+
+ASTNode *ast_continue(void);
+
+/*
+ * [10, 20, 30]
+ *
+ * MEMORIA: misma regla que los
+ * argumentos de una llamada. En
+ * caso de ÉXITO el nodo se adueña
+ * de 'elements' y de cada ASTNode;
+ * si devuelve NULL, la lista sigue
+ * siendo de quien llama.
+ *
+ * elements puede ser NULL si
+ * element_count es 0.
+ */
+
+ASTNode *ast_list(
+    ASTNode **elements,
+    int element_count
+);
+
+/*
+ * numeros[0]
+ */
+
+ASTNode *ast_index(
+    ASTNode *object,
+    ASTNode *index
+);
+
+/*
+ * numeros[0] = 99
+ *
+ * 'target' debe ser un AST_INDEX.
+ */
+
+ASTNode *ast_index_assignment(
+    ASTNode *target,
+    ASTNode *value
+);
+
+/*
+ * para cada numero en numeros
+ *     body
+ * fin
+ */
+
+ASTNode *ast_for_each(
+    const char *variable,
+    ASTNode *iterable,
+    ASTNode *body
+);
+
+/*
+ * {"a": 1, "b": 2}
+ *
+ * MEMORIA: misma regla que la
+ * lista. En caso de EXITO el nodo
+ * se aduena de 'keys', 'values' y
+ * de cada ASTNode; si devuelve
+ * NULL siguen siendo de quien
+ * llama.
+ *
+ * Ambos arrays pueden ser NULL si
+ * pair_count es 0.
+ */
+
+ASTNode *ast_dictionary(
+    ASTNode **keys,
+    ASTNode **values,
+    int pair_count
+);
+
+/*
  * si (condicion)
  *     then_branch
  * sino
@@ -261,7 +488,7 @@ ASTNode *ast_while(
 );
 
 /*
- * funcion nombre()
+ * funcion nombre(a, b)
  *     body
  * fin
  *
@@ -269,21 +496,47 @@ ASTNode *ast_while(
  *
  * Declarar NO ejecuta: el nodo
  * solo guarda el cuerpo.
+ *
+ * MEMORIA:
+ *
+ * En caso de ÉXITO el nodo se
+ * adueña de 'parameters' y de
+ * cada string que contiene, y
+ * los libera en ast_free().
+ *
+ * Si devuelve NULL, la lista
+ * sigue siendo de quien llama.
+ *
+ * parameters puede ser NULL si
+ * parameter_count es 0.
  */
 
 ASTNode *ast_function_declaration(
     const char *name,
+    char **parameters,
+    int parameter_count,
     ASTNode *body
 );
 
 /*
- * nombre()
+ * nombre(10 + 5, edad)
  *
- * Todavía sin argumentos.
+ * Los argumentos son expresiones
+ * SIN evaluar: se evalúan al
+ * ejecutar la llamada.
+ *
+ * MEMORIA:
+ *
+ * Misma regla que arriba. En caso
+ * de éxito el nodo se adueña de
+ * 'arguments' y de cada ASTNode,
+ * y los libera con ast_free().
  */
 
 ASTNode *ast_function_call(
-    const char *name
+    const char *name,
+    ASTNode **arguments,
+    int argument_count
 );
 
 /*

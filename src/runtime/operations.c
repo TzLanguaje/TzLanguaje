@@ -1,5 +1,6 @@
 #include "operations.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -741,6 +742,98 @@ static int values_equal(
     }
 
     /*
+     * LIST con LIST
+     *
+     * Igualdad estructural, igual
+     * que el texto se compara por
+     * contenido y no por dirección:
+     *
+     * [1, 2] es igual a [1, 2]
+     *
+     * Recursivo, así que también
+     * vale para listas anidadas.
+     */
+
+    if (
+        left.type == VALUE_LIST &&
+        right.type == VALUE_LIST
+    ) {
+
+        int count =
+            value_list_count(left);
+
+        if (count != value_list_count(right)) {
+            return 0;
+        }
+
+        for (int i = 0; i < count; i++) {
+
+            if (
+                !values_equal(
+                    left.data.list->items[i],
+                    right.data.list->items[i]
+                )
+            ) {
+
+                return 0;
+            }
+        }
+
+        return 1;
+    }
+
+    /*
+     * DICTIONARY con DICTIONARY
+     *
+     * Igualdad estructural e
+     * INDEPENDIENTE DEL ORDEN: un
+     * diccionario es un conjunto de
+     * pares, no una secuencia.
+     *
+     * Recursivo, asi que vale para
+     * anidados y para listas dentro.
+     */
+
+    if (
+        left.type == VALUE_DICTIONARY &&
+        right.type == VALUE_DICTIONARY
+    ) {
+
+        int count =
+            value_dictionary_count(left);
+
+        if (count != value_dictionary_count(right)) {
+            return 0;
+        }
+
+        for (int i = 0; i < count; i++) {
+
+            const char *key =
+                value_dictionary_key_at(left, i);
+
+            Value *other =
+                value_dictionary_at(right, key);
+
+            if (other == NULL) {
+                return 0;
+            }
+
+            if (
+                !values_equal(
+                    left.data.dictionary
+                        ->entries[i].value,
+                    *other
+                )
+            ) {
+
+                return 0;
+            }
+        }
+
+        return 1;
+    }
+
+    /*
      * Tipos distintos
      */
 
@@ -1026,4 +1119,63 @@ int operation_not(
         );
 
     return 1;
+}
+/*
+ * ==========================
+ * MENOS UNARIO
+ * ==========================
+ *
+ * -5
+ * -(5 + 3)
+ */
+
+int operation_negate(
+    Value operand,
+    Value *result
+) {
+
+    if (result == NULL) {
+        return 0;
+    }
+
+    if (operand.type == VALUE_NUMBER) {
+
+        /*
+         * -INT_MIN no cabe en un int:
+         * en C es comportamiento
+         * indefinido, no un numero
+         * grande.
+         */
+
+        if (operand.data.number == INT_MIN) {
+
+            fprintf(
+                stderr,
+                "Error: no se puede negar el numero mínimo.\n"
+            );
+
+            return 0;
+        }
+
+        *result =
+            value_number(-operand.data.number);
+
+        return 1;
+    }
+
+    if (operand.type == VALUE_DECIMAL) {
+
+        *result =
+            value_decimal(-operand.data.decimal);
+
+        return 1;
+    }
+
+    fprintf(
+        stderr,
+        "Error: no se puede negar %s.\n",
+        value_type_name(operand.type)
+    );
+
+    return 0;
 }

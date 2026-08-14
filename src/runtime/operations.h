@@ -111,4 +111,22 @@ int operation_not(
     Value *result
 );
 
+/*
+ * ==========================
+ * MENOS UNARIO
+ * ==========================
+ *
+ * -5    → -5   (numero)
+ * -2.5  → -2.5 (decimal)
+ *
+ * Conserva el tipo. Cualquier otro
+ * tipo es error: no hay conversion
+ * implicita.
+ */
+
+int operation_negate(
+    Value operand,
+    Value *result
+);
+
 #endif
