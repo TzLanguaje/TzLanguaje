@@ -1,0 +1,12 @@
+TzLang 0.1.0
+
+Uso:
+  tzc <archivo.tz>
+
+Opciones:
+  -h, --help       Mostrar esta ayuda
+  -v, --version    Mostrar la versión
+
+Ejemplos:
+  tzc programa.tz
+  tzc examples/hola.tz

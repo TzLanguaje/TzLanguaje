@@ -3,7 +3,7 @@
 # ==========================
 
 CC      = clang
-CFLAGS  = -Wall -Wextra
+CFLAGS  = -Wall -Wextra -std=c11
 
 SRC = \
 	src/main.c \

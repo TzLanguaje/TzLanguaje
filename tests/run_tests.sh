@@ -148,6 +148,31 @@ cli_case() {
 }
 
 cli_extra_tests() {
+    # --- opciones ---
+
+    # La ayuda y la version son multilinea, asi que la
+    # expectativa vive en un archivo y no duplicada aqui.
+    cp "$TESTS_DIR/cli/help.expected" "$TMP/expected"
+    cli_case "cli/help_long" 0 --help
+
+    cp "$TESTS_DIR/cli/help.expected" "$TMP/expected"
+    cli_case "cli/help_short" 0 -h
+
+    cp "$TESTS_DIR/cli/version.expected" "$TMP/expected"
+    cli_case "cli/version_long" 0 --version
+
+    cp "$TESTS_DIR/cli/version.expected" "$TMP/expected"
+    cli_case "cli/version_short" 0 -v
+
+    # opcion desconocida: no debe tratarse como archivo
+    printf "Error: opción desconocida '--banana'.\n\nUso: tzc <archivo.tz>\n" > "$TMP/expected"
+    cli_case "cli/unknown_option_long" 1 --banana
+
+    printf "Error: opción desconocida '-x'.\n\nUso: tzc <archivo.tz>\n" > "$TMP/expected"
+    cli_case "cli/unknown_option_short" 1 -x
+
+    # --- argumentos ---
+
     # sin argumentos
     printf 'Uso: tzc <archivo.tz>\n' > "$TMP/expected"
     cli_case "cli/no_arguments" 1
@@ -167,6 +192,10 @@ cli_extra_tests() {
     # un directorio no es un .tz
     printf "Error: '%s' no es un archivo .tz.\n" "$TESTS_DIR" > "$TMP/expected"
     cli_case "cli/directory" 2 "$TESTS_DIR"
+
+    # ejecucion normal de un .tz desde la ruta del proyecto
+    printf 'Hola desde TzLang\n' > "$TMP/expected"
+    cli_case "cli/run_example" 0 "$ROOT/examples/hola.tz"
 }
 
 # ------------------------------------------

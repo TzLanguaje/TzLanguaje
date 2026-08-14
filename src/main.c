@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "version.h"
+
 #include "io/file.h"
 
 #include "lexer/lexer.h"
@@ -26,6 +28,70 @@
 #define SALIDA_ERROR_ARGUMENTOS  1
 #define SALIDA_ERROR_ARCHIVO     2
 #define SALIDA_ERROR_PROGRAMA    3
+
+/*
+ * ==========================
+ * AYUDA Y VERSION
+ * ==========================
+ *
+ * Van a stdout porque son SALIDA
+ * pedida por el usuario, no
+ * errores. Los mensajes de uso por
+ * argumentos invalidos van a
+ * stderr.
+ */
+
+static void mostrar_version(void) {
+
+    printf(
+        "%s %s\n",
+        TZLANG_NAME,
+        TZLANG_VERSION
+    );
+}
+
+static void mostrar_ayuda(void) {
+
+    mostrar_version();
+
+    printf(
+        "\n"
+        "Uso:\n"
+        "  tzc <archivo.tz>\n"
+        "\n"
+        "Opciones:\n"
+        "  -h, --help       Mostrar esta ayuda\n"
+        "  -v, --version    Mostrar la versión\n"
+        "\n"
+        "Ejemplos:\n"
+        "  tzc programa.tz\n"
+        "  tzc examples/hola.tz\n"
+    );
+}
+
+static void mostrar_uso(void) {
+
+    fprintf(
+        stderr,
+        "Uso: tzc <archivo.tz>\n"
+    );
+}
+
+/*
+ * ¿El argumento es esta opcion, en
+ * su forma corta o larga?
+ */
+
+static int es_opcion(
+    const char *argumento,
+    const char *corta,
+    const char *larga
+) {
+
+    return
+        strcmp(argumento, corta) == 0 ||
+        strcmp(argumento, larga) == 0;
+}
 
 /*
  * ==========================
@@ -192,15 +258,56 @@ int main(int argc, char **argv) {
 
     if (argc != 2) {
 
-        fprintf(
-            stderr,
-            "Uso: tzc <archivo.tz>\n"
-        );
+        mostrar_uso();
 
         return SALIDA_ERROR_ARGUMENTOS;
     }
 
-    const char *path = argv[1];
+    const char *argumento = argv[1];
+
+    /*
+     * ==========================
+     * OPCIONES
+     * ==========================
+     */
+
+    if (es_opcion(argumento, "-h", "--help")) {
+
+        mostrar_ayuda();
+
+        return SALIDA_OK;
+    }
+
+    if (es_opcion(argumento, "-v", "--version")) {
+
+        mostrar_version();
+
+        return SALIDA_OK;
+    }
+
+    /*
+     * Todo lo que empieza por '-' y
+     * no reconocemos es una opcion
+     * equivocada, NO un nombre de
+     * archivo: asi '--banana' no
+     * acaba dando "no es un archivo
+     * .tz", que despistaria.
+     */
+
+    if (argumento[0] == '-') {
+
+        fprintf(
+            stderr,
+            "Error: opción desconocida '%s'.\n\n",
+            argumento
+        );
+
+        mostrar_uso();
+
+        return SALIDA_ERROR_ARGUMENTOS;
+    }
+
+    const char *path = argumento;
 
     if (!tiene_extension_tz(path)) {
 
