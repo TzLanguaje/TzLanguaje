@@ -2,6 +2,33 @@
 
 #include <limits.h>
 #include <stdio.h>
+
+/*
+ * TzLang comprueba el overflow de
+ * 'numero' calculando en long long
+ * y validando el rango ANTES de
+ * convertir a int.
+ *
+ * El estandar C99 garantiza al menos
+ * 64 bits en long long, asi que el
+ * producto de dos int de 32 bits
+ * nunca puede desbordarlo.
+ */
+
+#if LLONG_MAX < 9223372036854775807LL
+#error "TzLang necesita long long de al menos 64 bits"
+#endif
+
+/*
+ * ¿Cabe el resultado en un numero?
+ */
+
+static int cabe_en_numero(long long value) {
+
+    return
+        value >= (long long)INT_MIN &&
+        value <= (long long)INT_MAX;
+}
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,11 +57,21 @@ int operation_add(
         right.type == VALUE_NUMBER
     ) {
 
-        *result =
-            value_number(
-                left.data.number +
-                right.data.number
+        long long sum =
+            (long long)left.data.number +
+            (long long)right.data.number;
+
+        if (!cabe_en_numero(sum)) {
+
+            fprintf(
+                stderr,
+                "Error: overflow de numero en la suma.\n"
             );
+
+            return 0;
+        }
+
+        *result = value_number((int)sum);
 
         return 1;
     }
@@ -176,11 +213,21 @@ int operation_subtract(
         right.type == VALUE_NUMBER
     ) {
 
-        *result =
-            value_number(
-                left.data.number -
-                right.data.number
+        long long difference =
+            (long long)left.data.number -
+            (long long)right.data.number;
+
+        if (!cabe_en_numero(difference)) {
+
+            fprintf(
+                stderr,
+                "Error: overflow de numero en la resta.\n"
             );
+
+            return 0;
+        }
+
+        *result = value_number((int)difference);
 
         return 1;
     }
@@ -274,11 +321,28 @@ int operation_multiply(
         right.type == VALUE_NUMBER
     ) {
 
-        *result =
-            value_number(
-                left.data.number *
-                right.data.number
+        /*
+         * El producto se calcula en
+         * long long, donde NO puede
+         * desbordar, y se valida ANTES
+         * de convertir a int.
+         */
+
+        long long product =
+            (long long)left.data.number *
+            (long long)right.data.number;
+
+        if (!cabe_en_numero(product)) {
+
+            fprintf(
+                stderr,
+                "Error: overflow de numero en la multiplicacion.\n"
             );
+
+            return 0;
+        }
+
+        *result = value_number((int)product);
 
         return 1;
     }
@@ -377,6 +441,26 @@ int operation_divide(
             fprintf(
                 stderr,
                 "Error: división por cero.\n"
+            );
+
+            return 0;
+        }
+
+        /*
+         * INT_MIN / -1 daria 2147483648,
+         * que no cabe en un int: en C es
+         * comportamiento indefinido, no
+         * un numero grande.
+         */
+
+        if (
+            left.data.number == INT_MIN &&
+            right.data.number == -1
+        ) {
+
+            fprintf(
+                stderr,
+                "Error: overflow de numero en la division.\n"
             );
 
             return 0;

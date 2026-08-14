@@ -2,6 +2,7 @@
 #include "../runtime/operations.h"
 
 #include <ctype.h>
+#include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -2025,15 +2026,39 @@ static int builtin_numero(
             return 0;
         }
 
+        errno = 0;
+
         char *end = NULL;
 
-        long parsed = strtol(text, &end, 10);
+        long long parsed = strtoll(text, &end, 10);
 
         if (end == text || *end != '\0') {
 
             fprintf(
                 stderr,
                 "Error: numero() no puede convertir el texto '%s'.\n",
+                text
+            );
+
+            return 0;
+        }
+
+        /*
+         * El texto puede ser un entero
+         * valido pero demasiado grande
+         * para un numero de TzLang.
+         */
+
+        if (
+            errno == ERANGE ||
+            parsed < (long long)INT_MIN ||
+            parsed > (long long)INT_MAX
+        ) {
+
+            fprintf(
+                stderr,
+                "Error: el número %s está fuera del rango permitido "
+                "(de -2147483648 a 2147483647).\n",
                 text
             );
 
@@ -2650,12 +2675,37 @@ static int builtin_redondear(
 
         double d = value.data.decimal;
 
-        double rounded =
-            d >= 0.0
-                ? (double)(long long)(d + 0.5)
-                : (double)(long long)(d - 0.5);
+        /*
+         * El cast a long long solo es
+         * seguro si el valor cabe
+         * holgadamente: convertir un
+         * double enorme a entero es
+         * comportamiento indefinido.
+         *
+         * Se comprueba ANTES de
+         * convertir, no despues.
+         */
 
-        if (!decimal_cabe_en_numero(rounded)) {
+        if (!(d >= -9.0e18 && d <= 9.0e18)) {
+
+            fprintf(
+                stderr,
+                "Error: redondear() no puede convertir %g a numero.\n",
+                d
+            );
+
+            return 0;
+        }
+
+        long long rounded =
+            d >= 0.0
+                ? (long long)(d + 0.5)
+                : (long long)(d - 0.5);
+
+        if (
+            rounded < (long long)INT_MIN ||
+            rounded > (long long)INT_MAX
+        ) {
 
             fprintf(
                 stderr,

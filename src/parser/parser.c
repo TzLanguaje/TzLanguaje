@@ -1,5 +1,7 @@
 #include "parser.h"
 
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -353,6 +355,161 @@ void parser_free(Parser *parser) {
  * Cada nivel es una función que
  * llama al nivel más prioritario.
  */
+
+/*
+ * ==========================
+ * LITERALES NUMERICOS
+ * ==========================
+ *
+ * Error situado en un token
+ * concreto, no en el actual.
+ */
+
+static void parser_error_token(
+    const Token *token,
+    const char *message
+) {
+
+    if (token == NULL) {
+
+        fprintf(
+            stderr,
+            "Error del Parser: %s\n",
+            message
+        );
+
+        return;
+    }
+
+    fprintf(
+        stderr,
+        "Error del Parser en línea %d: %s\n",
+        token->line,
+        message
+    );
+}
+
+/*
+ * Convierte el texto de un literal
+ * entero SIN depender de overflow.
+ *
+ * El lexer solo produce digitos, de
+ * modo que la magnitud se lee con
+ * strtoull -- garantizado de 64 bits
+ * como minimo -- y despues se
+ * comprueba contra el rango de int.
+ * Nunca se convierte a int un valor
+ * que no quepa.
+ *
+ * 'negative' viene del menos unario
+ * pegado al literal, y es lo que
+ * permite que -2147483648 sea valido
+ * mientras 2147483648 no lo es.
+ */
+
+static ASTNode *make_number_literal(
+    const Token *token,
+    int negative
+) {
+
+    const char *text = token->value;
+
+    errno = 0;
+
+    char *end = NULL;
+
+    unsigned long long magnitude =
+        strtoull(text, &end, 10);
+
+    if (end == text || *end != '\0') {
+
+        parser_error_token(
+            token,
+            "número entero mal formado."
+        );
+
+        return NULL;
+    }
+
+    unsigned long long limit =
+        negative
+            ? (unsigned long long)INT_MAX + 1ULL
+            : (unsigned long long)INT_MAX;
+
+    if (errno == ERANGE || magnitude > limit) {
+
+        char message[160];
+
+        snprintf(
+            message,
+            sizeof(message),
+            "el número %s%s está fuera del rango permitido "
+            "(de -2147483648 a 2147483647).",
+            negative ? "-" : "",
+            text
+        );
+
+        parser_error_token(token, message);
+
+        return NULL;
+    }
+
+    /*
+     * -(long long)2147483648 cabe de
+     * sobra en long long, asi que
+     * llegar a INT_MIN es seguro.
+     */
+
+    int value =
+        negative
+            ? (int)(-(long long)magnitude)
+            : (int)magnitude;
+
+    return ast_number(value);
+}
+
+/*
+ * Literal decimal.
+ *
+ * strtod en vez de atof para poder
+ * detectar un valor que no quepa en
+ * un double.
+ */
+
+static ASTNode *make_decimal_literal(
+    const Token *token
+) {
+
+    const char *text = token->value;
+
+    errno = 0;
+
+    char *end = NULL;
+
+    double value = strtod(text, &end);
+
+    if (end == text || *end != '\0') {
+
+        parser_error_token(
+            token,
+            "número decimal mal formado."
+        );
+
+        return NULL;
+    }
+
+    if (errno == ERANGE) {
+
+        parser_error_token(
+            token,
+            "el número decimal está fuera del rango representable."
+        );
+
+        return NULL;
+    }
+
+    return ast_decimal(value);
+}
 
 static ASTNode *parse_expression(Parser *parser);
 
@@ -778,10 +935,7 @@ static ASTNode *parse_primary(Parser *parser) {
 
     if (match(parser, TOKEN_NUMBER)) {
 
-        int value =
-            atoi(token->value);
-
-        return ast_number(value);
+        return make_number_literal(token, 0);
     }
 
     /*
@@ -794,10 +948,7 @@ static ASTNode *parse_primary(Parser *parser) {
 
     if (match(parser, TOKEN_DECIMAL)) {
 
-        double value =
-            atof(token->value);
-
-        return ast_decimal(value);
+        return make_decimal_literal(token);
     }
 
     /*
@@ -1041,7 +1192,46 @@ static ASTNode *parse_unary(Parser *parser) {
         return make_unary(OP_NOT, operand);
     }
 
-    if (match(parser, TOKEN_MINUS)) {
+    if (check(parser, TOKEN_MINUS)) {
+
+        /*
+         * '-' pegado a un literal
+         * entero se pliega en UN solo
+         * literal negativo.
+         *
+         * Es lo que hace que
+         * -2147483648 sea valido
+         * (cabe en int) mientras
+         * 2147483648 por si solo no
+         * lo es. Sin esto habria que
+         * construir primero el
+         * positivo, que no cabe.
+         *
+         * Cualquier otra cosa sigue
+         * el camino normal de
+         * OP_NEGATE:
+         *
+         * -x, -(...), -3.14, --5
+         */
+
+        Token *next = peek_token(parser, 1);
+
+        if (
+            next != NULL &&
+            next->type == TOKEN_NUMBER
+        ) {
+
+            advance(parser);
+
+            Token *literal =
+                current_token(parser);
+
+            advance(parser);
+
+            return make_number_literal(literal, 1);
+        }
+
+        advance(parser);
 
         ASTNode *operand =
             parse_unary(parser);
