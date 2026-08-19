@@ -1,0 +1,29 @@
+TzLang esta instalado.
+
+Abre una terminal NUEVA (para que
+tome el PATH actualizado) y
+compruebalo:
+
+    tz --version
+
+Tu primer programa: crea un archivo
+hola.tz con esta linea
+
+    imprimir "Hola desde TzLang"
+
+y ejecutalo con
+
+    tz hola.tz
+
+Si marcaste la asociacion de
+archivos, tambien puedes ejecutarlo
+haciendo doble clic sobre el.
+
+La referencia completa del lenguaje
+esta en el README.md que acompana a
+la instalacion y en
+
+    https://github.com/tzerk-last/TzLanguaje
+
+Para desinstalarlo, usa "Agregar o
+quitar programas" de Windows.

@@ -158,32 +158,78 @@ Aprobados: 2 de 3
 
 ## Instalación
 
-TzLang se distribuye como un **binario único sin dependencias**. Funciona en **macOS, Linux y Windows**.
+TzLang se instala como cualquier otro programa: descargas el instalador de tu sistema, lo abres y sigues el asistente. Al terminar tienes la orden `tz` disponible en cualquier terminal.
 
-### macOS y Linux
+Todos los instaladores están en la [página de releases](https://github.com/tzerk-last/TzLanguaje/releases/latest).
+
+### Windows
+
+Descarga **`TzLang-vX.Y.Z-windows-x86_64-setup.exe`** y ábrelo.
+
+El asistente está en español. La casilla **«Añadir TzLang al PATH»** viene marcada — déjala así, es la que hace que `tz` funcione desde cualquier terminal. La segunda casilla asocia los archivos `.tz`, para poder ejecutarlos con doble clic.
+
+No hace falta ser administrador: se instala en tu carpeta de usuario. Aparece en **Agregar o quitar programas** para desinstalarlo.
+
+> Al abrirlo, Windows puede mostrar un aviso de SmartScreen porque el instalador no está firmado. Pulsa **Más información › Ejecutar de todas formas**.
+
+### macOS
+
+Descarga **`TzLang-vX.Y.Z-macos.pkg`** y ábrelo. Vale para Intel y para Apple Silicon.
+
+Instala `tz` en `/usr/local/bin`, que ya está en el `PATH` de macOS, así que funciona sin configurar nada.
+
+> Como el paquete no está firmado con una cuenta de Apple Developer, la primera vez macOS lo bloquea. Haz **clic derecho sobre el `.pkg` › Abrir**, y luego **Abrir** en el aviso.
+
+### Linux
+
+**Debian, Ubuntu, Mint** — descarga el `.deb` y haz doble clic, o desde la terminal:
+
+```bash
+sudo apt install ./tzlang_X.Y.Z_amd64.deb     # usa _arm64 en Raspberry Pi y similares
+```
+
+**Fedora, RHEL, openSUSE** — descarga el `.rpm`:
+
+```bash
+sudo dnf install ./tzlang-X.Y.Z-1.x86_64.rpm  # usa aarch64 en ARM
+```
+
+En ambos casos queda registrado en el gestor de paquetes: `sudo apt remove tzlang` o `sudo dnf remove tzlang` lo desinstalan.
+
+### Comprobar que funciona
+
+Abre una terminal **nueva** y escribe:
+
+```bash
+tz --version
+```
+
+---
+
+## Otras formas de instalar
+
+Si prefieres la terminal, o quieres automatizar la instalación.
+
+### Instalador de una línea
+
+**macOS y Linux**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.sh | sh
 ```
 
-Descarga el binario de la última versión publicada, verifica su checksum SHA-256 y lo instala en `~/.local/bin/tz`. No requiere permisos de administrador.
-
-Para instalarlo en otro sitio, o para fijar una versión concreta:
+Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de administrador. Se puede ajustar con `TZ_PREFIX` y `TZ_VERSION`:
 
 ```bash
-TZ_PREFIX=/usr/local sh install.sh     # para todo el sistema (necesita sudo)
-TZ_VERSION=v0.1.0    sh install.sh     # una versión concreta
+TZ_PREFIX=/usr/local sh install.sh
+TZ_VERSION=v0.1.0    sh install.sh
 ```
 
-### Windows
-
-En PowerShell:
+**Windows**, en PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.ps1 | iex
 ```
-
-Instala en `%LOCALAPPDATA%\Programs\TzLang\bin` y añade esa carpeta al `PATH` del usuario. Tampoco necesita administrador. Abre una terminal nueva al terminar.
 
 ### Gestores de paquetes
 
@@ -196,9 +242,9 @@ scoop bucket add tzlang https://github.com/tzerk-last/scoop-tzlang
 scoop install tzlang                          # Windows
 ```
 
-### Descarga manual
+### Binario suelto
 
-Cada versión publica binarios en la [página de releases](https://github.com/tzerk-last/TzLanguaje/releases), junto con `SHA256SUMS.txt` para verificarlos:
+Para meterlo en un contenedor o llevarlo en un USB, cada release publica también archivos comprimidos con el ejecutable pelado, y un `SHA256SUMS.txt` para verificarlos:
 
 | Sistema | Archivo |
 |---|---|
@@ -208,12 +254,6 @@ Cada versión publica binarios en la [página de releases](https://github.com/tz
 | Windows x86-64 | `tzlang-vX.Y.Z-windows-x86_64.zip` |
 
 Los binarios de Linux están enlazados estáticamente: funcionan en cualquier distribución sin depender de la versión de `glibc`.
-
-### Comprobar que funciona
-
-```bash
-tz --version
-```
 
 ---
 
@@ -724,6 +764,9 @@ TzLang/
 │   └── release.yml     publica los binarios al etiquetar
 │
 ├── packaging/
+│   ├── macos/          instalador .pkg con asistente
+│   ├── windows/        instalador .exe con asistente (Inno Setup)
+│   ├── linux/          paquetes .deb y .rpm
 │   ├── homebrew/       plantilla de la formula de Homebrew
 │   └── scoop/          plantilla del manifiesto de Scoop
 │

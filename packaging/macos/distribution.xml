@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ==========================
+  Asistente del instalador de macOS
+  ==========================
+
+  Describe las pantallas por las que
+  pasa el usuario. build-pkg.sh
+  sustituye @VERSION@ antes de
+  pasarselo a productbuild.
+-->
+<installer-gui-script minSpecVersion="2">
+
+    <title>TzLang @VERSION@</title>
+
+    <organization>com.tzerk</organization>
+
+    <!-- Pantallas del asistente -->
+    <welcome    file="welcome.html"    mime-type="text/html"  />
+    <license    file="LICENSE.txt"     mime-type="text/plain" />
+    <conclusion file="conclusion.html" mime-type="text/html"  />
+
+    <!--
+      Solo se puede instalar para
+      todos los usuarios: el destino
+      es /usr/local/bin, que es de
+      sistema.
+    -->
+    <options customize="never" require-scripts="false" hostArchitectures="arm64,x86_64" />
+    <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="false" />
+
+    <!-- macOS 10.13 o posterior -->
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="10.13" />
+        </allowed-os-versions>
+    </volume-check>
+
+    <choices-outline>
+        <line choice="default">
+            <line choice="com.tzerk.tzlang" />
+        </line>
+    </choices-outline>
+
+    <choice id="default" />
+
+    <choice id="com.tzerk.tzlang" visible="false">
+        <pkg-ref id="com.tzerk.tzlang" />
+    </choice>
+
+    <pkg-ref id="com.tzerk.tzlang">tzlang-component.pkg</pkg-ref>
+
+</installer-gui-script>

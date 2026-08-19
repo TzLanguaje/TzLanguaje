@@ -85,9 +85,13 @@ jobs:
           - target: linux-x86_64
             os: ubuntu-22.04
             cmake_extra: -Wno-dev
+            deb_arch: amd64
+            rpm_arch: x86_64
           - target: linux-aarch64
             os: ubuntu-22.04-arm
             cmake_extra: -Wno-dev
+            deb_arch: arm64
+            rpm_arch: aarch64
           # Un solo binario universal
           # para Intel y Apple Silicon.
           - target: macos-universal
@@ -147,6 +151,95 @@ jobs:
           Copy-Item LICENSE, README.md "dist\$name\"
           Compress-Archive -Path "dist\$name\*" -DestinationPath "dist\$name.zip"
           Remove-Item -Recurse -Force "dist\$name"
+
+      # ==========================
+      # INSTALADORES NATIVOS
+      # ==========================
+      #
+      # Ademas del archivo comprimido,
+      # cada plataforma produce su
+      # instalador de siempre: .pkg con
+      # asistente en macOS, .exe con
+      # asistente en Windows, .deb y
+      # .rpm en Linux.
+      #
+      # Cada uno se INSTALA aqui mismo
+      # para comprobar que funciona de
+      # verdad, no solo que se
+      # construye.
+
+      - name: Instalador .pkg (macOS)
+        if: startsWith(matrix.target, 'macos')
+        run: sh packaging/macos/build-pkg.sh build-rel/tz dist
+
+      - name: Comprobar el .pkg instalando
+        if: startsWith(matrix.target, 'macos')
+        run: |
+          set -eu
+          sudo installer -pkg dist/TzLang-v${{ needs.check.outputs.version }}-macos.pkg -target /
+          /usr/local/bin/tz --version
+          /usr/local/bin/tz examples/hola.tz
+
+      - name: Paquetes .deb y .rpm (Linux)
+        if: startsWith(matrix.target, 'linux')
+        run: |
+          set -eu
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq rpm
+          sh packaging/linux/build-deb.sh build-rel/tz ${{ matrix.deb_arch }} dist
+          sh packaging/linux/build-rpm.sh build-rel/tz ${{ matrix.rpm_arch }} dist
+
+      - name: Comprobar el .deb instalando
+        if: startsWith(matrix.target, 'linux')
+        run: |
+          set -eu
+          sudo dpkg -i dist/tzlang_${{ needs.check.outputs.version }}_${{ matrix.deb_arch }}.deb
+          tz --version
+          tz examples/hola.tz
+          # Y que se desinstale limpio.
+          sudo dpkg -r tzlang
+          # bash recuerda donde estaba
+          # cada orden; sin hash -r
+          # seguiria diciendo que tz
+          # existe.
+          hash -r
+          ! command -v tz
+
+      - name: Comprobar el contenido del .rpm
+        if: startsWith(matrix.target, 'linux')
+        run: |
+          set -eu
+          rpm -qlp dist/tzlang-${{ needs.check.outputs.version }}-1.${{ matrix.rpm_arch }}.rpm
+          rpm -qip dist/tzlang-${{ needs.check.outputs.version }}-1.${{ matrix.rpm_arch }}.rpm
+
+      - name: Instalador .exe (Windows)
+        if: startsWith(matrix.target, 'windows')
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          & $iscc `
+            /DTzVersion=${{ needs.check.outputs.version }} `
+            "/DTzBinario=$PWD\build-rel\Release\tz.exe" `
+            "/DTzSalida=$PWD\dist" `
+            packaging\windows\tzlang.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Comprobar el .exe instalando
+        if: startsWith(matrix.target, 'windows')
+        shell: pwsh
+        run: |
+          $setup = "dist\TzLang-v${{ needs.check.outputs.version }}-windows-x86_64-setup.exe"
+          # /VERYSILENT instala sin
+          # asistente; asi se comprueba
+          # el instalador sin que nadie
+          # pulse Siguiente.
+          Start-Process $setup -ArgumentList "/VERYSILENT","/SUPPRESSMSGBOXES","/NORESTART" -Wait
+          $tz = "$env:LOCALAPPDATA\Programs\TzLang\bin\tz.exe"
+          if (-not (Test-Path $tz)) { throw "el instalador no dejo tz.exe en $tz" }
+          & $tz --version
+          & $tz examples\hola.tz
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - uses: actions/upload-artifact@v4
         with:
