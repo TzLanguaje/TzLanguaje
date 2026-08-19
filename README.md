@@ -13,6 +13,14 @@
   <img src="https://img.shields.io/badge/plataformas-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="Plataformas">
 </p>
 
+<p align="center">
+  <a href="https://github.com/tzerk-last/TzLanguaje/releases/latest"><b>⬇ Descargar e instalar</b></a>
+  &nbsp;·&nbsp;
+  <a href="#instalación">Guía de instalación</a>
+  &nbsp;·&nbsp;
+  <a href="docs/language.md">Referencia del lenguaje</a>
+</p>
+
 ---
 
 ## ¿Qué es TzLang?
@@ -158,57 +166,108 @@ Aprobados: 2 de 3
 
 ## Instalación
 
-TzLang se instala como cualquier otro programa: descargas el instalador de tu sistema, lo abres y sigues el asistente. Al terminar tienes la orden `tz` disponible en cualquier terminal.
+No hace falta compilar nada ni instalar dependencias. Descargas un archivo, lo abres, y listo.
 
-Todos los instaladores están en la [página de releases](https://github.com/tzerk-last/TzLanguaje/releases/latest).
+**Todos los instaladores están aquí: [página de descargas](https://github.com/tzerk-last/TzLanguaje/releases/latest)**
+
+Baja hasta **Assets** y elige el archivo que corresponda a tu ordenador:
+
+| Si usas… | Descarga este archivo |
+|---|---|
+| **Windows** | `TzLang-vX.Y.Z-windows-x86_64-setup.exe` |
+| **Mac** (cualquiera, Intel o M1/M2/M3) | `TzLang-vX.Y.Z-macos.pkg` |
+| **Ubuntu, Debian, Mint** | `tzlang_X.Y.Z_amd64.deb` |
+| **Fedora, RHEL, openSUSE** | `tzlang-X.Y.Z-1.x86_64.rpm` |
+
+> En una Raspberry Pi o un portátil ARM, cambia `amd64` por `arm64` (en el `.deb`) o `x86_64` por `aarch64` (en el `.rpm`).
+
+---
 
 ### Windows
 
-Descarga **`TzLang-vX.Y.Z-windows-x86_64-setup.exe`** y ábrelo.
+1. Descarga el archivo `…-setup.exe` y haz **doble clic**.
+2. Windows mostrará un aviso azul que dice *«Windows protegió su PC»*. Es normal: aparece con cualquier programa sin firma de pago. Pulsa **Más información** y luego **Ejecutar de todas formas**.
+3. Sigue el asistente pulsando **Siguiente**. Deja marcadas las dos casillas:
+   - **Añadir TzLang al PATH** — es la que hace que la orden `tz` funcione.
+   - **Asociar los archivos .tz** — te permite ejecutar programas con doble clic.
+4. Pulsa **Instalar** y luego **Finalizar**.
 
-El asistente está en español. La casilla **«Añadir TzLang al PATH»** viene marcada — déjala así, es la que hace que `tz` funcione desde cualquier terminal. La segunda casilla asocia los archivos `.tz`, para poder ejecutarlos con doble clic.
-
-No hace falta ser administrador: se instala en tu carpeta de usuario. Aparece en **Agregar o quitar programas** para desinstalarlo.
-
-> Al abrirlo, Windows puede mostrar un aviso de SmartScreen porque el instalador no está firmado. Pulsa **Más información › Ejecutar de todas formas**.
+No pide contraseña de administrador. Para desinstalarlo, búscalo en **Agregar o quitar programas**.
 
 ### macOS
 
-Descarga **`TzLang-vX.Y.Z-macos.pkg`** y ábrelo. Vale para Intel y para Apple Silicon.
+1. Descarga el archivo `.pkg`.
+2. **No lo abras con doble clic la primera vez.** Haz **clic derecho** sobre él y elige **Abrir**. Luego, en el aviso que sale, pulsa **Abrir** otra vez.
 
-Instala `tz` en `/usr/local/bin`, que ya está en el `PATH` de macOS, así que funciona sin configurar nada.
+   Esto hace falta porque el instalador no está firmado con una cuenta de Apple Developer (cuesta 99 $ al año). Con doble clic normal, macOS lo bloquea sin darte opción.
+3. Sigue el asistente: **Continuar**, **Aceptar** la licencia, **Instalar**.
+4. Te pedirá tu contraseña de usuario. Es normal: instala en una carpeta del sistema.
 
-> Como el paquete no está firmado con una cuenta de Apple Developer, la primera vez macOS lo bloquea. Haz **clic derecho sobre el `.pkg` › Abrir**, y luego **Abrir** en el aviso.
+### Ubuntu, Debian, Mint
 
-### Linux
+Haz **doble clic** sobre el archivo `.deb` y pulsa **Instalar** en el centro de software.
 
-**Debian, Ubuntu, Mint** — descarga el `.deb` y haz doble clic, o desde la terminal:
-
-```bash
-sudo apt install ./tzlang_X.Y.Z_amd64.deb     # usa _arm64 en Raspberry Pi y similares
-```
-
-**Fedora, RHEL, openSUSE** — descarga el `.rpm`:
+Si prefieres la terminal:
 
 ```bash
-sudo dnf install ./tzlang-X.Y.Z-1.x86_64.rpm  # usa aarch64 en ARM
+sudo apt install ./tzlang_X.Y.Z_amd64.deb
 ```
 
-En ambos casos queda registrado en el gestor de paquetes: `sudo apt remove tzlang` o `sudo dnf remove tzlang` lo desinstalan.
+Para desinstalarlo: `sudo apt remove tzlang`
 
-### Comprobar que funciona
+### Fedora, RHEL, openSUSE
 
-Abre una terminal **nueva** y escribe:
+Haz **doble clic** sobre el archivo `.rpm`, o desde la terminal:
+
+```bash
+sudo dnf install ./tzlang-X.Y.Z-1.x86_64.rpm
+```
+
+Para desinstalarlo: `sudo dnf remove tzlang`
+
+---
+
+### Comprueba que funciona
+
+Abre una terminal **nueva** — importante, una que hayas abierto *después* de instalar:
+
+- **Windows**: busca *PowerShell* en el menú de inicio.
+- **Mac**: busca *Terminal* en Spotlight (⌘ + espacio).
+- **Linux**: Ctrl + Alt + T.
+
+Escribe:
 
 ```bash
 tz --version
+```
+
+Si responde `TzLang 0.1.0`, ya está instalado.
+
+Si en cambio dice *«orden no encontrada»* o *«no se reconoce como un comando»*, casi siempre es una de dos cosas: la terminal estaba abierta desde antes de instalar (ciérrala y abre otra), o en Windows desmarcaste la casilla del PATH (vuelve a pasar el instalador y déjala marcada).
+
+### Tu primer programa
+
+Crea un archivo llamado `hola.tz` con esta línea dentro:
+
+```tz
+imprimir "Hola desde TzLang"
+```
+
+Y ejecútalo desde la terminal, en la carpeta donde lo guardaste:
+
+```bash
+tz hola.tz
+```
+
+```
+Hola desde TzLang
 ```
 
 ---
 
 ## Otras formas de instalar
 
-Si prefieres la terminal, o quieres automatizar la instalación.
+Para quien prefiera la terminal, o quiera automatizar la instalación.
 
 ### Instalador de una línea
 
