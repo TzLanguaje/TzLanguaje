@@ -73,6 +73,13 @@ jobs:
     name: ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
 
+    # Compilar esto son segundos. Si un
+    # job pasa de 20 minutos es que se
+    # ha quedado esperando un runner:
+    # mejor que falle y se vea, a que
+    # cuelgue el release seis horas.
+    timeout-minutes: 20
+
     strategy:
       fail-fast: false
       matrix:
@@ -82,13 +89,21 @@ jobs:
           # haria fallar a cmake.
           # -Wno-dev es el relleno
           # inofensivo.
+          # No se fija la version de
+          # Ubuntu: el binario se enlaza
+          # estaticamente, asi que la
+          # glibc del runner da igual, y
+          # las etiquetas viejas se
+          # retiran y dejan el job
+          # esperando un runner que ya
+          # no existe.
           - target: linux-x86_64
-            os: ubuntu-22.04
+            os: ubuntu-latest
             cmake_extra: -Wno-dev
             deb_arch: amd64
             rpm_arch: x86_64
           - target: linux-aarch64
-            os: ubuntu-22.04-arm
+            os: ubuntu-24.04-arm
             cmake_extra: -Wno-dev
             deb_arch: arm64
             rpm_arch: aarch64
