@@ -44,6 +44,7 @@ ASAN_FLAGS  = -Wall -Wextra -std=c11 -g -O1 \
 
 SRC = \
 	src/main.c \
+	src/io/console.c \
 	src/io/file.c \
 	src/lexer/lexer.c \
 	src/parser/parser.c \
@@ -54,6 +55,7 @@ SRC = \
 
 OBJ = \
 	build/main.o \
+	build/io/console.o \
 	build/io/file.o \
 	build/lexer/lexer.o \
 	build/parser/parser.o \
@@ -95,12 +97,16 @@ $(TARGET): $(OBJ)
 # de modo que tocar un header solo
 # recompila a quien lo usa.
 
-build/main.o: src/main.c src/version.h src/io/file.h \
+build/main.o: src/main.c src/version.h src/io/console.h src/io/file.h \
               src/lexer/lexer.h src/parser/parser.h \
               src/ast/ast.h src/interpreter/interpreter.h \
               src/runtime/value.h
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c src/main.c -o build/main.o
+
+build/io/console.o: src/io/console.c src/io/console.h
+	@mkdir -p build/io
+	$(CC) $(CFLAGS) -c src/io/console.c -o build/io/console.o
 
 build/io/file.o: src/io/file.c src/io/file.h
 	@mkdir -p build/io

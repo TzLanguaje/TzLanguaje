@@ -55,6 +55,7 @@ endif()
 
 add_executable(tz
     src/main.c
+    src/io/console.c
     src/io/file.c
     src/lexer/lexer.c
     src/parser/parser.c
