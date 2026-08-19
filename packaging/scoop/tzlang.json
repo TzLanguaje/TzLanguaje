@@ -1,0 +1,51 @@
+{
+  "//": [
+    "Manifiesto de Scoop para TzLang (Windows).",
+    "",
+    "Va en un repositorio aparte llamado 'bucket', por",
+    "convencion tzerk-last/scoop-tzlang, dentro de",
+    "bucket/tzlang.json",
+    "",
+    "Como publicarlo:",
+    "  1. Crea el repo scoop-tzlang en GitHub.",
+    "  2. Copia este archivo a bucket/tzlang.json.",
+    "  3. Rellena 'hash' con el SHA256 del zip, que sale",
+    "     de SHA256SUMS.txt del release.",
+    "",
+    "Los usuarios instalan con:",
+    "  scoop bucket add tzlang https://github.com/tzerk-last/scoop-tzlang",
+    "  scoop install tzlang",
+    "",
+    "El bloque autoupdate deja que 'scoop update' encuentre",
+    "las versiones nuevas sin editar el manifiesto a mano."
+  ],
+
+  "version": "0.1.0",
+  "description": "Lenguaje de programacion educativo con sintaxis en espanol",
+  "homepage": "https://github.com/tzerk-last/TzLanguaje",
+  "license": "MIT",
+
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/tzerk-last/TzLanguaje/releases/download/v0.1.0/tzlang-v0.1.0-windows-x86_64.zip",
+      "hash": "PON_AQUI_EL_SHA256_DEL_ZIP"
+    }
+  },
+
+  "bin": "tz.exe",
+
+  "checkver": {
+    "github": "https://github.com/tzerk-last/TzLanguaje"
+  },
+
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/tzerk-last/TzLanguaje/releases/download/v$version/tzlang-v$version-windows-x86_64.zip"
+      }
+    },
+    "hash": {
+      "url": "https://github.com/tzerk-last/TzLanguaje/releases/download/v$version/SHA256SUMS.txt"
+    }
+  }
+}

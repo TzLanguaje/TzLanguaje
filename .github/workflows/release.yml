@@ -1,0 +1,197 @@
+# ==========================
+# RELEASE - publicar binarios
+# ==========================
+#
+# Se dispara al empujar una etiqueta
+# de version:
+#
+#   git tag v0.1.0
+#   git push origin v0.1.0
+#
+# Compila en los tres sistemas,
+# empaqueta el binario 'tz', calcula
+# los checksums y crea el release de
+# GitHub con todo dentro.
+#
+# Lo que descarguen install.sh e
+# install.ps1 sale de aqui.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Etiqueta a publicar (ej. v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  # ==========================
+  # 1. La etiqueta debe coincidir
+  #    con src/version.h
+  # ==========================
+  #
+  # version.h es la unica fuente de
+  # verdad. Si la etiqueta dice otra
+  # cosa, el release se para aqui en
+  # vez de publicar un binario que
+  # miente al decir --version.
+
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: v
+        run: |
+          set -eu
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          HEADER=$(sed -n 's/.*TZLANG_VERSION "\([0-9.]*\)".*/\1/p' src/version.h)
+          echo "etiqueta:   $TAG"
+          echo "version.h:  $HEADER"
+          if [ "$TAG" != "v$HEADER" ]; then
+            echo "::error::La etiqueta $TAG no coincide con TZLANG_VERSION $HEADER en src/version.h"
+            exit 1
+          fi
+          echo "version=$HEADER" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG"        >> "$GITHUB_OUTPUT"
+
+  # ==========================
+  # 2. Compilar en cada plataforma
+  # ==========================
+
+  build:
+    needs: check
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # cmake_extra siempre lleva
+          # valor: un argumento vacio
+          # haria fallar a cmake.
+          # -Wno-dev es el relleno
+          # inofensivo.
+          - target: linux-x86_64
+            os: ubuntu-22.04
+            cmake_extra: -Wno-dev
+          - target: linux-aarch64
+            os: ubuntu-22.04-arm
+            cmake_extra: -Wno-dev
+          # Un solo binario universal
+          # para Intel y Apple Silicon.
+          - target: macos-universal
+            os: macos-14
+            cmake_extra: -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64
+          - target: windows-x86_64
+            os: windows-latest
+            cmake_extra: -Wno-dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar
+        run: >
+          cmake -B build-rel
+          -DCMAKE_BUILD_TYPE=Release
+          -DTZLANG_STATIC=ON
+          "${{ matrix.cmake_extra }}"
+
+      - name: Compilar
+        run: cmake --build build-rel --config Release
+
+      - name: Comprobar que arranca
+        if: runner.os != 'Windows'
+        run: ./build-rel/tz --version
+
+      - name: Comprobar que arranca (Windows)
+        if: runner.os == 'Windows'
+        run: build-rel\Release\tz.exe --version
+
+      # ==========================
+      # Empaquetar
+      # ==========================
+      #
+      # Unix: tar.gz con el binario,
+      # LICENSE y README. Windows: zip
+      # con lo mismo.
+
+      - name: Empaquetar (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          set -eu
+          NAME="tzlang-v${{ needs.check.outputs.version }}-${{ matrix.target }}"
+          mkdir -p "dist/$NAME"
+          cp build-rel/tz "dist/$NAME/"
+          cp LICENSE README.md "dist/$NAME/"
+          tar -czf "dist/$NAME.tar.gz" -C dist "$NAME"
+          rm -rf "dist/$NAME"
+
+      - name: Empaquetar (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $name = "tzlang-v${{ needs.check.outputs.version }}-${{ matrix.target }}"
+          New-Item -ItemType Directory -Force -Path "dist\$name" | Out-Null
+          Copy-Item build-rel\Release\tz.exe "dist\$name\"
+          Copy-Item LICENSE, README.md "dist\$name\"
+          Compress-Archive -Path "dist\$name\*" -DestinationPath "dist\$name.zip"
+          Remove-Item -Recurse -Force "dist\$name"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+
+  # ==========================
+  # 3. Publicar el release
+  # ==========================
+
+  publish:
+    needs: [check, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      # Un solo archivo de checksums
+      # para todo el release, para que
+      # los instaladores y Homebrew
+      # puedan verificar la descarga.
+      #
+      # Se escribe FUERA de artifacts/
+      # y luego se mueve dentro, para
+      # que el propio archivo no pueda
+      # acabar en su propia lista.
+      - name: Checksums
+        run: |
+          set -eu
+          ( cd artifacts && sha256sum -- * ) > SHA256SUMS.txt
+          mv SHA256SUMS.txt artifacts/
+          cat artifacts/SHA256SUMS.txt
+
+      - name: Crear el release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          gh release create "${{ needs.check.outputs.tag }}" \
+            --title "TzLang ${{ needs.check.outputs.tag }}" \
+            --generate-notes \
+            --verify-tag \
+            artifacts/*

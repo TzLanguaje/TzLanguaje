@@ -1,0 +1,81 @@
+# ==========================
+# CI - compilar y probar
+# ==========================
+#
+# Corre en cada push y cada PR, en
+# los tres sistemas. Si algo deja de
+# compilar en Windows, se sabe aqui
+# y no el dia del release.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux (gcc)
+            os: ubuntu-latest
+          - name: macOS (clang)
+            os: macos-latest
+          - name: Windows (MSVC)
+            os: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar
+        run: cmake -B build-ci -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compilar
+        run: cmake --build build-ci --config Release
+
+      # La suite es un script sh: solo
+      # corre en Unix. En Windows se
+      # comprueba que el binario
+      # arranca y ejecuta un programa.
+      - name: Probar (Unix)
+        if: runner.os != 'Windows'
+        run: ctest --test-dir build-ci --output-on-failure
+
+      - name: Probar (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tz = "build-ci\Release\tz.exe"
+          & $tz --version
+          & $tz examples\hola.tz
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # ==========================
+      # Los instaladores
+      # ==========================
+      #
+      # Nadie los ejecuta hasta el dia
+      # del release, asi que al menos
+      # que no tengan errores de
+      # sintaxis.
+
+      - name: Sintaxis de install.sh
+        if: runner.os == 'Linux'
+        run: sh -n install.sh
+
+      - name: Sintaxis de install.ps1
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $errores = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path .\install.ps1), [ref]$null, [ref]$errores) | Out-Null
+          if ($errores) { $errores; exit 1 }
+          Write-Host "install.ps1 OK"

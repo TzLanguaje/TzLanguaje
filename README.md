@@ -5,10 +5,12 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/tzerk-last/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/tzerk-last/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/versión-0.1.0-blue" alt="Versión 0.1.0">
   <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
   <img src="https://img.shields.io/badge/tests-138%20passed-success" alt="138 tests">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
+  <img src="https://img.shields.io/badge/plataformas-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="Plataformas">
 </p>
 
 ---
@@ -156,53 +158,108 @@ Aprobados: 2 de 3
 
 ## Instalación
 
-### Requisitos
+TzLang se distribuye como un **binario único sin dependencias**. Funciona en **macOS, Linux y Windows**.
 
-TzLang se compila con un compilador de C11, `make` y una shell POSIX. No necesita ninguna biblioteca externa.
-
-El desarrollo y la validación se han realizado sobre **macOS con Apple Clang**. El código está escrito siguiendo el estándar **C11** sin extensiones de compilador, y el `Makefile` usa reglas explícitas en lugar de patrones de GNU Make, por lo que se espera que funcione en otros entornos, pero **la compatibilidad con Linux, Windows y GCC todavía no está validada** en la práctica.
-
-En macOS, las herramientas de línea de órdenes se instalan con:
+### macOS y Linux
 
 ```bash
-xcode-select --install
+curl -fsSL https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.sh | sh
 ```
 
-### Compilar
+Descarga el binario de la última versión publicada, verifica su checksum SHA-256 y lo instala en `~/.local/bin/tz`. No requiere permisos de administrador.
+
+Para instalarlo en otro sitio, o para fijar una versión concreta:
+
+```bash
+TZ_PREFIX=/usr/local sh install.sh     # para todo el sistema (necesita sudo)
+TZ_VERSION=v0.1.0    sh install.sh     # una versión concreta
+```
+
+### Windows
+
+En PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.ps1 | iex
+```
+
+Instala en `%LOCALAPPDATA%\Programs\TzLang\bin` y añade esa carpeta al `PATH` del usuario. Tampoco necesita administrador. Abre una terminal nueva al terminar.
+
+### Gestores de paquetes
+
+```bash
+brew install tzerk-last/tzlang/tzlang        # macOS y Linux
+```
+
+```powershell
+scoop bucket add tzlang https://github.com/tzerk-last/scoop-tzlang
+scoop install tzlang                          # Windows
+```
+
+### Descarga manual
+
+Cada versión publica binarios en la [página de releases](https://github.com/tzerk-last/TzLanguaje/releases), junto con `SHA256SUMS.txt` para verificarlos:
+
+| Sistema | Archivo |
+|---|---|
+| macOS (Intel y Apple Silicon) | `tzlang-vX.Y.Z-macos-universal.tar.gz` |
+| Linux x86-64 | `tzlang-vX.Y.Z-linux-x86_64.tar.gz` |
+| Linux ARM64 | `tzlang-vX.Y.Z-linux-aarch64.tar.gz` |
+| Windows x86-64 | `tzlang-vX.Y.Z-windows-x86_64.zip` |
+
+Los binarios de Linux están enlazados estáticamente: funcionan en cualquier distribución sin depender de la versión de `glibc`.
+
+### Comprobar que funciona
+
+```bash
+tz --version
+```
+
+---
+
+## Compilar desde el código
+
+No hace falta ninguna biblioteca externa: basta un compilador de C11.
+
+### Con CMake (los tres sistemas)
+
+Es la vía recomendada, y la única que funciona en Windows.
 
 ```bash
 git clone https://github.com/tzerk-last/TzLanguaje.git
 cd TzLanguaje
-make
+cmake -B build-cmake -DCMAKE_BUILD_TYPE=Release
+cmake --build build-cmake
 ```
 
-El ejecutable se genera en `build/tzc` y ya se puede usar directamente:
+El ejecutable queda en `build-cmake/tz` (`build-cmake\Release\tz.exe` en Windows). Para instalarlo:
 
 ```bash
+cmake --install build-cmake --prefix ~/.local
+```
+
+En Windows sirve Visual Studio 2019 16.8 o posterior (por `/std:c11`), o MinGW-w64.
+
+### Con Make (macOS y Linux)
+
+Es el flujo de desarrollo del proyecto: `make test`, `make debug` y `make asan` viven aquí.
+
+```bash
+make
 ./build/tzc examples/hola.tz
 ```
 
-### Instalar el comando `tz`
-
-Para disponer de TzLang desde cualquier directorio:
+Para instalar el comando `tz`:
 
 ```bash
 sudo make install
 ```
 
-Esto copia `build/tzc` a `/usr/local/bin/tz`. A partir de ese momento:
-
-```bash
-tz programa.tz
-```
-
-El destino se puede cambiar con `PREFIX`, lo que además evita necesitar privilegios de administrador:
+Esto copia `build/tzc` a `/usr/local/bin/tz`. El destino se cambia con `PREFIX`, lo que además evita necesitar privilegios de administrador:
 
 ```bash
 make PREFIX=$HOME/.local install
 ```
-
-En ese caso el comando queda en `~/.local/bin/tz`, que debe estar en tu `PATH`.
 
 Para desinstalarlo:
 
@@ -211,6 +268,8 @@ sudo make uninstall
 ```
 
 > El `Makefile` nunca invoca `sudo` por su cuenta: eres tú quien decide si hace falta según el `PREFIX` elegido.
+
+En macOS, las herramientas de línea de órdenes se instalan con `xcode-select --install`.
 
 ---
 
@@ -660,7 +719,19 @@ TzLang/
 │   ├── run_tests.sh              suite principal
 │   └── run_education_tests.sh    suite educativa
 │
-├── Makefile
+├── .github/workflows/
+│   ├── ci.yml          compila y prueba en los tres sistemas
+│   └── release.yml     publica los binarios al etiquetar
+│
+├── packaging/
+│   ├── homebrew/       plantilla de la formula de Homebrew
+│   └── scoop/          plantilla del manifiesto de Scoop
+│
+├── install.sh          instalador para macOS y Linux
+├── install.ps1         instalador para Windows
+│
+├── CMakeLists.txt      build multiplataforma
+├── Makefile            build de desarrollo (Unix)
 ├── LICENSE
 └── README.md
 ```

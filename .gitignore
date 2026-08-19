@@ -1,2 +1,6 @@
 build/
+build-cmake/
+build-ci/
+build-rel/
+dist/
 *.o
