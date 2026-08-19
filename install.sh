@@ -4,7 +4,7 @@
 # Instalador de TzLang (macOS / Linux)
 # ==========================
 #
-#   curl -fsSL https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/TzLanguaje/TzLanguaje/main/install.sh | sh
 #
 # Descarga el binario del ultimo
 # release, lo verifica contra
@@ -24,7 +24,7 @@
 
 set -eu
 
-REPO="${TZ_REPO:-tzerk-last/TzLanguaje}"
+REPO="${TZ_REPO:-TzLanguaje/TzLanguaje}"
 PREFIX="${TZ_PREFIX:-$HOME/.local}"
 BIN_DIR="$PREFIX/bin"
 

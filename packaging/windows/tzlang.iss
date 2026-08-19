@@ -36,14 +36,14 @@
 #endif
 
 #define TzNombre "TzLang"
-#define TzUrl    "https://github.com/tzerk-last/TzLanguaje"
+#define TzUrl    "https://github.com/TzLanguaje/TzLanguaje"
 
 [Setup]
 AppId={{8F3A6C21-4B7D-4E9A-9C15-2D8E7A0B3F44}
 AppName={#TzNombre}
 AppVersion={#TzVersion}
 AppVerName={#TzNombre} {#TzVersion}
-AppPublisher=tzerk-last
+AppPublisher=TzLanguaje
 AppPublisherURL={#TzUrl}
 AppSupportURL={#TzUrl}/issues
 AppUpdatesURL={#TzUrl}/releases

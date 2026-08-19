@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/tzerk-last/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/tzerk-last/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/tzerk-last/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/tzerk-last/TzLanguaje?label=versión&color=blue" alt="Última versión"></a>
+  <a href="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/TzLanguaje/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/TzLanguaje/TzLanguaje?label=versión&color=blue" alt="Última versión"></a>
   <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
   <img src="https://img.shields.io/badge/tests-138%20passed-success" alt="138 tests">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/tzerk-last/TzLanguaje/releases/latest"><b>⬇ Descargar e instalar</b></a>
+  <a href="https://github.com/TzLanguaje/TzLanguaje/releases/latest"><b>⬇ Descargar e instalar</b></a>
   &nbsp;·&nbsp;
   <a href="#instalación">Guía de instalación</a>
   &nbsp;·&nbsp;
@@ -168,7 +168,7 @@ Aprobados: 2 de 3
 
 No hace falta compilar nada ni instalar dependencias. Descargas un archivo, lo abres, y listo.
 
-**Todos los instaladores están aquí: [página de descargas](https://github.com/tzerk-last/TzLanguaje/releases/latest)**
+**Todos los instaladores están aquí: [página de descargas](https://github.com/TzLanguaje/TzLanguaje/releases/latest)**
 
 Baja hasta **Assets** y elige el archivo que corresponda a tu ordenador:
 
@@ -274,7 +274,7 @@ Para quien prefiera la terminal, o quiera automatizar la instalación.
 **macOS y Linux**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/TzLanguaje/TzLanguaje/main/install.sh | sh
 ```
 
 Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de administrador. Se puede ajustar con `TZ_PREFIX` y `TZ_VERSION`:
@@ -287,17 +287,17 @@ TZ_VERSION=v0.1.1    sh install.sh
 **Windows**, en PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/TzLanguaje/TzLanguaje/main/install.ps1 | iex
 ```
 
 ### Gestores de paquetes
 
 ```bash
-brew install tzerk-last/tzlang/tzlang        # macOS y Linux
+brew install tzlanguaje/tzlang/tzlang        # macOS y Linux
 ```
 
 ```powershell
-scoop bucket add tzlang https://github.com/tzerk-last/scoop-tzlang
+scoop bucket add tzlang https://github.com/TzLanguaje/scoop-tzlang
 scoop install tzlang                          # Windows
 ```
 
@@ -325,7 +325,7 @@ No hace falta ninguna biblioteca externa: basta un compilador de C11.
 Es la vía recomendada, y la única que funciona en Windows.
 
 ```bash
-git clone https://github.com/tzerk-last/TzLanguaje.git
+git clone https://github.com/TzLanguaje/TzLanguaje.git
 cd TzLanguaje
 cmake -B build-cmake -DCMAKE_BUILD_TYPE=Release
 cmake --build build-cmake

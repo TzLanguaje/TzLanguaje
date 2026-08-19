@@ -86,8 +86,8 @@ Version: $VERSION
 Section: devel
 Priority: optional
 Architecture: $ARCO
-Maintainer: tzerk-last <https://github.com/tzerk-last>
-Homepage: https://github.com/tzerk-last/TzLanguaje
+Maintainer: TzLanguaje <https://github.com/TzLanguaje>
+Homepage: https://github.com/TzLanguaje/TzLanguaje
 Installed-Size: $TAMANO
 Description: Lenguaje de programacion educativo con sintaxis en espanol
  TzLang es un lenguaje interpretado pensado para aprender a programar

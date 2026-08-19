@@ -3,7 +3,7 @@
 Instalador de TzLang (Windows)
 ==========================
 
-  irm https://raw.githubusercontent.com/tzerk-last/TzLanguaje/main/install.ps1 | iex
+  irm https://raw.githubusercontent.com/TzLanguaje/TzLanguaje/main/install.ps1 | iex
 
 Descarga el binario del ultimo
 release, lo verifica contra
@@ -28,7 +28,7 @@ Ejemplo:
 param(
     [string] $Version = $env:TZ_VERSION,
     [string] $Prefix  = $env:TZ_PREFIX,
-    [string] $Repo    = $(if ($env:TZ_REPO) { $env:TZ_REPO } else { "tzerk-last/TzLanguaje" })
+    [string] $Repo    = $(if ($env:TZ_REPO) { $env:TZ_REPO } else { "TzLanguaje/TzLanguaje" })
 )
 
 $ErrorActionPreference = "Stop"

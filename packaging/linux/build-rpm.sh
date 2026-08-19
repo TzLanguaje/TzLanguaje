@@ -65,7 +65,7 @@ Release:        1
 Summary:        Lenguaje de programacion educativo con sintaxis en espanol
 
 License:        MIT
-URL:            https://github.com/tzerk-last/TzLanguaje
+URL:            https://github.com/TzLanguaje/TzLanguaje
 
 Source0:        tz
 Source1:        LICENSE

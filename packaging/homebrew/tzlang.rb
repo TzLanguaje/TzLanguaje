@@ -7,7 +7,7 @@
 # un repositorio aparte llamado
 # "tap", que por convencion se llama
 #
-#   tzerk-last/homebrew-tzlang
+#   TzLanguaje/homebrew-tzlang
 #
 # y dentro, en Formula/tzlang.rb
 #
@@ -22,12 +22,12 @@
 #   3. Pon el sha256 del tarball de
 #      la version. Se saca asi:
 #
-#      curl -fsSL https://github.com/tzerk-last/TzLanguaje/archive/refs/tags/v0.1.1.tar.gz \
+#      curl -fsSL https://github.com/TzLanguaje/TzLanguaje/archive/refs/tags/v0.1.1.tar.gz \
 #        | shasum -a 256
 #
 #   4. Los usuarios instalan con:
 #
-#      brew install tzerk-last/tzlang/tzlang
+#      brew install tzlanguaje/tzlang/tzlang
 #
 # Compila desde el codigo en vez de
 # descargar el binario: asi la misma
@@ -37,11 +37,11 @@
 
 class Tzlang < Formula
   desc "Lenguaje de programacion educativo con sintaxis en espanol"
-  homepage "https://github.com/tzerk-last/TzLanguaje"
-  url "https://github.com/tzerk-last/TzLanguaje/archive/refs/tags/v0.1.1.tar.gz"
+  homepage "https://github.com/TzLanguaje/TzLanguaje"
+  url "https://github.com/TzLanguaje/TzLanguaje/archive/refs/tags/v0.1.1.tar.gz"
   sha256 "PON_AQUI_EL_SHA256_DEL_TARBALL"
   license "MIT"
-  head "https://github.com/tzerk-last/TzLanguaje.git", branch: "main"
+  head "https://github.com/TzLanguaje/TzLanguaje.git", branch: "main"
 
   depends_on "cmake" => :build
 

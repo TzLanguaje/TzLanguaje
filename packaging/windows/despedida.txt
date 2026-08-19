@@ -23,7 +23,7 @@ La referencia completa del lenguaje
 esta en el README.md que acompana a
 la instalacion y en
 
-    https://github.com/tzerk-last/TzLanguaje
+    https://github.com/TzLanguaje/TzLanguaje
 
 Para desinstalarlo, usa "Agregar o
 quitar programas" de Windows.
