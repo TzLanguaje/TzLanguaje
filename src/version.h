@@ -18,7 +18,7 @@
  * ningun .c al build.
  */
 
-#define TZLANG_VERSION "0.1.0"
+#define TZLANG_VERSION "0.1.1"
 
 #define TZLANG_NAME "TzLang"
 

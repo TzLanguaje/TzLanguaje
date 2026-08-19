@@ -34,6 +34,18 @@ ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 TZC="${TZC:-$ROOT/build/tzc}"
 TESTS_DIR="$ROOT/tests"
 
+# La version sale de src/version.h, no
+# escrita a mano en los .expected: si
+# no, subir la version romperia estos
+# tests en cada release.
+VERSION=$(sed -n 's/.*TZLANG_VERSION "\([0-9.]*\)".*/\1/p' "$ROOT/src/version.h")
+
+# Copia una expectativa sustituyendo
+# @VERSION@ por la version real.
+expectativa_con_version() {
+    sed "s/@VERSION@/$VERSION/g" "$1" > "$TMP/expected"
+}
+
 if [ ! -x "$TZC" ]; then
     printf 'Error: no se encontro %s\n' "$TZC"
     printf 'Compila primero con: make\n'
@@ -188,16 +200,16 @@ cli_extra_tests() {
 
     # La ayuda y la version son multilinea, asi que la
     # expectativa vive en un archivo y no duplicada aqui.
-    cp "$TESTS_DIR/cli/help.expected" "$TMP/expected"
+    expectativa_con_version "$TESTS_DIR/cli/help.expected"
     cli_case "cli/help_long" 0 --help
 
-    cp "$TESTS_DIR/cli/help.expected" "$TMP/expected"
+    expectativa_con_version "$TESTS_DIR/cli/help.expected"
     cli_case "cli/help_short" 0 -h
 
-    cp "$TESTS_DIR/cli/version.expected" "$TMP/expected"
+    expectativa_con_version "$TESTS_DIR/cli/version.expected"
     cli_case "cli/version_long" 0 --version
 
-    cp "$TESTS_DIR/cli/version.expected" "$TMP/expected"
+    expectativa_con_version "$TESTS_DIR/cli/version.expected"
     cli_case "cli/version_short" 0 -v
 
     # opcion desconocida: no debe tratarse como archivo

@@ -1,4 +1,4 @@
-TzLang 0.1.0
+TzLang @VERSION@
 
 Uso:
   tzc <archivo.tz>

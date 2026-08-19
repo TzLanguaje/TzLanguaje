@@ -2,6 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * ==========================
+ * CONSOLA DE WINDOWS
+ * ==========================
+ *
+ * Unica concesion a una plataforma
+ * concreta en todo el proyecto, y
+ * esta aislada aqui.
+ *
+ * Los mensajes de TzLang llevan
+ * acentos y enes, y se emiten en
+ * UTF-8. La consola de Windows usa
+ * por defecto una pagina de codigos
+ * antigua, asi que sin esto un
+ * "Error en linea 1" sale escrito
+ * "l+-nea" y quien esta aprendiendo
+ * no entiende nada.
+ *
+ * En macOS y Linux no hace falta:
+ * el terminal ya es UTF-8.
+ */
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "version.h"
 
 #include "io/file.h"
@@ -250,6 +276,16 @@ static int ejecutar_fuente(
  */
 
 int main(int argc, char **argv) {
+
+    /*
+     * Lo PRIMERO, antes de imprimir
+     * nada: si no, el primer mensaje
+     * ya saldria roto.
+     */
+
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+#endif
 
     /*
      * Ni de menos ni de mas: un

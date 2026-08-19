@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/tzerk-last/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/tzerk-last/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/versión-0.1.0-blue" alt="Versión 0.1.0">
+  <a href="https://github.com/tzerk-last/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/tzerk-last/TzLanguaje?label=versión&color=blue" alt="Última versión"></a>
   <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
   <img src="https://img.shields.io/badge/tests-138%20passed-success" alt="138 tests">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
@@ -241,7 +241,7 @@ Escribe:
 tz --version
 ```
 
-Si responde `TzLang 0.1.0`, ya está instalado.
+Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.1.1`, ya está instalado.
 
 Si en cambio dice *«orden no encontrada»* o *«no se reconoce como un comando»*, casi siempre es una de dos cosas: la terminal estaba abierta desde antes de instalar (ciérrala y abre otra), o en Windows desmarcaste la casilla del PATH (vuelve a pasar el instalador y déjala marcada).
 
@@ -281,7 +281,7 @@ Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de adm
 
 ```bash
 TZ_PREFIX=/usr/local sh install.sh
-TZ_VERSION=v0.1.0    sh install.sh
+TZ_VERSION=v0.1.1    sh install.sh
 ```
 
 **Windows**, en PowerShell:
@@ -381,7 +381,7 @@ tz --version            # mostrar la versión (o -v)
 ```
 
 ```
-TzLang 0.1.0
+TzLang 0.1.1
 ```
 
 > Nota: la ayuda integrada todavía se refiere al ejecutable por su nombre de compilación, `tzc`, aunque lo hayas instalado como `tz`. Es una diferencia cosmética pendiente de unificar.
@@ -941,7 +941,7 @@ AñO
 
 ## Roadmap
 
-Lo que ya está terminado en la **0.1.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; suite de 138 pruebas; compilación con sanitizers e instalación mediante `make install`.
+Lo que ya está terminado en la **0.1.1**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; suite de 138 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
 
 Lo siguiente, por orden de prioridad:
 

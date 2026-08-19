@@ -15,13 +15,13 @@ administrador.
 
 Parametros:
 
-  -Version   version concreta (ej. v0.1.0). Por defecto, la ultima.
+  -Version   version concreta (ej. v0.1.1). Por defecto, la ultima.
   -Prefix    carpeta de instalacion.
   -Repo      owner/repo de GitHub.
 
 Ejemplo:
 
-  .\install.ps1 -Version v0.1.0
+  .\install.ps1 -Version v0.1.1
 #>
 
 [CmdletBinding()]
@@ -86,7 +86,7 @@ if (-not $Version) {
 
 Para instalar una version concreta:
 
-    `$env:TZ_VERSION = "v0.1.0"
+    `$env:TZ_VERSION = "v0.1.1"
     irm https://raw.githubusercontent.com/$Repo/main/install.ps1 | iex
 "@
 
