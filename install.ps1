@@ -67,7 +67,36 @@ if (-not $Version) {
                                  -Headers @{ "User-Agent" = "tzlang-installer" }
         $Version = $api.tag_name
     } catch {
-        Morir "no se pudo averiguar la ultima version. Prueba con: -Version v0.1.0"
+        # Distinguir los tres motivos
+        # habituales: sin releases, con
+        # el limite de la API agotado, o
+        # sin internet. Cada uno se
+        # arregla de forma distinta.
+        $codigo = $null
+        if ($_.Exception.PSObject.Properties['Response'] -and $_.Exception.Response) {
+            try { $codigo = [int] $_.Exception.Response.StatusCode } catch { }
+        }
+
+        # Ojo: con 'irm ... | iex' NO se
+        # pueden pasar parametros, asi
+        # que la salida se da con una
+        # variable de entorno, que si
+        # funciona.
+        $comoFijarVersion = @"
+
+Para instalar una version concreta:
+
+    `$env:TZ_VERSION = "v0.1.0"
+    irm https://raw.githubusercontent.com/$Repo/main/install.ps1 | iex
+"@
+
+        if ($codigo -eq 404) {
+            Morir "el repositorio $Repo todavia no tiene ninguna release publicada.$comoFijarVersion"
+        } elseif ($codigo -eq 403) {
+            Morir "GitHub ha limitado las consultas desde esta red. Espera unos minutos.$comoFijarVersion"
+        } else {
+            Morir "no se pudo consultar GitHub. Revisa tu conexion a internet.$comoFijarVersion"
+        }
     }
 }
 

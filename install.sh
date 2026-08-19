@@ -39,11 +39,16 @@ morir() { rojo "Error: $1"; exit 1; }
 # ==========================
 
 if command -v curl >/dev/null 2>&1; then
-    bajar() { curl -fsSL "$1" -o "$2"; }
-    leer()  { curl -fsSL "$1"; }
+    bajar()  { curl -fsSL "$1" -o "$2"; }
+    leer()   { curl -fsSL "$1"; }
+    # Para poder decir POR QUE fallo:
+    # 404 (no hay releases) no es lo
+    # mismo que no tener internet.
+    codigo() { curl -sSL -o /dev/null -w '%{http_code}' "$1" 2>/dev/null; }
 elif command -v wget >/dev/null 2>&1; then
-    bajar() { wget -qO "$2" "$1"; }
-    leer()  { wget -qO - "$1"; }
+    bajar()  { wget -qO "$2" "$1"; }
+    leer()   { wget -qO - "$1"; }
+    codigo() { echo ""; }
 else
     morir "hace falta curl o wget"
 fi
@@ -93,7 +98,23 @@ else
         sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' |
         head -n 1
     )"
-    [ -n "$version" ] || morir "no se pudo averiguar la ultima version. Prueba con TZ_VERSION=v0.1.0"
+    if [ -z "$version" ]; then
+
+        # Ojo: con 'curl | sh' la
+        # variable hay que ponerla en el
+        # sh, no en el curl. Por eso el
+        # ejemplo va escrito asi.
+        ayuda="
+Para instalar una version concreta:
+
+    curl -fsSL https://raw.githubusercontent.com/$REPO/main/install.sh | TZ_VERSION=v0.1.0 sh"
+
+        case "$(codigo "https://api.github.com/repos/$REPO/releases/latest")" in
+            404) morir "el repositorio $REPO todavia no tiene ninguna release publicada.$ayuda" ;;
+            403) morir "GitHub ha limitado las consultas desde esta red. Espera unos minutos.$ayuda" ;;
+            *)   morir "no se pudo consultar GitHub. Revisa tu conexion a internet.$ayuda" ;;
+        esac
+    fi
 fi
 
 archivo="tzlang-$version-$target.tar.gz"
