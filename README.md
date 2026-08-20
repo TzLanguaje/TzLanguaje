@@ -751,6 +751,29 @@ imprimir b["datos"]["edad"]
 
 ---
 
+## Entrada del usuario
+
+`entrada()` pide un dato por teclado. Muestra el mensaje, espera a que la persona escriba una línea y **devuelve siempre un texto**:
+
+```tz
+variable nombre = entrada("¿Cómo te llamas? ")
+imprimir "Hola, " + nombre
+
+variable edad = numero(entrada("¿Cuántos años tienes? "))
+imprimir "El año que viene tendrás " + texto(edad + 1)
+```
+
+```
+¿Cómo te llamas? Ana
+Hola, Ana
+¿Cuántos años tienes? 30
+El año que viene tendrás 31
+```
+
+Para trabajar con números hay que convertir con `numero()` o `decimal()`. Si no hay nada que leer —la entrada está cerrada, o el programa corre en un servidor de integración continua— devuelve un texto vacío en lugar de fallar.
+
+---
+
 ## Funciones incorporadas
 
 TzLang incluye 16 funciones integradas:
@@ -896,7 +919,8 @@ TzLang/
 │   └── version.h       número de versión
 │
 ├── examples/           programas de ejemplo
-├── education/          lecciones con salida esperada
+├── education/          cinco lecciones con salida esperada
+│                       y el prompt generador de ejercicios
 ├── docs/
 │   └── language.md     referencia completa del lenguaje
 │
@@ -915,6 +939,9 @@ TzLang/
 │   ├── npm/            paquetes de npm y su lanzador
 │   ├── homebrew/       plantilla de la formula de Homebrew
 │   └── scoop/          plantilla del manifiesto de Scoop
+│
+├── scripts/
+│   └── subir-version.sh
 │
 ├── install.sh          instalador para macOS y Linux
 ├── install.ps1         instalador para Windows
@@ -1020,23 +1047,22 @@ AñO
 
 `largo("año")` devuelve `4` en lugar de `3`, y `mayusculas` deja intacta la `ñ` porque ocupa dos bytes. Es la limitación más visible para un lenguaje pensado en español, y la primera de la lista para arreglar.
 
-**Ausencias del lenguaje.** No hay módulos ni importaciones, clases, funciones anónimas, generadores, conjuntos, tuplas, recolector de basura ni enteros de precisión arbitraria. Tampoco existe el operador de módulo (`%`).
+**Paso de argumentos.** Las funciones reciben **copias** de listas y diccionarios, no referencias. Modificar una dentro de una función no afecta a la de fuera; hay que devolverla. Es lo contrario de Python o JavaScript, y sorprende a quien viene de ahí.
 
-**Plataformas.** Solo se ha validado sobre macOS con Apple Clang.
+**Ausencias del lenguaje.** No hay módulos ni importaciones, clases, funciones anónimas, generadores, conjuntos, tuplas, recolector de basura ni enteros de precisión arbitraria.
 
 ---
 
 ## Roadmap
 
-Lo que ya está terminado en la **0.3.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 17 funciones incorporadas; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; suite de 163 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
+Lo que ya está terminado en la **0.3.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos —resto incluido—, de comparación y lógicos; sintaxis comparativa en español; condicionales con `sino si`, bucles, `romper` y `continuar`; secuencias de escape en textos; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda, índices negativos y concatenación; 17 funciones incorporadas, con entrada por teclado; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; cinco lecciones en `education/`; suite de 163 pruebas verde también bajo ASan y UBSan; CI que compila y prueba en Linux, macOS y Windows; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
 
 Lo siguiente, por orden de prioridad:
 
-- Soporte real de Unicode en textos y funciones de cadena.
-- Ampliar el temario de `education/` con más lecciones.
+- Soporte real de Unicode en textos y funciones de cadena. Es la limitación más visible para un lenguaje en español.
+- Seguir ampliando `education/` con más lecciones y ejercicios.
 - Mensajes de error con número de línea y contexto en todas las etapas.
-- Validar de verdad la compilación en Linux y con GCC.
-- Unificar el nombre del comando en la ayuda integrada.
+- Decidir si el paso de argumentos debe seguir siendo por copia.
 - Sistema de módulos.
 
 No hay fechas comprometidas: es un proyecto en desarrollo.
