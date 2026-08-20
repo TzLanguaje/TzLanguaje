@@ -73,12 +73,59 @@ target_include_directories(tz PRIVATE src)
 # ==========================
 
 if(MSVC)
-    # /utf8: los literales del codigo
-    # llevan acentos y MSVC asume la
-    # codepage del sistema si no se
-    # le dice lo contrario.
-    target_compile_options(tz PRIVATE /W4 /utf8)
+
+    target_compile_options(tz PRIVATE /W4)
     target_compile_definitions(tz PRIVATE _CRT_SECURE_NO_WARNINGS)
+
+    # ==========================
+    # CODIFICACION DEL FUENTE
+    # ==========================
+    #
+    # Los literales del codigo llevan
+    # acentos y enes. Sin decirle
+    # nada, MSVC lee el fuente con la
+    # pagina de codigos del sistema,
+    # que no tiene por que ser UTF-8.
+    #
+    # La opcion se PREGUNTA en vez de
+    # darla por hecha: pasar /utf8 a
+    # un cl que no la conoce no falla,
+    # solo suelta
+    #
+    #   warning D9002: ignoring
+    #   unknown option '/utf8'
+    #
+    # en cada compilacion, y encima
+    # deja el fuente sin declarar. Con
+    # check_c_compiler_flag se aplica
+    # solo donde sirve, y no hay aviso
+    # donde no.
+
+    include(CheckCCompilerFlag)
+
+    check_c_compiler_flag("/utf8" TZ_ACEPTA_UTF8)
+
+    if(TZ_ACEPTA_UTF8)
+        target_compile_options(tz PRIVATE /utf8)
+    else()
+        # /utf8 es la forma corta de
+        # estas dos, que existen desde
+        # antes. Si la corta no esta,
+        # puede que las largas si.
+        check_c_compiler_flag("/source-charset:utf-8" TZ_ACEPTA_SOURCE_CHARSET)
+
+        if(TZ_ACEPTA_SOURCE_CHARSET)
+            target_compile_options(tz PRIVATE
+                /source-charset:utf-8
+                /execution-charset:utf-8
+            )
+        else()
+            message(WARNING
+                "Este compilador no acepta ni /utf8 ni /source-charset. "
+                "Los acentos de los mensajes podrian salir mal.")
+        endif()
+    endif()
+
 else()
     target_compile_options(tz PRIVATE -Wall -Wextra)
 endif()
