@@ -838,7 +838,9 @@ TzLang trae su propio icono, y los instaladores lo registran para que el explora
 |---|---|
 | **Windows** | Funciona. El instalador asocia los `.tz` y les pone el icono. También lo lleva el propio instalador y la entrada de *Agregar o quitar programas*. |
 | **Linux** | Funciona con los paquetes `.deb` y `.rpm`, que declaran el tipo `text/x-tzlang` e instalan el icono en siete tamaños. |
-| **macOS** | No. Poner icono a un tipo de archivo exige empaquetar una aplicación `.app` con declaraciones de tipo; un programa de línea de órdenes no puede hacerlo. Los `.tz` se ven con el icono genérico de texto. |
+| **macOS** | Funciona. El `.pkg` instala además `TzLang.app` en Aplicaciones, que declara el tipo de archivo y permite **ejecutar un `.tz` con doble clic**: abre el Terminal y lo corre. |
+
+En macOS hace falta esa aplicación porque el icono de un tipo de archivo **solo** se puede declarar desde el `Info.plist` de una app: un programa de línea de órdenes no tiene dónde hacerlo. Ya que hacía falta, se aprovecha para dar el doble clic.
 
 Los iconos se regeneran desde el original con:
 

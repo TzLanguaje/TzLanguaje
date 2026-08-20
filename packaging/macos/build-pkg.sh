@@ -74,6 +74,26 @@ mkdir -p "$TMP/root/usr/local/share/doc/tzlang"
 cp "$RAIZ/LICENSE" "$RAIZ/README.md" "$TMP/root/usr/local/share/doc/tzlang/"
 
 # ==========================
+# TzLang.app
+# ==========================
+#
+# En macOS el icono de un tipo de
+# archivo SOLO se puede declarar desde
+# el Info.plist de una aplicacion. Esta
+# es minima: recibe los .tz y los
+# ejecuta en el Terminal, con lo que
+# ademas da doble clic para ejecutar.
+#
+# Va a /Applications porque
+# LaunchServices registra solo lo que
+# encuentra ahi.
+
+sh "$RAIZ/packaging/macos/app/construir-app.sh" "$TMP/apps" >/dev/null
+
+mkdir -p "$TMP/root/Applications"
+cp -R "$TMP/apps/TzLang.app" "$TMP/root/Applications/"
+
+# ==========================
 # 2. COMPONENTE
 # ==========================
 

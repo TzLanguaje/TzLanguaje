@@ -112,4 +112,34 @@ print("   %s (%d imagenes, %.0f KB)" % (
     os.path.basename(destino), len(imagenes), len(salida) / 1024))
 PYTHON
 
+# ==========================
+# .icns para macOS
+# ==========================
+#
+# iconutil exige una carpeta .iconset
+# con nombres exactos, incluidas las
+# versiones @2x para pantallas Retina.
+
+echo "Empaquetando tzlang.icns..."
+
+SET="$AQUI/.tzlang.iconset"
+rm -rf "$SET"
+mkdir -p "$SET"
+
+sips -c "$RECORTE" "$RECORTE" "$ORIGEN" --out "$AQUI/.recortado.png" >/dev/null 2>&1
+
+for par in "16 icon_16x16" "32 icon_16x16@2x" "32 icon_32x32" "64 icon_32x32@2x" \
+           "128 icon_128x128" "256 icon_128x128@2x" "256 icon_256x256" \
+           "512 icon_256x256@2x" "512 icon_512x512" "1024 icon_512x512@2x"; do
+    px="${par% *}"
+    nombre="${par#* }"
+    sips -z "$px" "$px" "$AQUI/.recortado.png" --out "$SET/$nombre.png" >/dev/null 2>&1
+done
+
+iconutil -c icns "$SET" -o "$AQUI/tzlang.icns"
+
+rm -rf "$SET" "$AQUI/.recortado.png"
+
+printf '   tzlang.icns (%s KB)\n' "$(( $(wc -c < "$AQUI/tzlang.icns") / 1024 ))"
+
 echo "Listo."
