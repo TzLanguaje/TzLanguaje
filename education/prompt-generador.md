@@ -209,6 +209,7 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 - **Comillas simples** no existen: los textos van con `"` dobles. `'Hola'` da error.
 - **Notación de punto** no existe: es `persona["nombre"]`, nunca `persona.nombre`.
 - **`texto()` no convierte listas ni diccionarios.** Para verlos, `imprimir lista` directamente.
+- **Las palabras del lenguaje no valen como nombres de variable.** `variable y = 5` falla porque `y` es el operador lógico. Cuidado con `y`, `o`, `no`, `si`, `a`, `de`, `que`: son cortas y tentadoras. Usa `resultado`, `total`, `altura`.
 - `romper` y `continuar` solo valen dentro de un `mientras` o un `para cada`.
 - Los bloques se cierran **siempre** con `fin`.
 - Cada instrucción va en su propia línea.
@@ -236,6 +237,7 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 
 ## Detalles de comportamiento
 
+- Los decimales se imprimen con hasta 15 cifras significativas: `3.14159265358979` sale entero, y `0.1 + 0.2` da `0.3`.
 - **Un decimal con valor entero se imprime SIN decimales.** Esto es lo que más estropea las salidas esperadas:
 
   ```tz

@@ -853,8 +853,37 @@ static void value_print_nested(
 
         case VALUE_DECIMAL:
 
+            /*
+             * %g a secas corta a 6
+             * cifras significativas:
+             * 3.14159265358979 salia
+             * "3.14159" y 3141592.65
+             * salia "3.14159e+06".
+             *
+             * 15 cifras conservan lo que
+             * el usuario escribio y
+             * evitan la notacion
+             * cientifica en cualquier
+             * rango normal.
+             *
+             * No se usan 17 (las que
+             * hacen falta para
+             * reconstruir un double
+             * exacto) porque entonces
+             * asoma el ruido de la coma
+             * flotante: 0.1 + 0.2 se
+             * imprimiria
+             * 0.30000000000000004, que
+             * en un lenguaje para
+             * aprender no ayuda a nadie.
+             *
+             * %g sigue quitando los
+             * ceros finales, asi que 8.0
+             * se sigue viendo "8".
+             */
+
             printf(
-                "%g",
+                "%.15g",
                 value.data.decimal
             );
 

@@ -1,0 +1,13 @@
+// Los decimales se imprimen con 15 cifras
+// significativas: ni truncados a 6, ni con
+// el ruido de la coma flotante.
+
+imprimir 3.14159265358979
+imprimir 3141592.65
+imprimir 0.1 + 0.2
+imprimir 1.0 / 3.0
+
+// un decimal con valor entero sigue
+// viendose sin decimales
+imprimir 8.0
+imprimir 2.5

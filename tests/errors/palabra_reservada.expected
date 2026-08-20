@@ -1,0 +1,2 @@
+Error del Parser en línea 5: 'y' es una palabra reservada del lenguaje y no puede ser el nombre de una variable.
+Error construyendo AST.

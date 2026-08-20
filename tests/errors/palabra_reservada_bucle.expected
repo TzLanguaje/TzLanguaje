@@ -1,0 +1,2 @@
+Error del Parser en línea 1: 'o' es una palabra reservada del lenguaje y no puede ser el nombre de la variable del bucle.
+Error construyendo AST.

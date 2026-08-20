@@ -1773,6 +1773,42 @@ static ASTNode *parse_variable(
         )
     ) {
 
+        /*
+         * Si lo que hay es una palabra
+         * del lenguaje, decirlo. 'y',
+         * 'o' y 'no' son los operadores
+         * logicos, y a la vez nombres
+         * muy tentadores para una
+         * variable: sin este mensaje,
+         * "se esperaba el nombre" cuando
+         * acabas de escribir uno no hay
+         * quien lo entienda.
+         */
+
+        {
+            const char *reservada =
+                name == NULL
+                    ? NULL
+                    : lexer_palabra_reservada(name->type);
+
+            if (reservada != NULL) {
+
+                char detalle[160];
+
+                snprintf(
+                    detalle,
+                    sizeof(detalle),
+                    "'%s' es una palabra reservada del lenguaje "
+                    "y no puede ser el nombre de una variable.",
+                    reservada
+                );
+
+                parser_error(parser, detalle);
+
+                return NULL;
+            }
+        }
+
         parser_error(
             parser,
             "Se esperaba el nombre de la variable."
@@ -2925,6 +2961,30 @@ static ASTNode *parse_for_each(
             !is_contextual_name(name->type)
         )
     ) {
+
+        {
+            const char *reservada =
+                name == NULL
+                    ? NULL
+                    : lexer_palabra_reservada(name->type);
+
+            if (reservada != NULL) {
+
+                char detalle[170];
+
+                snprintf(
+                    detalle,
+                    sizeof(detalle),
+                    "'%s' es una palabra reservada del lenguaje "
+                    "y no puede ser el nombre de la variable del bucle.",
+                    reservada
+                );
+
+                parser_error(parser, detalle);
+
+                return NULL;
+            }
+        }
 
         parser_error(
             parser,

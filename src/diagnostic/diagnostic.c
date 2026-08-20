@@ -92,6 +92,10 @@ DiagnosticCategoria diagnostic_categoria_de_mensaje(const char *mensaje) {
      * es el contexto.
      */
 
+    if (strstr(mensaje, "palabra reservada") != NULL) {
+        return DIAG_PALABRA_CLAVE_FUERA_DE_LUGAR;
+    }
+
     if (strstr(mensaje, "solo puede utilizarse") != NULL) {
         return DIAG_PALABRA_CLAVE_FUERA_DE_LUGAR;
     }

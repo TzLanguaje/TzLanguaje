@@ -260,4 +260,22 @@ const char *token_type_name(
     TokenType type
 );
 
+/*
+ * ==========================
+ * PALABRAS RESERVADAS
+ * ==========================
+ *
+ * Si el tipo corresponde a una palabra
+ * clave del lenguaje, devuelve como se
+ * escribe. Si no, NULL.
+ *
+ * Lo usa el parser para poder decir
+ * "'y' es una palabra reservada" en
+ * vez de "se esperaba un nombre",
+ * cuando alguien intenta llamar asi a
+ * una variable.
+ */
+
+const char *lexer_palabra_reservada(TokenType tipo);
+
 #endif

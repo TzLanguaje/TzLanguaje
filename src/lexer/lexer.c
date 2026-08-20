@@ -1236,3 +1236,20 @@ void lexer_free_tokens(
 
     free(tokens);
 }
+
+const char *lexer_palabra_reservada(TokenType tipo) {
+
+    size_t i;
+
+    for (
+        i = 0;
+        i < sizeof(keywords) / sizeof(keywords[0]);
+        i++
+    ) {
+        if (keywords[i].type == tipo) {
+            return keywords[i].word;
+        }
+    }
+
+    return NULL;
+}

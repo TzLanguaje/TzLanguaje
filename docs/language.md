@@ -1,4 +1,4 @@
-# TzLang 0.3.0 - Documentación del Lenguaje
+# TzLang 0.3.1 - Documentación del Lenguaje
 
 ## 1. Hola mundo
 
@@ -991,7 +991,7 @@ tz --version
 tz -v
 ```
 
-Actualmente la versión definida en el proyecto es: **TzLang 0.3.0**
+Actualmente la versión definida en el proyecto es: **TzLang 0.3.1**
 
 Una opción desconocida produce un error:
 
@@ -1239,7 +1239,7 @@ fin
 
 ## 37. Estado de TzLang
 
-La versión actual es: **TzLang 0.3.0**
+La versión actual es: **TzLang 0.3.1**
 
 El lenguaje actualmente dispone de:
 

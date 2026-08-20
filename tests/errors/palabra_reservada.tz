@@ -1,0 +1,5 @@
+// 'y' es el operador logico: no puede ser
+// el nombre de una variable. El mensaje
+// tiene que decirlo, no limitarse a
+// "se esperaba un nombre".
+variable y = 5
