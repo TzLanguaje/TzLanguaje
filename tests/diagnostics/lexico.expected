@@ -1,0 +1,6 @@
+Lexer error at line 1: unexpected character '@'
+Error ejecutando Lexer.
+
+Un carácter que el lenguaje no reconoce.
+
+Basta uno para que nada de lo demás llegue a leerse.

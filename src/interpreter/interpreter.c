@@ -1,4 +1,6 @@
 #include "interpreter.h"
+
+#include "../diagnostic/diagnostic.h"
 #include "../runtime/operations.h"
 
 #include <ctype.h>
@@ -938,6 +940,8 @@ static int evaluate_expression(
             )
         ) {
 
+            diagnostic_registrar(DIAG_VARIABLE_NO_DEFINIDA);
+
             fprintf(
                 stderr,
                 "Error: variable '%s' no existe.\n",
@@ -1434,6 +1438,8 @@ static int evaluate_expression(
 
             if (key.type != VALUE_STRING) {
 
+                diagnostic_registrar(DIAG_TIPO);
+
                 fprintf(
                     stderr,
                     "Error: la clave de un diccionario debe ser un texto, no %s.\n",
@@ -1531,6 +1537,8 @@ static int evaluate_expression(
             object.type != VALUE_DICTIONARY
         ) {
 
+            diagnostic_registrar(DIAG_TIPO);
+
             fprintf(
                 stderr,
                 "Error: solo se puede indexar una lista o un diccionario, no %s.\n",
@@ -1566,6 +1574,8 @@ static int evaluate_expression(
 
             if (index.type != VALUE_NUMBER) {
 
+                diagnostic_registrar(DIAG_TIPO);
+
                 fprintf(
                     stderr,
                     "Error: el índice debe ser un numero, no %s.\n",
@@ -1584,6 +1594,8 @@ static int evaluate_expression(
                 value_list_at(object, position);
 
             if (item == NULL) {
+
+                diagnostic_registrar(DIAG_INDICE);
 
                 fprintf(
                     stderr,
@@ -1622,6 +1634,8 @@ static int evaluate_expression(
 
         if (index.type != VALUE_STRING) {
 
+            diagnostic_registrar(DIAG_TIPO);
+
             fprintf(
                 stderr,
                 "Error: la clave debe ser un texto, no %s.\n",
@@ -1641,6 +1655,8 @@ static int evaluate_expression(
             );
 
         if (item == NULL) {
+
+            diagnostic_registrar(DIAG_CLAVE);
 
             fprintf(
                 stderr,
@@ -1856,6 +1872,8 @@ static int resolve_lvalue(
 
         if (reference == NULL) {
 
+            diagnostic_registrar(DIAG_VARIABLE_NO_DEFINIDA);
+
             fprintf(
                 stderr,
                 "Error: variable '%s' no existe.\n",
@@ -1880,6 +1898,8 @@ static int resolve_lvalue(
             slot
         );
     }
+
+    diagnostic_registrar(DIAG_ARGUMENTO);
 
     fprintf(
         stderr,
@@ -1958,6 +1978,8 @@ static int builtin_texto(
 
         default:
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: texto() no puede convertir %s.\n",
@@ -1992,6 +2014,8 @@ static int builtin_numero(
 
         if (!decimal_cabe_en_numero(value.data.decimal)) {
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: numero() no puede convertir %g.\n",
@@ -2018,6 +2042,8 @@ static int builtin_numero(
 
         if (text == NULL || text[0] == '\0') {
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: numero() no puede convertir un texto vacío.\n"
@@ -2033,6 +2059,8 @@ static int builtin_numero(
         long long parsed = strtoll(text, &end, 10);
 
         if (end == text || *end != '\0') {
+
+            diagnostic_registrar(DIAG_ARGUMENTO);
 
             fprintf(
                 stderr,
@@ -2055,6 +2083,8 @@ static int builtin_numero(
             parsed > (long long)INT_MAX
         ) {
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: el número %s está fuera del rango permitido "
@@ -2069,6 +2099,8 @@ static int builtin_numero(
 
         return 1;
     }
+
+    diagnostic_registrar(DIAG_ARGUMENTO);
 
     fprintf(
         stderr,
@@ -2109,6 +2141,8 @@ static int builtin_decimal(
 
         if (text == NULL || text[0] == '\0') {
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: decimal() no puede convertir un texto vacío.\n"
@@ -2123,6 +2157,8 @@ static int builtin_decimal(
 
         if (end == text || *end != '\0') {
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: decimal() no puede convertir el texto '%s'.\n",
@@ -2136,6 +2172,8 @@ static int builtin_decimal(
 
         return 1;
     }
+
+    diagnostic_registrar(DIAG_ARGUMENTO);
 
     fprintf(
         stderr,
@@ -2188,6 +2226,8 @@ static int builtin_largo(
 
         return 1;
     }
+
+    diagnostic_registrar(DIAG_ARGUMENTO);
 
     fprintf(
         stderr,
@@ -2255,6 +2295,8 @@ static int builtin_contiene(
 
         if (needle.type != VALUE_STRING) {
 
+            diagnostic_registrar(DIAG_TIPO);
+
             fprintf(
                 stderr,
                 "Error: la clave debe ser un texto, no %s.\n",
@@ -2274,6 +2316,8 @@ static int builtin_contiene(
 
         return 1;
     }
+
+    diagnostic_registrar(DIAG_ARGUMENTO);
 
     fprintf(
         stderr,
@@ -2306,6 +2350,8 @@ static int builtin_unir(
 
     if (list.type != VALUE_LIST) {
 
+        diagnostic_registrar(DIAG_ARGUMENTO);
+
         fprintf(
             stderr,
             "Error: unir() necesita una lista, no %s.\n",
@@ -2316,6 +2362,8 @@ static int builtin_unir(
     }
 
     if (separator.type != VALUE_STRING) {
+
+        diagnostic_registrar(DIAG_ARGUMENTO);
 
         fprintf(
             stderr,
@@ -2339,6 +2387,8 @@ static int builtin_unir(
         Value *item = value_list_at(list, i);
 
         if (item->type != VALUE_STRING) {
+
+            diagnostic_registrar(DIAG_ARGUMENTO);
 
             fprintf(
                 stderr,
@@ -2421,6 +2471,8 @@ static int builtin_separar(
 
     if (text.type != VALUE_STRING) {
 
+        diagnostic_registrar(DIAG_ARGUMENTO);
+
         fprintf(
             stderr,
             "Error: separar() necesita un texto, no %s.\n",
@@ -2431,6 +2483,8 @@ static int builtin_separar(
     }
 
     if (separator.type != VALUE_STRING) {
+
+        diagnostic_registrar(DIAG_ARGUMENTO);
 
         fprintf(
             stderr,
@@ -2543,6 +2597,8 @@ static int builtin_cambiar_caja(
 
     if (text.type != VALUE_STRING) {
 
+        diagnostic_registrar(DIAG_ARGUMENTO);
+
         fprintf(
             stderr,
             "Error: %s() solo funciona con texto, no %s.\n",
@@ -2635,6 +2691,8 @@ static int builtin_absoluto(
         return 1;
     }
 
+    diagnostic_registrar(DIAG_ARGUMENTO);
+
     fprintf(
         stderr,
         "Error: absoluto() solo funciona con numero o decimal, no %s.\n",
@@ -2688,6 +2746,8 @@ static int builtin_redondear(
 
         if (!(d >= -9.0e18 && d <= 9.0e18)) {
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: redondear() no puede convertir %g a numero.\n",
@@ -2707,6 +2767,8 @@ static int builtin_redondear(
             rounded > (long long)INT_MAX
         ) {
 
+            diagnostic_registrar(DIAG_ARGUMENTO);
+
             fprintf(
                 stderr,
                 "Error: redondear() no puede convertir %g a numero.\n",
@@ -2720,6 +2782,8 @@ static int builtin_redondear(
 
         return 1;
     }
+
+    diagnostic_registrar(DIAG_ARGUMENTO);
 
     fprintf(
         stderr,
@@ -2750,6 +2814,8 @@ static int builtin_claves_valores(
 ) {
 
     if (dictionary.type != VALUE_DICTIONARY) {
+
+        diagnostic_registrar(DIAG_ARGUMENTO);
 
         fprintf(
             stderr,
@@ -2886,6 +2952,8 @@ static int call_builtin(
 
             if (target->type != VALUE_LIST) {
 
+                diagnostic_registrar(DIAG_ARGUMENTO);
+
                 fprintf(
                     stderr,
                     "Error: agregar() solo funciona con listas, no %s.\n",
@@ -2928,6 +2996,8 @@ static int call_builtin(
 
             if (argument.type != VALUE_NUMBER) {
 
+                diagnostic_registrar(DIAG_TIPO);
+
                 fprintf(
                     stderr,
                     "Error: el índice debe ser un numero, no %s.\n",
@@ -2950,6 +3020,8 @@ static int call_builtin(
                     &removed
                 )
             ) {
+
+                diagnostic_registrar(DIAG_INDICE);
 
                 fprintf(
                     stderr,
@@ -2983,6 +3055,8 @@ static int call_builtin(
 
             if (argument.type != VALUE_STRING) {
 
+                diagnostic_registrar(DIAG_TIPO);
+
                 fprintf(
                     stderr,
                     "Error: la clave debe ser un texto, no %s.\n",
@@ -3004,6 +3078,8 @@ static int call_builtin(
                 )
             ) {
 
+                diagnostic_registrar(DIAG_CLAVE);
+
                 fprintf(
                     stderr,
                     "Error: la clave '%s' no existe en el diccionario.\n",
@@ -3021,6 +3097,8 @@ static int call_builtin(
 
             return 1;
         }
+
+        diagnostic_registrar(DIAG_ARGUMENTO);
 
         fprintf(
             stderr,
@@ -3438,6 +3516,8 @@ static int resolve_index_slot(
 
         if (container == NULL) {
 
+            diagnostic_registrar(DIAG_VARIABLE_NO_DEFINIDA);
+
             fprintf(
                 stderr,
                 "Error: variable '%s' no existe.\n",
@@ -3495,6 +3575,8 @@ static int resolve_index_slot(
         container->type != VALUE_DICTIONARY
     ) {
 
+        diagnostic_registrar(DIAG_TIPO);
+
         fprintf(
             stderr,
             "Error: solo se puede indexar una lista o un diccionario, no %s.\n",
@@ -3532,6 +3614,8 @@ static int resolve_index_slot(
 
         if (index.type != VALUE_NUMBER) {
 
+            diagnostic_registrar(DIAG_TIPO);
+
             fprintf(
                 stderr,
                 "Error: el índice debe ser un numero, no %s.\n",
@@ -3551,6 +3635,8 @@ static int resolve_index_slot(
         value_free(&index);
 
         if (item == NULL) {
+
+            diagnostic_registrar(DIAG_INDICE);
 
             fprintf(
                 stderr,
@@ -3585,6 +3671,8 @@ static int resolve_index_slot(
 
     if (index.type != VALUE_STRING) {
 
+        diagnostic_registrar(DIAG_TIPO);
+
         fprintf(
             stderr,
             "Error: la clave debe ser un texto, no %s.\n",
@@ -3605,6 +3693,8 @@ static int resolve_index_slot(
     if (item == NULL) {
 
         if (!create) {
+
+            diagnostic_registrar(DIAG_CLAVE);
 
             fprintf(
                 stderr,
@@ -3783,6 +3873,8 @@ static ExecutionResult execute_statement(
                 node->data.assignment.name
             )
         ) {
+
+            diagnostic_registrar(DIAG_VARIABLE_NO_DEFINIDA);
 
             fprintf(
                 stderr,

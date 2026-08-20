@@ -44,6 +44,7 @@ ASAN_FLAGS  = -Wall -Wextra -std=c11 -g -O1 \
 
 SRC = \
 	src/main.c \
+	src/diagnostic/diagnostic.c \
 	src/io/console.c \
 	src/io/file.c \
 	src/lexer/lexer.c \
@@ -55,6 +56,7 @@ SRC = \
 
 OBJ = \
 	build/main.o \
+	build/diagnostic/diagnostic.o \
 	build/io/console.o \
 	build/io/file.o \
 	build/lexer/lexer.o \
@@ -97,12 +99,17 @@ $(TARGET): $(OBJ)
 # de modo que tocar un header solo
 # recompila a quien lo usa.
 
-build/main.o: src/main.c src/version.h src/io/console.h src/io/file.h \
+build/main.o: src/main.c src/version.h src/diagnostic/diagnostic.h src/io/console.h src/io/file.h \
               src/lexer/lexer.h src/parser/parser.h \
               src/ast/ast.h src/interpreter/interpreter.h \
               src/runtime/value.h
 	@mkdir -p build
 	$(CC) $(CFLAGS) -c src/main.c -o build/main.o
+
+build/diagnostic/diagnostic.o: src/diagnostic/diagnostic.c \
+                               src/diagnostic/diagnostic.h src/io/console.h
+	@mkdir -p build/diagnostic
+	$(CC) $(CFLAGS) -c src/diagnostic/diagnostic.c -o build/diagnostic/diagnostic.o
 
 build/io/console.o: src/io/console.c src/io/console.h
 	@mkdir -p build/io
@@ -112,11 +119,11 @@ build/io/file.o: src/io/file.c src/io/file.h
 	@mkdir -p build/io
 	$(CC) $(CFLAGS) -c src/io/file.c -o build/io/file.o
 
-build/lexer/lexer.o: src/lexer/lexer.c src/lexer/lexer.h
+build/lexer/lexer.o: src/lexer/lexer.c src/lexer/lexer.h src/diagnostic/diagnostic.h
 	@mkdir -p build/lexer
 	$(CC) $(CFLAGS) -c src/lexer/lexer.c -o build/lexer/lexer.o
 
-build/parser/parser.o: src/parser/parser.c src/parser/parser.h \
+build/parser/parser.o: src/parser/parser.c src/parser/parser.h src/diagnostic/diagnostic.h \
                        src/ast/ast.h src/lexer/lexer.h
 	@mkdir -p build/parser
 	$(CC) $(CFLAGS) -c src/parser/parser.c -o build/parser/parser.o
@@ -127,6 +134,7 @@ build/ast/ast.o: src/ast/ast.c src/ast/ast.h
 
 build/interpreter/interpreter.o: src/interpreter/interpreter.c \
                                  src/interpreter/interpreter.h \
+                                 src/diagnostic/diagnostic.h \
                                  src/ast/ast.h src/runtime/value.h \
                                  src/runtime/operations.h
 	@mkdir -p build/interpreter

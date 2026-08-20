@@ -1,5 +1,7 @@
 #include "lexer.h"
 
+#include "../diagnostic/diagnostic.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -819,6 +821,8 @@ Token *lexer_tokenize(
                     break;
                 }
 
+                diagnostic_registrar(DIAG_LEXICO);
+
                 fprintf(
                     stderr,
                     "Lexer error at line %d: unexpected character '%c'\n",
@@ -941,6 +945,8 @@ Token *lexer_tokenize(
                 break;
 
             default:
+
+                diagnostic_registrar(DIAG_LEXICO);
 
                 fprintf(
                     stderr,

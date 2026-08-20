@@ -8,7 +8,7 @@
   <a href="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/TzLanguaje/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/TzLanguaje/TzLanguaje?label=versión&color=blue" alt="Última versión"></a>
   <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
-  <img src="https://img.shields.io/badge/tests-138%20passed-success" alt="138 tests">
+  <img src="https://img.shields.io/badge/tests-148%20passed-success" alt="148 tests">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
   <img src="https://img.shields.io/badge/plataformas-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="Plataformas">
 </p>
@@ -241,7 +241,7 @@ Escribe:
 tz --version
 ```
 
-Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.1.1`, ya está instalado.
+Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.2.0`, ya está instalado.
 
 Si en cambio dice *«orden no encontrada»* o *«no se reconoce como un comando»*, casi siempre es una de dos cosas: la terminal estaba abierta desde antes de instalar (ciérrala y abre otra), o en Windows desmarcaste la casilla del PATH (vuelve a pasar el instalador y déjala marcada).
 
@@ -281,7 +281,7 @@ Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de adm
 
 ```bash
 TZ_PREFIX=/usr/local sh install.sh
-TZ_VERSION=v0.1.1    sh install.sh
+TZ_VERSION=v0.2.0    sh install.sh
 ```
 
 **Windows**, en PowerShell:
@@ -381,7 +381,7 @@ tz --version            # mostrar la versión (o -v)
 ```
 
 ```
-TzLang 0.1.1
+TzLang 0.2.0
 ```
 
 > Nota: la ayuda integrada todavía se refiere al ejecutable por su nombre de compilación, `tzc`, aunque lo hayas instalado como `tz`. Es una diferencia cosmética pendiente de unificar.
@@ -754,6 +754,42 @@ La ejecución falló.
 
 ---
 
+---
+
+## Notas de diagnóstico
+
+Cuando un programa falla, TzLang añade una frase debajo del error técnico.
+
+```tz
+imprimir (1 + 2
+```
+
+```
+Error del Parser en línea 2: Se esperaba ')' para cerrar la expresión.
+Error construyendo AST.
+
+Falta un paréntesis.
+
+A veces, los errores más grandes empiezan con algo así de pequeño.
+```
+
+> **A veces los errores más grandes empiezan con algo muy pequeño.**
+
+La nota es una capa añadida: el diagnóstico técnico no cambia ni pierde información. Cada categoría de error —símbolo que falta, variable no definida, tipos que no encajan, índice fuera de rango— tiene su propia frase, siempre la misma, sin azar.
+
+Solo aparece cuando estás delante de un terminal. Si rediriges la salida a un archivo o la procesas con un script, TzLang emite exactamente los mismos bytes que antes:
+
+```bash
+tz programa.tz 2> errores.txt    # sin notas, salida intacta
+```
+
+Se puede forzar en cualquiera de los dos sentidos:
+
+```bash
+TZ_NOTAS=1 tz programa.tz    # siempre
+TZ_NOTAS=0 tz programa.tz    # nunca
+```
+
 ## Arquitectura
 
 El intérprete procesa cada programa en una tubería de etapas bien separadas, cada una en su propio directorio dentro de `src/`:
@@ -805,7 +841,8 @@ TzLang/
 │   ├── ast/            ast.c / ast.h
 │   ├── interpreter/    interpreter.c / interpreter.h
 │   ├── runtime/        value.c / operations.c
-│   ├── io/             file.c / file.h
+│   ├── diagnostic/     notas de diagnóstico por categoría
+│   ├── io/             file.c / console.c
 │   ├── main.c          punto de entrada y CLI
 │   └── version.h       número de versión
 │
@@ -941,7 +978,7 @@ AñO
 
 ## Roadmap
 
-Lo que ya está terminado en la **0.1.1**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; suite de 138 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
+Lo que ya está terminado en la **0.2.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; suite de 148 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
 
 Lo siguiente, por orden de prioridad:
 

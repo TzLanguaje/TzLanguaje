@@ -23,8 +23,13 @@
  * que no hay colision posible.
  */
 
+#include <stdio.h>
+
 #ifdef _WIN32
 #include <windows.h>
+#include <io.h>
+#else
+#include <unistd.h>
 #endif
 
 void console_init(void) {
@@ -42,5 +47,22 @@ void console_init(void) {
 
 #ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
+#endif
+}
+
+int console_stderr_es_terminal(void) {
+
+    /*
+     * isatty no es C11, es del sistema
+     * operativo, y por eso la llamada
+     * esta aqui dentro y no repartida
+     * por el proyecto. Windows la
+     * llama _isatty.
+     */
+
+#ifdef _WIN32
+    return _isatty(_fileno(stderr)) != 0;
+#else
+    return isatty(fileno(stderr)) != 0;
 #endif
 }

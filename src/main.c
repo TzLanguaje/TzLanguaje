@@ -4,6 +4,8 @@
 
 #include "version.h"
 
+#include "diagnostic/diagnostic.h"
+
 #include "io/console.h"
 #include "io/file.h"
 
@@ -214,6 +216,19 @@ static int ejecutar_fuente(
 
     if (!interpreter_run(program)) {
 
+        /*
+         * Red de seguridad: si el
+         * error concreto no registro
+         * su categoria, queda la
+         * general de ejecucion.
+         * diagnostic_registrar()
+         * respeta la primera, asi que
+         * esto nunca pisa una mas
+         * precisa.
+         */
+
+        diagnostic_registrar(DIAG_SEMANTICO);
+
         fprintf(
             stderr,
             "La ejecución falló.\n"
@@ -343,6 +358,16 @@ int main(int argc, char **argv) {
     }
 
     int ok = ejecutar_fuente(source);
+
+    /*
+     * La nota va DESPUES de todos los
+     * mensajes tecnicos, una sola vez
+     * y solo si algo fallo.
+     */
+
+    if (!ok) {
+        diagnostic_imprimir_nota();
+    }
 
     /*
      * El buffer se libera SIEMPRE,

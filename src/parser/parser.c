@@ -1,5 +1,7 @@
 #include "parser.h"
 
+#include "../diagnostic/diagnostic.h"
+
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -104,6 +106,10 @@ static void parser_error(
     const char *message
 ) {
     Token *token = current_token(parser);
+
+    diagnostic_registrar(
+        diagnostic_categoria_de_mensaje(message)
+    );
 
     if (token == NULL) {
         fprintf(
@@ -369,6 +375,10 @@ static void parser_error_token(
     const Token *token,
     const char *message
 ) {
+
+    diagnostic_registrar(
+        diagnostic_categoria_de_mensaje(message)
+    );
 
     if (token == NULL) {
 

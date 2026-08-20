@@ -1,0 +1,6 @@
+Error del Parser en línea 1: Se esperaba ':' entre la clave y el valor.
+Error construyendo AST.
+
+Falta un pequeño símbolo.
+
+A veces, los errores más grandes comienzan con algo tan pequeño.

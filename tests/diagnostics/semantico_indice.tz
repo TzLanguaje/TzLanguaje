@@ -1,0 +1,2 @@
+variable l = [1, 2]
+imprimir l[9]

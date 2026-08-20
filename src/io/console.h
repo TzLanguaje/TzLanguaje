@@ -18,4 +18,20 @@
 
 void console_init(void);
 
+/*
+ * ¿Es stderr un terminal de verdad, o
+ * esta redirigido a un archivo o a
+ * una tuberia?
+ *
+ * Vive aqui, junto a console_init(),
+ * porque la respuesta se pregunta de
+ * forma distinta en cada sistema y
+ * este es el modulo que aisla esas
+ * diferencias.
+ *
+ * Devuelve 1 si es un terminal.
+ */
+
+int console_stderr_es_terminal(void);
+
 #endif

@@ -10,6 +10,8 @@
 #   nombre.tz         el programa
 #   nombre.expected   la salida esperada (stdout + stderr)
 #   nombre.exit       el codigo de salida esperado (opcional, por defecto 0)
+#   nombre.notas      si existe, el test se ejecuta con TZ_NOTAS=1, es decir
+#                     con las notas de diagnostico activadas (opcional)
 #
 # Los tests del CLI que no son archivos .tz viven
 # al final, en cli_extra_tests().
@@ -151,6 +153,14 @@ run_file_tests() {
         expected="$base.expected"
         exitfile="$base.exit"
 
+        # Las notas de diagnostico van
+        # apagadas salvo que el test
+        # pida lo contrario. Asi los
+        # tests de siempre siguen
+        # comparando exactamente la
+        # misma salida que antes.
+        notasfile="$base.notas"
+
         if [ ! -f "$expected" ]; then
             TOTAL=$((TOTAL + 1))
             FAILED=$((FAILED + 1))
@@ -167,7 +177,11 @@ run_file_tests() {
 
         # stdout y stderr por separado y luego concatenados,
         # para que el orden no dependa del buffering.
-        "$TZC" "$tz" >"$TMP/out" 2>"$TMP/err"
+        if [ -f "$notasfile" ]; then
+            TZ_NOTAS=1 "$TZC" "$tz" >"$TMP/out" 2>"$TMP/err"
+        else
+            TZ_NOTAS=0 "$TZC" "$tz" >"$TMP/out" 2>"$TMP/err"
+        fi
         got_code=$?
 
         cat "$TMP/out" "$TMP/err" > "$TMP/actual"
@@ -247,6 +261,88 @@ cli_extra_tests() {
 }
 
 # ------------------------------------------
+# Notas de diagnostico
+# ------------------------------------------
+#
+# Comprueban lo que los .expected no pueden:
+# que la nota sea DETERMINISTA y que este
+# apagada por defecto cuando la salida no es
+# un terminal.
+
+diagnostic_tests() {
+
+    programa="$TESTS_DIR/diagnostics/identificador.tz"
+
+    # --- determinismo ---
+    #
+    # El mismo error, tres veces seguidas,
+    # tiene que dar exactamente la misma
+    # salida. Si algun dia se introduce azar
+    # al elegir la frase, esto lo caza.
+
+    TOTAL=$((TOTAL + 1))
+
+    TZ_NOTAS=1 "$TZC" "$programa" >"$TMP/d1" 2>&1
+    TZ_NOTAS=1 "$TZC" "$programa" >"$TMP/d2" 2>&1
+    TZ_NOTAS=1 "$TZC" "$programa" >"$TMP/d3" 2>&1
+
+    if diff -q "$TMP/d1" "$TMP/d2" >/dev/null 2>&1 &&
+       diff -q "$TMP/d2" "$TMP/d3" >/dev/null 2>&1
+    then
+        PASSED=$((PASSED + 1))
+        printf '[PASS] %s\n' "diagnostics/determinista"
+    else
+        FAILED=$((FAILED + 1))
+        printf '[FAIL] %s\n' "diagnostics/determinista"
+        printf '  la nota cambia entre ejecuciones identicas\n\n'
+    fi
+
+    # --- apagadas por defecto ---
+    #
+    # Sin TZ_NOTAS y con la salida redirigida a
+    # un archivo, no debe aparecer ninguna nota:
+    # es lo que mantiene intacta la salida para
+    # los scripts que ya existen.
+
+    TOTAL=$((TOTAL + 1))
+
+    unset TZ_NOTAS
+    "$TZC" "$programa" >"$TMP/sin" 2>&1
+
+    if grep -q "Error: variable 'noExiste' no existe." "$TMP/sin" &&
+       ! grep -q "Ese nombre todavía no existe" "$TMP/sin"
+    then
+        PASSED=$((PASSED + 1))
+        printf '[PASS] %s\n' "diagnostics/apagadas_por_defecto"
+    else
+        FAILED=$((FAILED + 1))
+        printf '[FAIL] %s\n' "diagnostics/apagadas_por_defecto"
+        printf '  la nota aparece con la salida redirigida\n\n'
+    fi
+
+    # --- el tecnico nunca desaparece ---
+    #
+    # Con las notas ENCENDIDAS, el diagnostico
+    # de siempre tiene que seguir ahi.
+
+    TOTAL=$((TOTAL + 1))
+
+    TZ_NOTAS=1 "$TZC" "$programa" >"$TMP/con" 2>&1
+
+    if grep -q "Error: variable 'noExiste' no existe." "$TMP/con" &&
+       grep -q "La ejecución falló." "$TMP/con" &&
+       grep -q "Ese nombre todavía no existe" "$TMP/con"
+    then
+        PASSED=$((PASSED + 1))
+        printf '[PASS] %s\n' "diagnostics/tecnico_preservado"
+    else
+        FAILED=$((FAILED + 1))
+        printf '[FAIL] %s\n' "diagnostics/tecnico_preservado"
+        printf '  falta el diagnostico tecnico o la nota\n\n'
+    fi
+}
+
+# ------------------------------------------
 # Validacion de examples/
 #
 # No comprueba la salida: solo que cada
@@ -286,6 +382,7 @@ printf '=== TzLang Test Suite ===\n\n'
 
 run_file_tests
 cli_extra_tests
+diagnostic_tests
 example_tests
 
 printf '\n========================================\n'

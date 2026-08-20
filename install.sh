@@ -13,14 +13,14 @@
 #
 # Variables que se pueden ajustar:
 #
-#   TZ_VERSION   version concreta (ej. v0.1.1). Por defecto, la ultima.
+#   TZ_VERSION   version concreta (ej. v0.2.0). Por defecto, la ultima.
 #   TZ_PREFIX    donde instalar. Por defecto ~/.local
 #   TZ_REPO      owner/repo de GitHub
 #
 # Ejemplos:
 #
 #   TZ_PREFIX=/usr/local sh install.sh
-#   TZ_VERSION=v0.1.1 sh install.sh
+#   TZ_VERSION=v0.2.0 sh install.sh
 
 set -eu
 
@@ -107,7 +107,7 @@ else
         ayuda="
 Para instalar una version concreta:
 
-    curl -fsSL https://raw.githubusercontent.com/$REPO/main/install.sh | TZ_VERSION=v0.1.1 sh"
+    curl -fsSL https://raw.githubusercontent.com/$REPO/main/install.sh | TZ_VERSION=v0.2.0 sh"
 
         case "$(codigo "https://api.github.com/repos/$REPO/releases/latest")" in
             404) morir "el repositorio $REPO todavia no tiene ninguna release publicada.$ayuda" ;;
