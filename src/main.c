@@ -60,15 +60,15 @@ static void mostrar_ayuda(void) {
     printf(
         "\n"
         "Uso:\n"
-        "  tzc <archivo.tz>\n"
+        "  tz <archivo.tz>\n"
         "\n"
         "Opciones:\n"
         "  -h, --help       Mostrar esta ayuda\n"
         "  -v, --version    Mostrar la versión\n"
         "\n"
         "Ejemplos:\n"
-        "  tzc programa.tz\n"
-        "  tzc examples/hola.tz\n"
+        "  tz programa.tz\n"
+        "  tz examples/hola.tz\n"
     );
 }
 
@@ -76,7 +76,7 @@ static void mostrar_uso(void) {
 
     fprintf(
         stderr,
-        "Uso: tzc <archivo.tz>\n"
+        "Uso: tz <archivo.tz>\n"
     );
 }
 
@@ -262,7 +262,7 @@ static int ejecutar_fuente(
  * ENTRADA
  * ==========================
  *
- * tzc <archivo.tz>
+ * tz <archivo.tz>
  */
 
 int main(int argc, char **argv) {

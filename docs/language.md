@@ -1,4 +1,4 @@
-# TzLang 0.2.1 - Documentación del Lenguaje
+# TzLang 0.2.2 - Documentación del Lenguaje
 
 ## 1. Hola mundo
 
@@ -11,16 +11,16 @@ imprimir "Hola desde TzLang"
 Se ejecuta mediante:
 
 ```bash
-./build/tzc programa.tz
+./build/tz programa.tz
 ```
 
 También existen opciones de ayuda y versión:
 
 ```bash
-./build/tzc --help
-./build/tzc -h
-./build/tzc --version
-./build/tzc -v
+./build/tz --help
+./build/tz -h
+./build/tz --version
+./build/tz -v
 ```
 
 ## 2. Variables
@@ -974,29 +974,29 @@ El BOM UTF-8 se descarta automáticamente. Los caracteres Unicode todavía no fo
 La forma básica de ejecutar un programa es:
 
 ```bash
-tzc programa.tz
+tz programa.tz
 ```
 
 Ayuda:
 
 ```bash
-tzc --help
-tzc -h
+tz --help
+tz -h
 ```
 
 Versión:
 
 ```bash
-tzc --version
-tzc -v
+tz --version
+tz -v
 ```
 
-Actualmente la versión definida en el proyecto es: **TzLang 0.2.1**
+Actualmente la versión definida en el proyecto es: **TzLang 0.2.2**
 
 Una opción desconocida produce un error:
 
 ```bash
-tzc --banana
+tz --banana
 ```
 
 ## 31. Compilación desde código fuente
@@ -1239,7 +1239,7 @@ fin
 
 ## 37. Estado de TzLang
 
-La versión actual es: **TzLang 0.2.1**
+La versión actual es: **TzLang 0.2.2**
 
 El lenguaje actualmente dispone de:
 

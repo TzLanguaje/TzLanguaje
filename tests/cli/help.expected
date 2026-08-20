@@ -1,12 +1,12 @@
 TzLang @VERSION@
 
 Uso:
-  tzc <archivo.tz>
+  tz <archivo.tz>
 
 Opciones:
   -h, --help       Mostrar esta ayuda
   -v, --version    Mostrar la versión
 
 Ejemplos:
-  tzc programa.tz
-  tzc examples/hola.tz
+  tz programa.tz
+  tz examples/hola.tz

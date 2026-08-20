@@ -227,20 +227,20 @@ cli_extra_tests() {
     cli_case "cli/version_short" 0 -v
 
     # opcion desconocida: no debe tratarse como archivo
-    printf "Error: opción desconocida '--banana'.\n\nUso: tzc <archivo.tz>\n" > "$TMP/expected"
+    printf "Error: opción desconocida '--banana'.\n\nUso: tz <archivo.tz>\n" > "$TMP/expected"
     cli_case "cli/unknown_option_long" 1 --banana
 
-    printf "Error: opción desconocida '-x'.\n\nUso: tzc <archivo.tz>\n" > "$TMP/expected"
+    printf "Error: opción desconocida '-x'.\n\nUso: tz <archivo.tz>\n" > "$TMP/expected"
     cli_case "cli/unknown_option_short" 1 -x
 
     # --- argumentos ---
 
     # sin argumentos
-    printf 'Uso: tzc <archivo.tz>\n' > "$TMP/expected"
+    printf 'Uso: tz <archivo.tz>\n' > "$TMP/expected"
     cli_case "cli/no_arguments" 1
 
     # demasiados argumentos
-    printf 'Uso: tzc <archivo.tz>\n' > "$TMP/expected"
+    printf 'Uso: tz <archivo.tz>\n' > "$TMP/expected"
     cli_case "cli/too_many_arguments" 1 "$TESTS_DIR/cli/crlf.tz" "$TESTS_DIR/cli/crlf.tz"
 
     # archivo inexistente
