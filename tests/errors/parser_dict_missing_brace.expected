@@ -1,2 +1,2 @@
-Error del Parser en línea 2: Se esperaba ',' o '}' en el diccionario.
+Error del Parser en línea 1: Se esperaba ',' o '}' en el diccionario.
 Error construyendo AST.

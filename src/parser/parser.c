@@ -101,6 +101,50 @@ static int match(
 /*
  * Crea un error del Parser.
  */
+/*
+ * ==========================
+ * A QUE LINEA CULPAR
+ * ==========================
+ *
+ * El parser se queja mirando el token
+ * que tiene delante. Cuando el error
+ * es "falta algo" -un parentesis, un
+ * 'fin'- ese token suele ser el fin de
+ * linea o el fin de archivo, que ya
+ * estan en la linea SIGUIENTE.
+ *
+ * Resultado: el alumno miraba una
+ * linea vacia. Y como todos los
+ * archivos terminan con un salto,
+ * pasaba practicamente siempre.
+ *
+ * Se retrocede hasta el ultimo token
+ * con contenido real, que es donde la
+ * persona escribio de verdad.
+ */
+
+static int linea_del_error(Parser *parser) {
+
+    int i = parser->current;
+
+    if (i >= parser->token_count) {
+        i = parser->token_count - 1;
+    }
+
+    while (i > 0) {
+
+        TokenType t = parser->tokens[i].type;
+
+        if (t != TOKEN_EOF && t != TOKEN_NEWLINE) {
+            break;
+        }
+
+        i--;
+    }
+
+    return parser->tokens[i].line;
+}
+
 static void parser_error(
     Parser *parser,
     const char *message
@@ -121,10 +165,12 @@ static void parser_error(
         return;
     }
 
+    (void) token;
+
     fprintf(
         stderr,
         "Error del Parser en línea %d: %s\n",
-        token->line,
+        linea_del_error(parser),
         message
     );
 }

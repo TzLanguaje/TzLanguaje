@@ -1,2 +1,3 @@
-Lexer error at line 2: unexpected character '@'
+Error en línea 2: el carácter '@' no forma parte de TzLang.
+Las variables se nombran sin símbolos delante: variable edad = 20.
 Error ejecutando Lexer.

@@ -1,4 +1,7 @@
-Lexer error at line 1: unexpected character '@'
-Lexer error at line 2: unexpected character '#'
-Lexer error at line 3: unexpected character '$'
+Error en línea 1: el carácter '@' no forma parte de TzLang.
+Las variables se nombran sin símbolos delante: variable edad = 20.
+Error en línea 2: el carácter '#' no forma parte de TzLang.
+Los comentarios empiezan por dos barras: // así.
+Error en línea 3: el carácter '$' no forma parte de TzLang.
+Las variables se nombran sin símbolos delante: variable edad = 20.
 Error ejecutando Lexer.

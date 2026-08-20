@@ -328,6 +328,58 @@ const char *token_type_name(
  * ==========================
  */
 
+/*
+ * ==========================
+ * PISTA SEGUN EL CARACTER
+ * ==========================
+ *
+ * Casi siempre que aparece un caracter
+ * que TzLang no conoce, la persona
+ * venia de otro lenguaje y escribio la
+ * version de alli.
+ *
+ * Decir "caracter inesperado" es
+ * cierto y no ayuda. Decir "para negar
+ * se usa 'no'" enseña algo.
+ *
+ * Devuelve NULL si no hay nada util
+ * que anadir.
+ */
+
+static const char *pista_para(char c) {
+
+    switch (c) {
+
+        case '\'':
+            return "Los textos van entre comillas dobles: \"así\".";
+
+        case '.':
+            return "Para leer un diccionario se usan corchetes: persona[\"nombre\"].";
+
+        case '#':
+            return "Los comentarios empiezan por dos barras: // así.";
+
+        case '&':
+            return "Para unir dos condiciones se escribe 'y'.";
+
+        case '|':
+            return "Para elegir entre dos condiciones se escribe 'o'.";
+
+        case '!':
+            return "Para negar una condición se escribe 'no'.";
+
+        case '$':
+        case '@':
+            return "Las variables se nombran sin símbolos delante: variable edad = 20.";
+
+        case '^':
+            return "No hay operador de potencia: multiplica las veces que haga falta.";
+
+        default:
+            return NULL;
+    }
+}
+
 Token *lexer_tokenize(
     const char *source,
     int *token_count
@@ -983,12 +1035,20 @@ Token *lexer_tokenize(
 
                 diagnostic_registrar(DIAG_LEXICO);
 
-                fprintf(
-                    stderr,
-                    "Lexer error at line %d: unexpected character '%c'\n",
-                    line,
-                    *current
-                );
+                {
+                    const char *pista = pista_para(*current);
+
+                    fprintf(
+                        stderr,
+                        "Error en línea %d: el carácter '%c' no forma parte de TzLang.\n",
+                        line,
+                        *current
+                    );
+
+                    if (pista != NULL) {
+                        fprintf(stderr, "%s\n", pista);
+                    }
+                }
 
                 had_error = 1;
 
@@ -1108,12 +1168,20 @@ Token *lexer_tokenize(
 
                 diagnostic_registrar(DIAG_LEXICO);
 
-                fprintf(
-                    stderr,
-                    "Lexer error at line %d: unexpected character '%c'\n",
-                    line,
-                    *current
-                );
+                {
+                    const char *pista = pista_para(*current);
+
+                    fprintf(
+                        stderr,
+                        "Error en línea %d: el carácter '%c' no forma parte de TzLang.\n",
+                        line,
+                        *current
+                    );
+
+                    if (pista != NULL) {
+                        fprintf(stderr, "%s\n", pista);
+                    }
+                }
 
                 had_error = 1;
 

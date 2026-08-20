@@ -39,7 +39,7 @@ variable anos = numero(entrada("Tu edad? "))
 
 **Tipos:** `numero` (entero), `decimal`, `texto`, `booleano` (`verdadero` / `falso`), `nulo`, `lista`, `diccionario`.
 
-**Comparaciones** — se escriben con palabras, no con símbolos:
+**Comparaciones** — se escriben con palabras. Los símbolos (`>`, `<`, `==`…) también funcionan, pero **usa siempre las palabras**: son el sentido de TzLang y lo que hace que un principiante lea su programa en voz alta y lo entienda.
 
 ```
 es mayor que            es menor que
@@ -192,7 +192,6 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 
 - **`+=`, `-=`, `++`, `--`** no existen. Escribe `x = x + 1`.
 - **`para i = 0 hasta 10`** no existe. Solo existe `para cada x en lista`. Para contar, usa `mientras`.
-- **`>`, `<`, `>=`, `<=`, `==`, `!=`** no existen como símbolos. Usa las formas con palabras.
 - No hay clases, objetos, módulos, `importar`, ni manejo de excepciones.
 - **Cuidado con la división entera:** entre dos enteros, `10 / 3` da `3`, no `3.33`.
 - **Y cuidado con el orden al convertir.** `decimal()` hay que aplicarlo **antes** de dividir, no después:
