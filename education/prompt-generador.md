@@ -129,6 +129,34 @@ Fuera de una función, en el mismo ámbito, `agregar(lista, x)` **sí** modifica
 
 > Ojo: reasignar una variable global desde dentro de una función **sí** la cambia. Lo que se copia son los argumentos, no las globales.
 
+## Define las funciones ANTES de usarlas
+
+No hay *hoisting*. Una definición existe a partir del momento en que se ejecuta:
+
+```tz
+imprimir doble(5)       // Error: la función 'doble' no existe
+funcion doble(x)
+    retornar x * 2
+fin
+```
+
+Una función **sí** puede llamar a otra definida más abajo, porque para entonces ya se ejecutaron las dos definiciones. Lo que falla es llamarla desde el código principal antes de tiempo.
+
+**Regla segura: todas las funciones arriba, el código que las usa abajo.**
+
+## El número de argumentos es estricto
+
+```tz
+funcion sumar(a, b)
+    retornar a + b
+fin
+
+sumar(1, 2, 3)   // Error: esperaba 2 argumentos, pero recibió 3
+sumar(1)         // Error: esperaba 2 argumentos, pero recibió 1
+```
+
+No hay valores por defecto ni argumentos opcionales. Al menos falla ruidoso, no en silencio.
+
 ## `agregar` y `eliminar` devuelven `nulo`
 
 ```tz
@@ -178,9 +206,32 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 - **Notación de punto** no existe: es `persona["nombre"]`, nunca `persona.nombre`.
 - **No hay secuencias de escape.** `\n` sale literal como barra y ene, y `\"` da error del lexer. Para varias líneas, usa varios `imprimir`. No se pueden meter comillas dobles dentro de un texto.
 - **`texto()` no convierte listas ni diccionarios.** Para verlos, `imprimir lista` directamente.
+- **Los índices negativos** no existen: `lista[-1]` es error, no el último elemento. Para el último: `lista[largo(lista) - 1]`.
+- **Las listas no se concatenan con `+`**: `[1,2] + [3,4]` es error. Hay que recorrer una y `agregar()` a la otra.
 - `romper` y `continuar` solo valen dentro de un `mientras` o un `para cada`.
 - Los bloques se cierran **siempre** con `fin`.
 - Cada instrucción va en su propia línea.
+
+## Detalles de las funciones incorporadas
+
+- **`contiene()` cambia de significado según el tipo.** En una lista busca un **valor**; en un diccionario busca una **clave**:
+
+  ```tz
+  variable p = {"nombre": "Carlos"}
+  contiene(p, "nombre")   // verdadero  <- es una clave
+  contiene(p, "Carlos")   // falso      <- es un valor, no cuenta
+  ```
+
+- **`unir()` exige que todos los elementos sean texto.** No convierte nada:
+
+  ```tz
+  unir(["a", 1], "-")              // Error: el elemento 1 es numero
+  unir(["a", texto(1)], "-")       // bien
+  ```
+
+- **`largo()` solo vale para texto, lista y diccionario.** Sobre un número da error, no `0`.
+- **`texto()` no convierte listas ni diccionarios.** Para verlos, `imprimir lista` directamente.
+- **`agregar()` y `eliminar()` devuelven `nulo`**, nunca la estructura.
 
 ## Detalles de comportamiento
 
