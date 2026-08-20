@@ -105,7 +105,17 @@ imprimir persona["nombre"]
 - No hay `entrada`, `leer` ni forma de pedir datos al usuario. Los valores van escritos en el programa.
 - No hay clases, objetos, módulos, `importar`, ni manejo de excepciones.
 - No hay operador de módulo `%`. Si necesitas el resto, calcúlalo: `a - (a / b) * b`. Funciona porque la división entre enteros trunca.
-- **Cuidado con la división:** entre dos enteros, `10 / 3` da `3`, no `3.33`. Para obtener decimales hay que convertir antes: `decimal(10) / decimal(3)` da `3.33333`.
+- **Cuidado con la división entera:** entre dos enteros, `10 / 3` da `3`, no `3.33`.
+- **Y cuidado con el orden al convertir.** `decimal()` hay que aplicarlo **antes** de dividir, no después:
+
+  ```tz
+  decimal(10 / 3)          // 3        <- MAL: la division ya trunco
+  decimal(10) / 3          // 3.33333  <- bien
+  decimal(10) / decimal(3) // 3.33333  <- bien
+  10 / decimal(3)          // 3.33333  <- bien
+  ```
+
+  Basta con que **uno** de los dos sea decimal. `decimal(a / b)` es el error clásico: convierte un resultado que ya perdió los decimales.
 - Los bloques se cierran **siempre** con `fin`.
 - Cada instrucción va en su propia línea.
 
