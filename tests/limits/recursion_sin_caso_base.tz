@@ -1,0 +1,6 @@
+// Sin caso base. Antes esto mataba el
+// proceso con SIGSEGV y sin mensaje.
+funcion sinFin(n)
+    retornar sinFin(n + 1)
+fin
+imprimir sinFin(1)

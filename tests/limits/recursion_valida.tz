@@ -1,0 +1,16 @@
+// La recursion legitima no debe verse afectada
+funcion factorial(n)
+    si n es menor o igual que 1
+        retornar 1
+    fin
+    retornar n * factorial(n - 1)
+fin
+imprimir factorial(10)
+
+funcion profunda(n)
+    si n es menor o igual que 0
+        retornar 0
+    fin
+    retornar 1 + profunda(n - 1)
+fin
+imprimir profunda(1500)

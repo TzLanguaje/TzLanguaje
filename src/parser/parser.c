@@ -522,6 +522,7 @@ static ASTNode *make_decimal_literal(
 }
 
 static ASTNode *parse_expression(Parser *parser);
+static ASTNode *parse_expression_interna(Parser *parser);
 
 /*
  * Una llamada también es una
@@ -1701,7 +1702,52 @@ static ASTNode *parse_and(Parser *parser) {
  * así que es la entrada a
  * cualquier expresión.
  */
+/*
+ * ==========================
+ * LIMITE DE ANIDAMIENTO
+ * ==========================
+ *
+ * El parser es de descenso recursivo:
+ * cada parentesis, cada corchete y
+ * cada llave anidados consumen pila de
+ * C. Con miles de ellos la pila se
+ * agota y el proceso muere sin
+ * mensaje, igual que pasaba con la
+ * recursion en el interprete.
+ *
+ * 500 niveles son mas de los que
+ * escribe nadie a mano y dejan un
+ * margen enorme antes del limite real.
+ */
+
+#define LIMITE_ANIDAMIENTO 500
+
+static int nivel_anidamiento = 0;
+
 static ASTNode *parse_expression(Parser *parser) {
+
+    ASTNode *resultado;
+
+    if (nivel_anidamiento >= LIMITE_ANIDAMIENTO) {
+
+        parser_error(
+            parser,
+            "La expresion anida demasiados niveles."
+        );
+
+        return NULL;
+    }
+
+    nivel_anidamiento++;
+
+    resultado = parse_expression_interna(parser);
+
+    nivel_anidamiento--;
+
+    return resultado;
+}
+
+static ASTNode *parse_expression_interna(Parser *parser) {
 
     ASTNode *left =
         parse_and(parser);

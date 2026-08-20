@@ -235,6 +235,11 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 - **`texto()` no convierte listas ni diccionarios.** Para verlos, `imprimir lista` directamente.
 - **`agregar()` y `eliminar()` devuelven `nulo`**, nunca la estructura.
 
+## Límites
+
+- Una función puede anidar **2.000 llamadas**. Si una recursión no tiene caso base, TzLang corta con un error claro en vez de reventar.
+- Los diccionarios buscan las claves una por una. Para ejercicios con miles de elementos, mejor listas.
+
 ## Detalles de comportamiento
 
 - Los decimales se imprimen con hasta 15 cifras significativas: `3.14159265358979` sale entero, y `0.1 + 0.2` da `0.3`.

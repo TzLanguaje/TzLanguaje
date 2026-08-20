@@ -851,6 +851,33 @@ static int execution_interrupts(
  * expresión, así que no hay dos
  * implementaciones de lo mismo.
  */
+/*
+ * ==========================
+ * LIMITE DE RECURSION
+ * ==========================
+ *
+ * Sin esto, una funcion que se llama a
+ * si misma sin caso base agota la pila
+ * del proceso y el sistema operativo
+ * mata el programa: SIGSEGV, sin
+ * mensaje, sin linea, sin nada.
+ *
+ * Olvidar el caso base es EL error
+ * clasico al aprender recursion, asi
+ * que merece un error del lenguaje y
+ * no una ventana que se cierra.
+ *
+ * El limite es holgado: 2000 llamadas
+ * anidadas son mas de las que necesita
+ * cualquier programa razonable, y muy
+ * pocas comparadas con las ~4500 que
+ * aguanta la pila.
+ */
+
+#define LIMITE_RECURSION 2000
+
+static int profundidad_llamadas = 0;
+
 static int call_function(
     ASTNode *node,
     Environment *environment,
@@ -3477,6 +3504,28 @@ static int call_function(
         );
     }
 
+    /*
+     * A partir de aqui es una funcion
+     * del usuario: las incorporadas ya
+     * salieron arriba y no recursan.
+     */
+
+    if (profundidad_llamadas >= LIMITE_RECURSION) {
+
+        diagnostic_registrar(DIAG_RECURSION);
+
+        fprintf(
+            stderr,
+            "Error: demasiadas llamadas anidadas en '%s' (mas de %d).\n"
+            "Suele significar que a una funcion recursiva le falta el caso "
+            "base, o que este nunca se cumple.\n",
+            name,
+            LIMITE_RECURSION
+        );
+
+        return 0;
+    }
+
     Function *function =
         function_table_find(
             functions,
@@ -3598,12 +3647,26 @@ static int call_function(
      * como cualquier otro.
      */
 
+    /*
+     * El contador sube justo antes de
+     * entrar al cuerpo y baja al salir,
+     * pase lo que pase dentro. Solo
+     * envuelve a execute_block: enlazar
+     * los argumentos ocurre en el
+     * entorno del llamador y no cuenta
+     * como una llamada mas.
+     */
+
+    profundidad_llamadas++;
+
     ExecutionResult body =
         execute_block(
             function->body,
             local,
             functions
         );
+
+    profundidad_llamadas--;
 
     /*
      * ==========================

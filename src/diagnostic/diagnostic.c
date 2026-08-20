@@ -265,6 +265,12 @@ const char *diagnostic_nota(DiagnosticCategoria categoria) {
             "\n"
             "Un pequeño desajuste. Una gran interrupción.";
 
+    case DIAG_RECURSION:
+        return
+            "La función se llamó a sí misma demasiadas veces.\n"
+            "\n"
+            "Toda recursión necesita un caso base: una condición que la detenga.";
+
     case DIAG_SEMANTICO:
         return
             "El programa se leyó bien, pero no pudo llegar al final.\n"

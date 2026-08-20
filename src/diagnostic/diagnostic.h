@@ -56,6 +56,7 @@ typedef enum {
     DIAG_INDICE,
     DIAG_CLAVE,
     DIAG_ARGUMENTO,
+    DIAG_RECURSION,
     DIAG_SEMANTICO
 
 } DiagnosticCategoria;

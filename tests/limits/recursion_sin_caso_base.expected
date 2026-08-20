@@ -1,0 +1,3 @@
+Error: demasiadas llamadas anidadas en 'sinFin' (mas de 2000).
+Suele significar que a una funcion recursiva le falta el caso base, o que este nunca se cumple.
+La ejecución falló.
