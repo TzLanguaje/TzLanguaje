@@ -290,6 +290,25 @@ TZ_VERSION=v0.2.3    sh install.sh
 irm https://raw.githubusercontent.com/TzLanguaje/TzLanguaje/main/install.ps1 | iex
 ```
 
+### Gestores de paquetes
+
+**macOS y Linux**, con Homebrew:
+
+```bash
+brew install tzlanguaje/tzlang/tzlang
+```
+
+Compila desde el código, así que sirve igual en Intel, Apple Silicon y Linux.
+
+**Windows**, con Scoop:
+
+```powershell
+scoop bucket add tzlang https://github.com/TzLanguaje/scoop-tzlang
+scoop install tzlang
+```
+
+Descarga el binario y verifica su checksum SHA-256.
+
 ### Binario suelto
 
 Para meterlo en un contenedor o llevarlo en un USB, cada release publica también archivos comprimidos con el ejecutable pelado, y un `SHA256SUMS.txt` para verificarlos:
