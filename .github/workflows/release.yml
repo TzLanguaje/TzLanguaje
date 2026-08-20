@@ -368,6 +368,36 @@ jobs:
           chmod +x dist/npm/tzlang-linux-x64/bin/tz
           dist/npm/tzlang-linux-x64/bin/tz --version
 
+      # ==========================
+      # Comprobar la credencial ANTES
+      # de publicar nada
+      # ==========================
+      #
+      # npm no deja despublicar. Si el
+      # token no sirve, es mucho mejor
+      # descubrirlo aqui que a mitad
+      # del bucle, con dos paquetes ya
+      # subidos y la version quemada.
+      #
+      # npm whoami falla igual que
+      # publish ante un token invalido,
+      # caducado o sin permiso para
+      # saltarse el 2FA.
+
+      - name: Comprobar el token de npm
+        if: steps.token.outputs.hay == 'si'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -eu
+          if ! usuario=$(npm whoami 2>&1); then
+            echo "::error::El token de npm no es valido: $usuario"
+            echo "Para publicar desde CI hace falta un token de tipo Automation,"
+            echo "o uno granular autorizado a saltarse el 2FA."
+            exit 1
+          fi
+          echo "Autenticado en npm como: $usuario"
+
       # Primero los de plataforma: el
       # principal depende de ellos.
       - name: Publicar los paquetes de plataforma
