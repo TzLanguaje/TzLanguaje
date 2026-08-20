@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Declara el tipo de archivo .tz ante el
+  escritorio, para que el explorador de
+  archivos sepa que son y les ponga el
+  icono de TzLang.
+
+  Va en /usr/share/mime/packages/
+-->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="text/x-tzlang">
+    <comment>Programa de TzLang</comment>
+    <comment xml:lang="es">Programa de TzLang</comment>
+    <comment xml:lang="en">TzLang program</comment>
+    <glob pattern="*.tz"/>
+    <sub-class-of type="text/plain"/>
+    <icon name="text-x-tzlang"/>
+    <generic-icon name="text-x-script"/>
+  </mime-type>
+</mime-info>

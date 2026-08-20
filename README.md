@@ -830,6 +830,24 @@ La ejecución falló.
 
 ---
 
+## El icono de los archivos `.tz`
+
+TzLang trae su propio icono, y los instaladores lo registran para que el explorador de archivos lo use en los `.tz`.
+
+| Sistema | Estado |
+|---|---|
+| **Windows** | Funciona. El instalador asocia los `.tz` y les pone el icono. También lo lleva el propio instalador y la entrada de *Agregar o quitar programas*. |
+| **Linux** | Funciona con los paquetes `.deb` y `.rpm`, que declaran el tipo `text/x-tzlang` e instalan el icono en siete tamaños. |
+| **macOS** | No. Poner icono a un tipo de archivo exige empaquetar una aplicación `.app` con declaraciones de tipo; un programa de línea de órdenes no puede hacerlo. Los `.tz` se ven con el icono genérico de texto. |
+
+Los iconos se regeneran desde el original con:
+
+```bash
+sh packaging/icono/generar-iconos.sh
+```
+
+---
+
 ## Mensajes pensados para quien aprende
 
 Cuando aparece un símbolo que TzLang no conoce, el error no se limita a señalarlo: dice qué se escribe en su lugar.
@@ -954,6 +972,7 @@ TzLang/
 │   └── release.yml     publica los binarios al etiquetar
 │
 ├── packaging/
+│   ├── icono/          el icono y su generador
 │   ├── macos/          instalador .pkg con asistente
 │   ├── windows/        instalador .exe con asistente (Inno Setup)
 │   ├── linux/          paquetes .deb y .rpm

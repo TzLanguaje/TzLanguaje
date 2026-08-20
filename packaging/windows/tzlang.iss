@@ -65,6 +65,7 @@ InfoAfterFile=despedida.txt
 
 OutputDir={#TzSalida}
 OutputBaseFilename=TzLang-v{#TzVersion}-windows-x86_64-setup
+SetupIconFile=..\icono\tzlang.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -74,7 +75,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 
 UninstallDisplayName={#TzNombre} {#TzVersion}
-UninstallDisplayIcon={app}\bin\tz.exe
+UninstallDisplayIcon={app}\tzlang.ico
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
@@ -98,6 +99,7 @@ Name: "associate"; \
 Source: "{#TzBinario}";   DestDir: "{app}\bin"; DestName: "tz.exe"; Flags: ignoreversion
 Source: "..\..\LICENSE";   DestDir: "{app}";     DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "..\..\README.md"; DestDir: "{app}";     Flags: ignoreversion
+Source: "..\icono\tzlang.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 ; ==========================
@@ -125,7 +127,7 @@ Root: HKCU; Subkey: "Software\Classes\TzLang.Programa"; \
     Flags: uninsdeletekey; Tasks: associate
 
 Root: HKCU; Subkey: "Software\Classes\TzLang.Programa\DefaultIcon"; \
-    ValueType: string; ValueName: ""; ValueData: "{app}\bin\tz.exe,0"; \
+    ValueType: string; ValueName: ""; ValueData: "{app}\tzlang.ico"; \
     Tasks: associate
 
 Root: HKCU; Subkey: "Software\Classes\TzLang.Programa\shell\open\command"; \

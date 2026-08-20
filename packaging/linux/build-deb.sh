@@ -60,11 +60,70 @@ chmod 755 "$ROOT/usr/bin/tz"
 mkdir -p "$ROOT/usr/share/doc/tzlang"
 cp "$RAIZ/README.md" "$ROOT/usr/share/doc/tzlang/"
 
+# ==========================
+# ICONO Y TIPO DE ARCHIVO
+# ==========================
+#
+# Para que el explorador de archivos
+# reconozca los .tz y les ponga el
+# icono hacen falta dos cosas: declarar
+# el tipo MIME y dejar el icono con el
+# nombre que ese tipo espera.
+
+mkdir -p "$ROOT/usr/share/mime/packages"
+cp "$RAIZ/packaging/linux/tzlang-mime.xml" \
+   "$ROOT/usr/share/mime/packages/tzlang.xml"
+
+for t in 16 24 32 48 64 128 256; do
+    destino="$ROOT/usr/share/icons/hicolor/${t}x${t}"
+    mkdir -p "$destino/mimetypes" "$destino/apps"
+    cp "$RAIZ/packaging/icono/tzlang-$t.png" \
+       "$destino/mimetypes/text-x-tzlang.png"
+    cp "$RAIZ/packaging/icono/tzlang-$t.png" \
+       "$destino/apps/tzlang.png"
+done
+
 # Debian exige un archivo 'copyright'
 # con este nombre exacto.
 cp "$RAIZ/LICENSE" "$ROOT/usr/share/doc/tzlang/copyright"
 
 chmod -R go-w "$ROOT"
+
+# ==========================
+# REFRESCAR LAS CACHES
+# ==========================
+#
+# Sin esto el sistema no se entera de
+# que hay un tipo y un icono nuevos
+# hasta el siguiente reinicio de sesion.
+
+mkdir -p "$ROOT/DEBIAN"
+
+cat > "$ROOT/DEBIAN/postinst" <<'POSTINST'
+#!/bin/sh
+set -e
+if command -v update-mime-database >/dev/null 2>&1; then
+    update-mime-database /usr/share/mime >/dev/null 2>&1 || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -f -t /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi
+exit 0
+POSTINST
+
+cat > "$ROOT/DEBIAN/postrm" <<'POSTRM'
+#!/bin/sh
+set -e
+if command -v update-mime-database >/dev/null 2>&1; then
+    update-mime-database /usr/share/mime >/dev/null 2>&1 || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -f -t /usr/share/icons/hicolor >/dev/null 2>&1 || true
+fi
+exit 0
+POSTRM
+
+chmod 755 "$ROOT/DEBIAN/postinst" "$ROOT/DEBIAN/postrm"
 
 # ==========================
 # METADATOS

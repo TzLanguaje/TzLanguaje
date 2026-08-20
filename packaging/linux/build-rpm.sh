@@ -46,6 +46,11 @@ mkdir -p "$TMP/BUILD" "$TMP/RPMS" "$TMP/SOURCES" "$TMP/SPECS"
 cp "$BINARIO"        "$TMP/SOURCES/tz"
 cp "$RAIZ/LICENSE"   "$TMP/SOURCES/LICENSE"
 cp "$RAIZ/README.md" "$TMP/SOURCES/README.md"
+cp "$RAIZ/packaging/linux/tzlang-mime.xml" "$TMP/SOURCES/tzlang.xml"
+
+for t in 16 24 32 48 64 128 256; do
+    cp "$RAIZ/packaging/icono/tzlang-$t.png" "$TMP/SOURCES/icono-$t.png"
+done
 
 # ==========================
 # SPEC
@@ -70,6 +75,7 @@ URL:            https://github.com/TzLanguaje/TzLanguaje
 Source0:        tz
 Source1:        LICENSE
 Source2:        README.md
+Source3:        tzlang.xml
 
 BuildArch:      $ARCO
 AutoReqProv:    no
@@ -88,10 +94,32 @@ install -D -m 0755 %{SOURCE0} %{buildroot}%{_bindir}/tz
 install -D -m 0644 %{SOURCE1} %{buildroot}%{_datadir}/doc/tzlang/LICENSE
 install -D -m 0644 %{SOURCE2} %{buildroot}%{_datadir}/doc/tzlang/README.md
 
+# Tipo de archivo e iconos, para que el
+# explorador reconozca los .tz
+install -D -m 0644 %{SOURCE3} %{buildroot}%{_datadir}/mime/packages/tzlang.xml
+
+for t in 16 24 32 48 64 128 256; do
+    install -D -m 0644 %{_sourcedir}/icono-$t.png \
+        %{buildroot}%{_datadir}/icons/hicolor/${t}x${t}/mimetypes/text-x-tzlang.png
+    install -D -m 0644 %{_sourcedir}/icono-$t.png \
+        %{buildroot}%{_datadir}/icons/hicolor/${t}x${t}/apps/tzlang.png
+done
+
+%post
+update-mime-database %{_datadir}/mime >/dev/null 2>&1 || :
+gtk-update-icon-cache -f -t %{_datadir}/icons/hicolor >/dev/null 2>&1 || :
+
+%postun
+update-mime-database %{_datadir}/mime >/dev/null 2>&1 || :
+gtk-update-icon-cache -f -t %{_datadir}/icons/hicolor >/dev/null 2>&1 || :
+
 %files
 %{_bindir}/tz
 %{_datadir}/doc/tzlang/LICENSE
 %{_datadir}/doc/tzlang/README.md
+%{_datadir}/mime/packages/tzlang.xml
+%{_datadir}/icons/hicolor/*/mimetypes/text-x-tzlang.png
+%{_datadir}/icons/hicolor/*/apps/tzlang.png
 
 %changelog
 SPEC
