@@ -3297,6 +3297,8 @@ static int call_function(
 
     if (function == NULL) {
 
+        diagnostic_registrar(DIAG_FUNCION_NO_DEFINIDA);
+
         fprintf(
             stderr,
             "Error: la función '%s' no existe.\n",

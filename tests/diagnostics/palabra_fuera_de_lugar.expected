@@ -1,0 +1,6 @@
+Error del Parser en línea 1: 'romper' solo puede utilizarse dentro de un 'mientras'.
+Error construyendo AST.
+
+La palabra está bien escrita, pero no en este lugar.
+
+Cada instrucción necesita su contexto para significar algo.

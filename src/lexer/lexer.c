@@ -637,11 +637,44 @@ Token *lexer_tokenize(
 
             /*
              * Cerrar comillas
+             *
+             * Si se llego al final del
+             * archivo sin encontrar la
+             * comilla de cierre, el
+             * texto esta sin terminar.
+             *
+             * Antes esto pasaba en
+             * silencio: el programa se
+             * ejecutaba y salia con
+             * codigo 0, como si nada.
+             * Olvidar una comilla es
+             * de los descuidos mas
+             * comunes al empezar, y
+             * merece un error, no un
+             * exito enganoso.
              */
 
-            if (*current == '"') {
-                current++;
+            if (*current != '"') {
+
+                diagnostic_registrar(DIAG_TEXTO_SIN_CERRAR);
+
+                fprintf(
+                    stderr,
+                    "Error en línea %d: falta la comilla que cierra el texto.\n",
+                    token.line
+                );
+
+                free(token.value);
+
+                lexer_free_tokens(
+                    tokens,
+                    count
+                );
+
+                return NULL;
             }
+
+            current++;
 
             tokens[count++] = token;
 

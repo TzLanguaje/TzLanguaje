@@ -93,7 +93,33 @@ DiagnosticCategoria diagnostic_categoria_de_mensaje(const char *mensaje) {
      */
 
     if (strstr(mensaje, "solo puede utilizarse") != NULL) {
-        return DIAG_PALABRA_CLAVE_FALTANTE;
+        return DIAG_PALABRA_CLAVE_FUERA_DE_LUGAR;
+    }
+
+    /*
+     * "Se esperaba 'fin'" y "Se
+     * esperaba ':'" no son lo mismo:
+     * lo primero es una palabra del
+     * lenguaje, lo segundo un signo.
+     * Se distinguen mirando si lo
+     * entrecomillado empieza por
+     * letra.
+     */
+
+    {
+        const char *esperado = strstr(mensaje, "Se esperaba '");
+
+        if (esperado != NULL) {
+
+            char primero = esperado[13];
+
+            if ((primero >= 'a' && primero <= 'z') ||
+                (primero >= 'A' && primero <= 'Z')) {
+                return DIAG_PALABRA_CLAVE_FALTANTE;
+            }
+
+            return DIAG_SIMBOLO_FALTANTE;
+        }
     }
 
     if (strstr(mensaje, "Se esperaba") != NULL) {
@@ -133,6 +159,12 @@ const char *diagnostic_nota(DiagnosticCategoria categoria) {
             "\n"
             "Basta uno para que nada de lo demás llegue a leerse.";
 
+    case DIAG_TEXTO_SIN_CERRAR:
+        return
+            "Un texto quedó sin cerrar.\n"
+            "\n"
+            "Una comilla que falta, y el resto del archivo cambia de significado.";
+
     case DIAG_PARENTESIS_FALTANTE:
         return
             "Falta un paréntesis.\n"
@@ -159,6 +191,12 @@ const char *diagnostic_nota(DiagnosticCategoria categoria) {
 
     case DIAG_PALABRA_CLAVE_FALTANTE:
         return
+            "Falta una palabra del lenguaje.\n"
+            "\n"
+            "Lo que se abre pide cerrarse; si no, nadie sabe dónde termina.";
+
+    case DIAG_PALABRA_CLAVE_FUERA_DE_LUGAR:
+        return
             "La palabra está bien escrita, pero no en este lugar.\n"
             "\n"
             "Cada instrucción necesita su contexto para significar algo.";
@@ -180,6 +218,24 @@ const char *diagnostic_nota(DiagnosticCategoria categoria) {
             "Ese nombre todavía no existe.\n"
             "\n"
             "Una letra de diferencia basta para nombrar algo que nunca se creó.";
+
+    case DIAG_FUNCION_NO_DEFINIDA:
+        return
+            "Esa función no está definida.\n"
+            "\n"
+            "Quizá falte crearla, o el nombre no sea exactamente el mismo.";
+
+    case DIAG_DIVISION_CERO:
+        return
+            "Dividir entre cero no da ningún número.\n"
+            "\n"
+            "Hay preguntas que la aritmética se niega a responder.";
+
+    case DIAG_DESBORDAMIENTO:
+        return
+            "El número creció más de lo que cabe.\n"
+            "\n"
+            "Todo espacio tiene un borde, aunque tarde en aparecer.";
 
     case DIAG_TIPO:
         return

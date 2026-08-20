@@ -146,7 +146,8 @@ build/runtime/value.o: src/runtime/value.c src/runtime/value.h
 
 build/runtime/operations.o: src/runtime/operations.c \
                             src/runtime/operations.h \
-                            src/runtime/value.h
+                            src/runtime/value.h \
+                            src/diagnostic/diagnostic.h
 	@mkdir -p build/runtime
 	$(CC) $(CFLAGS) -c src/runtime/operations.c -o build/runtime/operations.o
 

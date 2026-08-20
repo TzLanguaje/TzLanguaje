@@ -1,0 +1,6 @@
+Error en línea 1: falta la comilla que cierra el texto.
+Error ejecutando Lexer.
+
+Un texto quedó sin cerrar.
+
+Una comilla que falta, y el resto del archivo cambia de significado.

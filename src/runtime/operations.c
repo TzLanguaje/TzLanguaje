@@ -1,5 +1,7 @@
 #include "operations.h"
 
+#include "../diagnostic/diagnostic.h"
+
 #include <limits.h>
 #include <stdio.h>
 
@@ -62,6 +64,8 @@ int operation_add(
             (long long)right.data.number;
 
         if (!cabe_en_numero(sum)) {
+
+            diagnostic_registrar(DIAG_DESBORDAMIENTO);
 
             fprintf(
                 stderr,
@@ -178,6 +182,8 @@ int operation_add(
         return 1;
     }
 
+    diagnostic_registrar(DIAG_TIPO);
+
     fprintf(
         stderr,
         "Error: no se puede sumar %s con %s.\n",
@@ -218,6 +224,8 @@ int operation_subtract(
             (long long)right.data.number;
 
         if (!cabe_en_numero(difference)) {
+
+            diagnostic_registrar(DIAG_DESBORDAMIENTO);
 
             fprintf(
                 stderr,
@@ -286,6 +294,8 @@ int operation_subtract(
         return 1;
     }
 
+    diagnostic_registrar(DIAG_TIPO);
+
     fprintf(
         stderr,
         "Error: no se puede restar %s con %s.\n",
@@ -333,6 +343,8 @@ int operation_multiply(
             (long long)right.data.number;
 
         if (!cabe_en_numero(product)) {
+
+            diagnostic_registrar(DIAG_DESBORDAMIENTO);
 
             fprintf(
                 stderr,
@@ -401,6 +413,8 @@ int operation_multiply(
         return 1;
     }
 
+    diagnostic_registrar(DIAG_TIPO);
+
     fprintf(
         stderr,
         "Error: no se puede multiplicar %s con %s.\n",
@@ -438,6 +452,8 @@ int operation_divide(
 
         if (right.data.number == 0) {
 
+            diagnostic_registrar(DIAG_DIVISION_CERO);
+
             fprintf(
                 stderr,
                 "Error: división por cero.\n"
@@ -457,6 +473,8 @@ int operation_divide(
             left.data.number == INT_MIN &&
             right.data.number == -1
         ) {
+
+            diagnostic_registrar(DIAG_DESBORDAMIENTO);
 
             fprintf(
                 stderr,
@@ -486,6 +504,8 @@ int operation_divide(
 
         if (right.data.decimal == 0.0) {
 
+            diagnostic_registrar(DIAG_DIVISION_CERO);
+
             fprintf(
                 stderr,
                 "Error: división por cero.\n"
@@ -513,6 +533,8 @@ int operation_divide(
     ) {
 
         if (right.data.decimal == 0.0) {
+
+            diagnostic_registrar(DIAG_DIVISION_CERO);
 
             fprintf(
                 stderr,
@@ -542,6 +564,8 @@ int operation_divide(
 
         if (right.data.number == 0) {
 
+            diagnostic_registrar(DIAG_DIVISION_CERO);
+
             fprintf(
                 stderr,
                 "Error: división por cero.\n"
@@ -558,6 +582,8 @@ int operation_divide(
 
         return 1;
     }
+
+    diagnostic_registrar(DIAG_TIPO);
 
     fprintf(
         stderr,
@@ -726,6 +752,8 @@ static int compare_ordered(
      *
      * "hola" > "mundo"
      */
+
+    diagnostic_registrar(DIAG_TIPO);
 
     fprintf(
         stderr,
@@ -1233,6 +1261,8 @@ int operation_negate(
 
         if (operand.data.number == INT_MIN) {
 
+            diagnostic_registrar(DIAG_DESBORDAMIENTO);
+
             fprintf(
                 stderr,
                 "Error: no se puede negar el numero mínimo.\n"
@@ -1254,6 +1284,8 @@ int operation_negate(
 
         return 1;
     }
+
+    diagnostic_registrar(DIAG_TIPO);
 
     fprintf(
         stderr,

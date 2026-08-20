@@ -1,0 +1,6 @@
+Error del Parser en línea 3: Se esperaba 'fin' para cerrar el 'si'.
+Error construyendo AST.
+
+Falta una palabra del lenguaje.
+
+Lo que se abre pide cerrarse; si no, nadie sabe dónde termina.
