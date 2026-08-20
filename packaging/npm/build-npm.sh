@@ -38,7 +38,7 @@ VERSION="$(sed -n 's/.*TZLANG_VERSION "\([0-9.]*\)".*/\1/p' "$RAIZ/src/version.h
 [ -n "$VERSION" ] || { echo "Error: no se pudo leer la version" >&2; exit 1; }
 
 REPO_URL="https://github.com/TzLanguaje/TzLanguaje"
-DESC="Lenguaje de programacion educativo con sintaxis en espanol"
+DESC="TzLang: lenguaje de programación educativo con sintaxis en español"
 
 echo "TzLang $VERSION -> paquetes npm en $SALIDA"
 
@@ -79,7 +79,7 @@ paquete_plataforma() {
 {
   "name": "$1",
   "version": "$VERSION",
-  "description": "$DESC (binario para $2)",
+  "description": "$DESC — binario para $2",
   "license": "MIT",
   "homepage": "$REPO_URL",
   "repository": {
