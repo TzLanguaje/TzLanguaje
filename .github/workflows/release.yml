@@ -303,3 +303,86 @@ jobs:
             --generate-notes \
             --verify-tag \
             artifacts/*
+
+  # ==========================
+  # 4. Publicar en npm
+  # ==========================
+  #
+  # Cinco paquetes: cuatro con el
+  # binario de cada plataforma, que
+  # declaran 'os' y 'cpu' para que npm
+  # instale solo el que toca, y el
+  # principal 'tzlang', que los lista
+  # como optionalDependencies y trae
+  # el lanzador.
+  #
+  # Va DESPUES de publish: si la
+  # release de GitHub fallara, no
+  # tiene sentido publicar en npm una
+  # version que no existe.
+
+  npm:
+    needs: [check, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      # Sin token no se publica, pero
+      # TAMPOCO se falla: la release de
+      # GitHub ya salio bien y no debe
+      # aparecer en rojo por esto.
+      - name: ¿Hay token de npm?
+        id: token
+        run: |
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::NPM_TOKEN no esta configurado; se omite la publicacion en npm."
+          fi
+
+      - name: Preparar los paquetes
+        if: steps.token.outputs.hay == 'si'
+        run: sh packaging/npm/build-npm.sh artifacts dist/npm
+
+      - name: Comprobar que el lanzador arranca
+        if: steps.token.outputs.hay == 'si'
+        run: |
+          set -eu
+          node --check dist/npm/tzlang/bin/tz.js
+          # El binario de Linux x64 es el
+          # del propio runner: se puede
+          # ejecutar aqui mismo.
+          chmod +x dist/npm/tzlang-linux-x64/bin/tz
+          dist/npm/tzlang-linux-x64/bin/tz --version
+
+      # Primero los de plataforma: el
+      # principal depende de ellos.
+      - name: Publicar los paquetes de plataforma
+        if: steps.token.outputs.hay == 'si'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -eu
+          for p in tzlang-darwin tzlang-linux-x64 tzlang-linux-arm64 tzlang-win32-x64; do
+            echo "publicando $p"
+            ( cd "dist/npm/$p" && npm publish --access public )
+          done
+
+      - name: Publicar tzlang
+        if: steps.token.outputs.hay == 'si'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: cd dist/npm/tzlang && npm publish --access public

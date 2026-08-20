@@ -290,6 +290,22 @@ TZ_VERSION=v0.2.0    sh install.sh
 irm https://raw.githubusercontent.com/TzLanguaje/TzLanguaje/main/install.ps1 | iex
 ```
 
+### npm
+
+Si ya tienes Node, puedes probarlo sin instalar nada:
+
+```bash
+npx tzlang programa.tz
+```
+
+O instalarlo de forma permanente:
+
+```bash
+npm install -g tzlang
+```
+
+El paquete trae el binario nativo de tu plataforma —unos 90 KB— sin compilar nada ni descargar en `postinstall`.
+
 ### Gestores de paquetes
 
 ```bash
@@ -863,6 +879,7 @@ TzLang/
 │   ├── macos/          instalador .pkg con asistente
 │   ├── windows/        instalador .exe con asistente (Inno Setup)
 │   ├── linux/          paquetes .deb y .rpm
+│   ├── npm/            paquetes de npm y su lanzador
 │   ├── homebrew/       plantilla de la formula de Homebrew
 │   └── scoop/          plantilla del manifiesto de Scoop
 │
