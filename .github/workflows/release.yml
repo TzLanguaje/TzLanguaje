@@ -321,8 +321,24 @@ jobs:
   # tiene sentido publicar en npm una
   # version que no existe.
 
+  # DESACTIVADO POR AHORA.
+  #
+  # Todo lo de npm esta hecho y
+  # probado, pero no se publica hasta
+  # que se decida. Para encenderlo:
+  #
+  #   Settings > Secrets and variables
+  #   > Actions > Variables
+  #   > New repository variable
+  #
+  #     PUBLICAR_EN_NPM = si
+  #
+  # y tener NPM_TOKEN configurado. No
+  # hace falta tocar este archivo.
+
   npm:
     needs: [check, publish]
+    if: vars.PUBLICAR_EN_NPM == 'si'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
