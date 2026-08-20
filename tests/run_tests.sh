@@ -269,6 +269,61 @@ cli_extra_tests() {
 # apagada por defecto cuando la salida no es
 # un terminal.
 
+entrada_tests() {
+
+    # entrada() lee de la entrada estandar, asi
+    # que no puede ser un test de archivo suelto:
+    # el runner no le pasaria nada y quedaria a
+    # merced de lo que hubiera en stdin.
+
+    programa="$TMP/entrada.tz"
+
+    cat > "$programa" <<'PROGRAMA'
+variable nombre = entrada("Nombre: ")
+imprimir "Hola " + nombre
+variable edad = numero(entrada("Edad: "))
+imprimir texto(edad + 1)
+PROGRAMA
+
+    TOTAL=$((TOTAL + 1))
+
+    printf 'Ana\n30\n' | "$TZC" "$programa" > "$TMP/e_out" 2>&1
+
+    printf 'Nombre: Hola Ana\nEdad: 31\n' > "$TMP/e_esperado"
+
+    if diff -q "$TMP/e_esperado" "$TMP/e_out" >/dev/null 2>&1; then
+        PASSED=$((PASSED + 1))
+        printf '[PASS] %s\n' "entrada/lee_una_linea"
+    else
+        FAILED=$((FAILED + 1))
+        printf '[FAIL] %s\n' "entrada/lee_una_linea"
+        diff "$TMP/e_esperado" "$TMP/e_out" | sed 's/^/  /'
+    fi
+
+    # Sin nada que leer devuelve texto vacio,
+    # no falla: en un CI la entrada esta cerrada.
+
+    TOTAL=$((TOTAL + 1))
+
+    cat > "$programa" <<'PROGRAMA'
+variable x = entrada("")
+imprimir "[" + x + "]"
+imprimir largo(x)
+PROGRAMA
+
+    "$TZC" "$programa" < /dev/null > "$TMP/e_out2" 2>&1
+
+    if [ "$(cat "$TMP/e_out2")" = "[]
+0" ]; then
+        PASSED=$((PASSED + 1))
+        printf '[PASS] %s\n' "entrada/sin_entrada_texto_vacio"
+    else
+        FAILED=$((FAILED + 1))
+        printf '[FAIL] %s\n' "entrada/sin_entrada_texto_vacio"
+        cat "$TMP/e_out2" | sed 's/^/  /'
+    fi
+}
+
 diagnostic_tests() {
 
     programa="$TESTS_DIR/diagnostics/identificador.tz"
@@ -383,6 +438,7 @@ printf '=== TzLang Test Suite ===\n\n'
 run_file_tests
 cli_extra_tests
 diagnostic_tests
+entrada_tests
 example_tests
 
 printf '\n========================================\n'

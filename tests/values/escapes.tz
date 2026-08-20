@@ -1,0 +1,8 @@
+// Secuencias de escape
+
+imprimir "linea1\nlinea2"
+imprimir "col1\tcol2"
+imprimir "dice \"hola\""
+imprimir "barra: \\"
+imprimir "sin escapes"
+imprimir largo("a\nb")

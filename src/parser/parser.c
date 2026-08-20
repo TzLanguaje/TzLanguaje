@@ -1274,13 +1274,26 @@ static ASTNode *parse_multiplicative(
 
     while (
         check(parser, TOKEN_STAR) ||
-        check(parser, TOKEN_SLASH)
+        check(parser, TOKEN_SLASH) ||
+        check(parser, TOKEN_PERCENT)
     ) {
 
-        BinaryOperator operator =
-            check(parser, TOKEN_STAR)
-                ? OP_MULTIPLY
-                : OP_DIVIDE;
+        /*
+         * El resto tiene la misma
+         * precedencia que multiplicar y
+         * dividir, como en el resto de
+         * lenguajes.
+         */
+
+        BinaryOperator operator;
+
+        if (check(parser, TOKEN_STAR)) {
+            operator = OP_MULTIPLY;
+        } else if (check(parser, TOKEN_SLASH)) {
+            operator = OP_DIVIDE;
+        } else {
+            operator = OP_MODULO;
+        }
 
         advance(parser);
 
@@ -2009,6 +2022,88 @@ static ASTNode *parse_if(
     ASTNode *else_branch = NULL;
 
     if (match(parser, TOKEN_SINO)) {
+
+        /*
+         * ==========================
+         * sino si
+         * ==========================
+         *
+         * 'sino si' se trata como un
+         * 'si' completo metido dentro
+         * del sino, que es justo lo que
+         * habia que escribir a mano
+         * antes:
+         *
+         *   sino
+         *       si ...
+         *       fin
+         *   fin
+         *
+         * La diferencia es que ese 'si'
+         * interior se come el 'fin' de
+         * los dos, asi que una cadena de
+         * cinco ramas lleva un 'fin' y
+         * no cinco.
+         *
+         * parse_if() ya exige su propio
+         * 'fin', asi que aqui se retorna
+         * directamente sin pedir otro.
+         */
+
+        if (check(parser, TOKEN_SI)) {
+
+            /*
+             * parse_if() da por hecho
+             * que el 'si' ya se consumio,
+             * igual que cuando la llama
+             * parse_statement().
+             */
+
+            advance(parser);
+
+            ASTNode *anidado =
+                parse_if(parser);
+
+            if (anidado == NULL) {
+
+                ast_free(condition);
+                ast_free(then_branch);
+
+                return NULL;
+            }
+
+            /*
+             * El 'si' anidado va dentro
+             * de un bloque, no pelado:
+             * execute_block() solo
+             * acepta bloques, y con un
+             * nodo suelto falla sin
+             * decir nada.
+             *
+             * Asi el arbol queda
+             * identico al de escribir el
+             * anidamiento a mano.
+             */
+
+            ASTNode *envoltorio = ast_program();
+
+            if (envoltorio == NULL) {
+
+                ast_free(condition);
+                ast_free(then_branch);
+                ast_free(anidado);
+
+                return NULL;
+            }
+
+            ast_program_add(envoltorio, anidado);
+
+            return ast_if(
+                condition,
+                then_branch,
+                envoltorio
+            );
+        }
 
         else_branch =
             parse_block(parser);

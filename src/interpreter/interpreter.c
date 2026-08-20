@@ -799,6 +799,32 @@ static ExecutionResult execution_continue(void) {
  * consume después.
  */
 
+/*
+ * ==========================
+ * INDICES NEGATIVOS
+ * ==========================
+ *
+ * -1 es el ultimo elemento, -2 el
+ * penultimo, y asi. Se traduce a la
+ * posicion equivalente desde el
+ * principio antes de tocar la lista.
+ *
+ * Si el resultado sigue fuera de
+ * rango, value_list_at() lo rechaza
+ * igual que siempre.
+ */
+
+static int indice_normalizado(
+    int posicion,
+    int total
+) {
+    if (posicion < 0) {
+        return total + posicion;
+    }
+
+    return posicion;
+}
+
 static int execution_interrupts(
     ExecutionResult result
 ) {
@@ -1141,6 +1167,21 @@ static int evaluate_expression(
 
                 success =
                     operation_divide(
+                        left,
+                        right,
+                        result
+                    );
+
+                break;
+
+            /*
+             * RESTO
+             */
+
+            case OP_MODULO:
+
+                success =
+                    operation_modulo(
                         left,
                         right,
                         result
@@ -1588,7 +1629,21 @@ static int evaluate_expression(
                 return 0;
             }
 
-            int position = index.data.number;
+            /*
+             * Se guarda el que escribio
+             * el usuario para el mensaje
+             * de error: decirle que
+             * fallo el 2 cuando puso -1
+             * no ayuda a nadie.
+             */
+
+            int position_escrito = index.data.number;
+
+            int position =
+                indice_normalizado(
+                    position_escrito,
+                    value_list_count(object)
+                );
 
             Value *item =
                 value_list_at(object, position);
@@ -1601,7 +1656,7 @@ static int evaluate_expression(
                     stderr,
                     "Error: índice %d fuera de rango. "
                     "La lista tiene %d elemento%s.\n",
-                    position,
+                    position_escrito,
                     value_list_count(object),
                     value_list_count(object) == 1
                         ? ""
@@ -1824,7 +1879,13 @@ static const Builtin builtins[] = {
      */
 
     { "claves",     1, 0 },
-    { "valores",    1, 0 }
+    { "valores",    1, 0 },
+
+    /*
+     * Entrada del usuario
+     */
+
+    { "entrada",    1, 0 }
 };
 
 static const Builtin *builtin_find(
@@ -2588,6 +2649,125 @@ static int builtin_separar(
  * dejan tal cual.
  */
 
+/*
+ * ==========================
+ * entrada(mensaje)
+ * ==========================
+ *
+ * Muestra el mensaje y espera a que
+ * la persona escriba una linea.
+ * Devuelve siempre un TEXTO: si hace
+ * falta un numero, se convierte con
+ * numero() o decimal().
+ *
+ * Se lee con fgets en bucle en vez de
+ * getline porque getline es POSIX y no
+ * existe en MSVC. Esto es C11 puro.
+ *
+ * Si no hay nada que leer (la entrada
+ * esta cerrada, o el programa corre en
+ * un CI) devuelve un texto vacio en
+ * vez de fallar: un programa de clase
+ * no deberia reventar por eso.
+ */
+
+static int builtin_entrada(
+    Value mensaje,
+    Value *result
+) {
+
+    if (mensaje.type != VALUE_STRING) {
+
+        diagnostic_registrar(DIAG_ARGUMENTO);
+
+        fprintf(
+            stderr,
+            "Error: entrada() necesita un texto como mensaje, no %s.\n",
+            value_type_name(mensaje.type)
+        );
+
+        return 0;
+    }
+
+    printf("%s", mensaje.data.string);
+    fflush(stdout);
+
+    size_t capacidad = 128;
+    size_t usado = 0;
+
+    char *linea = malloc(capacidad);
+
+    if (linea == NULL) {
+        return 0;
+    }
+
+    linea[0] = '\0';
+
+    for (;;) {
+
+        if (fgets(linea + usado, (int) (capacidad - usado), stdin) == NULL) {
+            break;
+        }
+
+        usado += strlen(linea + usado);
+
+        /*
+         * Si termina en salto de linea,
+         * ya esta la linea entera.
+         */
+
+        if (usado > 0 && linea[usado - 1] == '\n') {
+            break;
+        }
+
+        /*
+         * Se lleno el buffer sin llegar
+         * al salto: hay mas.
+         */
+
+        if (usado + 1 >= capacidad) {
+
+            size_t nueva = capacidad * 2;
+
+            char *mas = realloc(linea, nueva);
+
+            if (mas == NULL) {
+
+                free(linea);
+
+                return 0;
+            }
+
+            linea = mas;
+            capacidad = nueva;
+
+            continue;
+        }
+
+        break;
+    }
+
+    /*
+     * Fuera el salto final, y el
+     * retorno de carro que anade
+     * Windows.
+     */
+
+    while (
+        usado > 0 &&
+        (linea[usado - 1] == '\n' ||
+         linea[usado - 1] == '\r')
+    ) {
+        linea[--usado] = '\0';
+    }
+
+    *result = value_string(linea);
+
+    free(linea);
+
+    return 1;
+}
+
 static int builtin_cambiar_caja(
     const char *name,
     Value text,
@@ -3209,6 +3389,14 @@ static int call_builtin(
                 result
             );
     }
+    else if (strcmp(builtin->name, "entrada") == 0) {
+
+        success =
+            builtin_entrada(
+                arguments[0],
+                result
+            );
+    }
     else if (strcmp(builtin->name, "minusculas") == 0) {
 
         success =
@@ -3629,7 +3817,13 @@ static int resolve_index_slot(
             return 0;
         }
 
-        int position = index.data.number;
+        int position_escrito = index.data.number;
+
+        int position =
+            indice_normalizado(
+                position_escrito,
+                value_list_count(*container)
+            );
 
         Value *item =
             value_list_at(*container, position);
@@ -3644,7 +3838,7 @@ static int resolve_index_slot(
                 stderr,
                 "Error: índice %d fuera de rango. "
                 "La lista tiene %d elemento%s.\n",
-                position,
+                position_escrito,
                 value_list_count(*container),
                 value_list_count(*container) == 1
                     ? ""

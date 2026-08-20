@@ -1,0 +1,12 @@
+La primera: 8
+La ultima:  7
+Cuantas hay: 4
+[8, 6, 9, 7, 10]
+[8, 6, 9, 7, 10, 5, 5]
+Promedio: 8
+Ana
+{"nombre": "Ana", "edad": 21, "ciudad": "Madrid"}
+["nombre", "edad", "ciudad"]
+["Ana", 21, "Madrid"]
+verdadero
+verdadero

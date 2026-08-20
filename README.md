@@ -8,7 +8,7 @@
   <a href="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/TzLanguaje/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/TzLanguaje/TzLanguaje?label=versión&color=blue" alt="Última versión"></a>
   <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
-  <img src="https://img.shields.io/badge/tests-155%20passed-success" alt="155 tests">
+  <img src="https://img.shields.io/badge/tests-163%20passed-success" alt="163 tests">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
   <img src="https://img.shields.io/badge/plataformas-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="Plataformas">
 </p>
@@ -241,7 +241,7 @@ Escribe:
 tz --version
 ```
 
-Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.2.3`, ya está instalado.
+Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.3.0`, ya está instalado.
 
 Si en cambio dice *«orden no encontrada»* o *«no se reconoce como un comando»*, casi siempre es una de dos cosas: la terminal estaba abierta desde antes de instalar (ciérrala y abre otra), o en Windows desmarcaste la casilla del PATH (vuelve a pasar el instalador y déjala marcada).
 
@@ -281,7 +281,7 @@ Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de adm
 
 ```bash
 TZ_PREFIX=/usr/local sh install.sh
-TZ_VERSION=v0.2.3    sh install.sh
+TZ_VERSION=v0.3.0    sh install.sh
 ```
 
 **Windows**, en PowerShell:
@@ -389,7 +389,7 @@ tz --version            # mostrar la versión (o -v)
 ```
 
 ```
-TzLang 0.2.3
+TzLang 0.3.0
 ```
 
 Solo se aceptan archivos con extensión `.tz`.
@@ -453,6 +453,20 @@ diccionario
 
 Los booleanos son `verdadero` y `falso`, y la ausencia de valor es `nulo`.
 
+Dentro de un texto se pueden usar cuatro secuencias de escape:
+
+| Escape | Significado |
+|---|---|
+| `\n` | Salto de línea |
+| `\t` | Tabulador |
+| `\"` | Comilla doble |
+| `\\` | Barra invertida |
+
+```tz
+imprimir "Dice \"hola\""
+imprimir "uno\ndos"
+```
+
 ### Operadores aritméticos
 
 ```tz
@@ -460,6 +474,7 @@ imprimir 7 + 3
 imprimir 7 - 3
 imprimir 7 * 3
 imprimir 7 / 3
+imprimir 7 % 3
 imprimir 7.0 / 2
 imprimir -5
 imprimir 2 + 3 * 4
@@ -486,6 +501,20 @@ variable nota = 85
 
 si nota es mayor o igual que 90
     imprimir "Sobresaliente"
+sino
+    imprimir "Puede mejorar"
+fin
+```
+
+Para encadenar condiciones, `sino si`. Toda la cadena se cierra con **un solo** `fin`:
+
+```tz
+si nota es mayor o igual que 90
+    imprimir "Sobresaliente"
+sino si nota es mayor o igual que 70
+    imprimir "Aprobado"
+sino si nota es mayor o igual que 50
+    imprimir "Justo"
 sino
     imprimir "Puede mejorar"
 fin
@@ -644,6 +673,19 @@ imprimir mixta[4][1]
 3
 ```
 
+Los índices negativos cuentan desde el final, y las listas se concatenan con `+`:
+
+```tz
+variable l = [10, 20, 30]
+imprimir l[-1]
+imprimir [1, 2] + [3, 4]
+```
+
+```
+30
+[1, 2, 3, 4]
+```
+
 ### Diccionarios
 
 Las claves son de tipo `texto` y se conserva el orden de inserción:
@@ -731,6 +773,7 @@ TzLang incluye 16 funciones integradas:
 | `redondear(x)` | Redondea a `numero` | `redondear(3.7)` | `4` |
 | `claves(dic)` | Lista de claves | `claves(p)` | `["nombre"]` |
 | `valores(dic)` | Lista de valores | `valores(p)` | `["Carlos"]` |
+| `entrada(msg)` | Pide un dato por teclado | `entrada("Nombre: ")` | `"Ana"` |
 
 `agregar` y `eliminar` modifican la estructura que reciben; el resto devuelven un valor nuevo.
 
@@ -985,7 +1028,7 @@ AñO
 
 ## Roadmap
 
-Lo que ya está terminado en la **0.2.3**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; suite de 155 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
+Lo que ya está terminado en la **0.3.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 17 funciones incorporadas; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; suite de 163 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
 
 Lo siguiente, por orden de prioridad:
 

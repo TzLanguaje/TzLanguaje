@@ -1,0 +1,46 @@
+// ==========================
+// Leccion 2: decidir
+// ==========================
+//
+// Un programa que siempre hace lo
+// mismo sirve de poco. 'si' le
+// permite elegir.
+
+variable edad = 20
+
+si edad es mayor o igual que 18
+    imprimir "Puedes votar"
+sino
+    imprimir "Todavia no puedes votar"
+fin
+
+// Las comparaciones se escriben como
+// se dicen en voz alta:
+//
+//   es mayor que          es menor que
+//   es mayor o igual que  es menor o igual que
+//   es igual a            es diferente de
+
+variable nota = 75
+
+// Para encadenar decisiones, 'sino si'.
+// Toda la cadena se cierra con UN solo 'fin'.
+
+si nota es mayor o igual que 90
+    imprimir "Sobresaliente"
+sino si nota es mayor o igual que 70
+    imprimir "Aprobado"
+sino si nota es mayor o igual que 50
+    imprimir "Justo"
+sino
+    imprimir "Suspenso"
+fin
+
+// Se pueden combinar con y / o / no
+
+variable llueve = verdadero
+variable tengoParaguas = falso
+
+si llueve y no tengoParaguas
+    imprimir "Mejor te quedas"
+fin

@@ -1,0 +1,28 @@
+// Cadena de sino si con un solo fin
+
+funcion clasificar(n)
+    si n es mayor que 100
+        retornar "enorme"
+    sino si n es mayor que 50
+        retornar "grande"
+    sino si n es mayor que 10
+        retornar "mediano"
+    sino
+        retornar "pequeno"
+    fin
+fin
+
+imprimir clasificar(500)
+imprimir clasificar(70)
+imprimir clasificar(30)
+imprimir clasificar(5)
+
+// el anidado a mano sigue valiendo igual
+variable x = 5
+si x es mayor que 10
+    imprimir "a"
+sino
+    si x es mayor que 3
+        imprimir "b"
+    fin
+fin

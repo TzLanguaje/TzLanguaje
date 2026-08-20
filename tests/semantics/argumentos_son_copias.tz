@@ -1,0 +1,42 @@
+// Los argumentos se pasan por COPIA.
+// Esto fija esa semantica: sin esta prueba,
+// cambiarla sin querer no rompe nada.
+
+funcion tocarLista(lista)
+    agregar(lista, 99)
+fin
+
+funcion tocarDicc(d)
+    d["nueva"] = 99
+fin
+
+variable numeros = [1, 2, 3]
+tocarLista(numeros)
+imprimir numeros
+
+variable dic = {"a": 1}
+tocarDicc(dic)
+imprimir dic
+
+// el patron correcto: retornar
+funcion agregarBien(lista)
+    agregar(lista, 99)
+    retornar lista
+fin
+
+variable otra = [1, 2]
+otra = agregarBien(otra)
+imprimir otra
+
+// en el mismo ambito SI muta
+variable tercera = [1, 2]
+agregar(tercera, 3)
+imprimir tercera
+
+// una global reasignada desde dentro SI cambia
+variable global = 1
+funcion cambiarGlobal()
+    global = 99
+fin
+cambiarGlobal()
+imprimir global

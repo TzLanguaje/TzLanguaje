@@ -1,0 +1,15 @@
+// Los indices negativos cuentan desde el final
+
+variable lista = [10, 20, 30, 40]
+
+imprimir lista[-1]
+imprimir lista[-2]
+imprimir lista[-4]
+
+// tambien al asignar
+lista[-1] = 99
+imprimir lista
+
+// y siguen funcionando los positivos
+imprimir lista[0]
+imprimir lista[3]

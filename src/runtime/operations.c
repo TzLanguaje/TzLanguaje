@@ -182,6 +182,60 @@ int operation_add(
         return 1;
     }
 
+    /*
+     * ==========================
+     * LISTA + LISTA
+     * ==========================
+     *
+     * Devuelve una lista NUEVA con los
+     * elementos de las dos. Ninguna de
+     * las originales se toca: es la
+     * misma idea de copia que rige en
+     * el resto del lenguaje.
+     */
+
+    if (
+        left.type == VALUE_LIST &&
+        right.type == VALUE_LIST
+    ) {
+
+        Value juntas = value_list();
+
+        int i;
+
+        for (i = 0; i < value_list_count(left); i++) {
+
+            Value copia =
+                value_copy(*value_list_at(left, i));
+
+            if (!value_list_push(&juntas, copia)) {
+
+                value_free(&copia);
+                value_free(&juntas);
+
+                return 0;
+            }
+        }
+
+        for (i = 0; i < value_list_count(right); i++) {
+
+            Value copia =
+                value_copy(*value_list_at(right, i));
+
+            if (!value_list_push(&juntas, copia)) {
+
+                value_free(&copia);
+                value_free(&juntas);
+
+                return 0;
+            }
+        }
+
+        *result = juntas;
+
+        return 1;
+    }
+
     diagnostic_registrar(DIAG_TIPO);
 
     fprintf(
@@ -430,6 +484,83 @@ int operation_multiply(
  * DIVISIÓN
  * ==========================
  */
+
+/*
+ * ==========================
+ * RESTO
+ * ==========================
+ *
+ * 7 % 3 da 1.
+ *
+ * Solo entre enteros: con decimales el
+ * resto no tiene un significado unico
+ * y confundiria a quien esta
+ * aprendiendo. Mejor un error claro.
+ */
+
+int operation_modulo(
+    Value left,
+    Value right,
+    Value *result
+) {
+
+    if (result == NULL) {
+        return 0;
+    }
+
+    if (
+        left.type == VALUE_NUMBER &&
+        right.type == VALUE_NUMBER
+    ) {
+
+        if (right.data.number == 0) {
+
+            diagnostic_registrar(DIAG_DIVISION_CERO);
+
+            fprintf(
+                stderr,
+                "Error: el resto entre cero no existe.\n"
+            );
+
+            return 0;
+        }
+
+        /*
+         * INT_MIN % -1 es comportamiento
+         * indefinido en C, igual que la
+         * division. El resto real es 0.
+         */
+
+        if (
+            left.data.number == INT_MIN &&
+            right.data.number == -1
+        ) {
+
+            *result = value_number(0);
+
+            return 1;
+        }
+
+        *result =
+            value_number(
+                left.data.number %
+                right.data.number
+            );
+
+        return 1;
+    }
+
+    diagnostic_registrar(DIAG_TIPO);
+
+    fprintf(
+        stderr,
+        "Error: el resto solo funciona entre numeros enteros, no %s con %s.\n",
+        value_type_name(left.type),
+        value_type_name(right.type)
+    );
+
+    return 0;
+}
 
 int operation_divide(
     Value left,

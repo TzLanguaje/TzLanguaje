@@ -1,2 +1,4 @@
-variable L = [1, 2, 3]
-imprimir L[-1]
+// Un indice negativo cuenta desde el final,
+// pero -4 en una lista de 3 sigue sin existir.
+variable lista = [1, 2, 3]
+imprimir lista[-4]

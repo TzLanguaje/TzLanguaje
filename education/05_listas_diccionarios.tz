@@ -1,0 +1,51 @@
+// ==========================
+// Leccion 5: guardar muchos datos
+// ==========================
+
+// Una LISTA guarda cosas en orden.
+// Se llega a ellas por su posicion,
+// empezando a contar en 0.
+
+variable notas = [8, 6, 9, 7]
+
+imprimir "La primera: " + texto(notas[0])
+imprimir "La ultima:  " + texto(notas[-1])   // -1 es la ultima
+imprimir "Cuantas hay: " + texto(largo(notas))
+
+agregar(notas, 10)
+imprimir notas
+
+// Las listas se juntan con +
+variable mas = notas + [5, 5]
+imprimir mas
+
+// Calcular el promedio
+variable suma = 0
+para cada n en notas
+    suma = suma + n
+fin
+
+// decimal() ANTES de dividir, o la
+// division entera se come los decimales
+imprimir "Promedio: " + texto(decimal(suma) / largo(notas))
+
+// ==========================
+
+// Un DICCIONARIO guarda cosas con
+// nombre en vez de con posicion.
+
+variable persona = {"nombre": "Ana", "edad": 20}
+
+imprimir persona["nombre"]
+
+persona["edad"] = 21             // cambia una clave que existe
+persona["ciudad"] = "Madrid"     // y crea una que no existia
+
+imprimir persona
+imprimir claves(persona)
+imprimir valores(persona)
+
+// contiene() busca CLAVES en un
+// diccionario, pero VALORES en una lista
+imprimir contiene(persona, "ciudad")
+imprimir contiene(notas, 10)

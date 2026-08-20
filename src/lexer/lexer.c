@@ -606,24 +606,139 @@ Token *lexer_tokenize(
             const char *start =
                 current;
 
+            /*
+             * ==========================
+             * SECUENCIAS DE ESCAPE
+             * ==========================
+             *
+             * El texto se construye
+             * caracter a caracter en vez
+             * de copiarse de golpe,
+             * porque hay que traducir:
+             *
+             *   \n   salto de linea
+             *   \t   tabulador
+             *   \"   comilla doble
+             *   \\   barra invertida
+             *
+             * Sin esto no habia forma de
+             * meter una comilla dentro
+             * de un texto.
+             *
+             * El buffer se dimensiona
+             * con lo que queda de
+             * archivo: traducir siempre
+             * acorta, nunca alarga.
+             */
+
+            size_t restante = strlen(current);
+
+            char *texto = malloc(restante + 1);
+
+            if (texto == NULL) {
+
+                lexer_free_tokens(
+                    tokens,
+                    count
+                );
+
+                return NULL;
+            }
+
+            size_t escritos = 0;
+            int escape_malo = 0;
+            char cual_malo = 0;
+
             while (
                 *current != '\0' &&
                 *current != '"'
             ) {
-                current++;
+
+                if (*current != '\\') {
+
+                    texto[escritos++] = *current;
+
+                    current++;
+
+                    continue;
+                }
+
+                /*
+                 * Una barra al final del
+                 * archivo no escapa nada.
+                 */
+
+                if (*(current + 1) == '\0') {
+                    break;
+                }
+
+                switch (*(current + 1)) {
+
+                    case 'n':
+                        texto[escritos++] = '\n';
+                        break;
+
+                    case 't':
+                        texto[escritos++] = '\t';
+                        break;
+
+                    case '"':
+                        texto[escritos++] = '"';
+                        break;
+
+                    case '\\':
+                        texto[escritos++] = '\\';
+                        break;
+
+                    default:
+                        escape_malo = 1;
+                        cual_malo = *(current + 1);
+                        break;
+                }
+
+                if (escape_malo) {
+                    break;
+                }
+
+                current += 2;
             }
 
-            size_t length =
-                current - start;
+            texto[escritos] = '\0';
+
+            if (escape_malo) {
+
+                diagnostic_registrar(DIAG_LEXICO);
+
+                fprintf(
+                    stderr,
+                    "Error en línea %d: '\\%c' no es una secuencia valida. "
+                    "Las validas son \\n, \\t, \\\" y \\\\.\n",
+                    token.line,
+                    cual_malo
+                );
+
+                free(texto);
+
+                lexer_free_tokens(
+                    tokens,
+                    count
+                );
+
+                return NULL;
+            }
+
+            (void) start;
 
             token.type =
                 TOKEN_STRING;
 
             token.value =
                 copy_string(
-                    start,
-                    length
+                    texto,
+                    escritos
                 );
+
+            free(texto);
 
             if (token.value == NULL) {
 
@@ -720,6 +835,18 @@ Token *lexer_tokenize(
 
                 token.value =
                     copy_string("*", 1);
+
+                current++;
+
+                break;
+
+            case '%':
+
+                token.type =
+                    TOKEN_PERCENT;
+
+                token.value =
+                    copy_string("%", 1);
 
                 current++;
 

@@ -1,0 +1,22 @@
+// El resto: misma precedencia que * y /
+
+imprimir 7 % 3
+imprimir 10 % 2
+imprimir 9 % 3
+
+// precedencia
+imprimir 10 % 3 + 1
+imprimir 2 + 10 % 3
+imprimir 2 * 3 % 4
+
+// negativos
+imprimir -7 % 3
+imprimir 7 % -3
+
+// par o impar, el uso tipico
+variable n = 8
+si n % 2 es igual a 0
+    imprimir "par"
+sino
+    imprimir "impar"
+fin

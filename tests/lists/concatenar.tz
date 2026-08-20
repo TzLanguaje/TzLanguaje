@@ -1,0 +1,13 @@
+// Concatenar listas con +
+
+variable a = [1, 2]
+variable b = [3, 4]
+variable c = a + b
+
+imprimir c
+imprimir a
+imprimir b
+
+imprimir [] + [1]
+imprimir [1] + []
+imprimir [["x"]] + [["y"]]

@@ -1,9 +1,9 @@
 # Prompt para generar ejercicios de TzLang
 
 Copia todo lo que hay debajo de la línea
-y pégalo en Claude. Está pensado para
-que genere ejercicios de nivel junior
-que **ejecuten de verdad**.
+y pégalo en un asistente de IA. Está
+pensado para que genere ejercicios de
+nivel junior que **ejecuten de verdad**.
 
 ---
 
@@ -25,6 +25,16 @@ variable vacio = nulo
 imprimir "Hola"
 imprimir nombre
 imprimir "Hola " + nombre
+
+// Cuatro secuencias de escape dentro de un texto:
+imprimir "dice \"hola\""
+imprimir "uno\ndos"
+imprimir "col1\tcol2"
+imprimir "barra: \\"
+
+// Pedir un dato por teclado. Devuelve TEXTO siempre:
+variable quien = entrada("Como te llamas? ")
+variable anos = numero(entrada("Tu edad? "))
 ```
 
 **Tipos:** `numero` (entero), `decimal`, `texto`, `booleano` (`verdadero` / `falso`), `nulo`, `lista`, `diccionario`.
@@ -39,15 +49,19 @@ es igual a              es diferente de
 
 **Lógicos:** `y`, `o`, `no`
 
-**Aritméticos:** `+`, `-`, `*`, `/`
+**Aritméticos:** `+`, `-`, `*`, `/`, `%` (resto)
 
-**Condicional:**
+`%` solo funciona entre enteros. `7 % 3` da `1`.
+
+**Condicional**, con `sino si` para encadenar. Toda la cadena lleva **un solo** `fin`:
 
 ```tz
-si edad es mayor o igual que 18
-    imprimir "Mayor de edad"
+si nota es mayor o igual que 90
+    imprimir "Sobresaliente"
+sino si nota es mayor o igual que 70
+    imprimir "Aprobado"
 sino
-    imprimir "Menor de edad"
+    imprimir "Puede mejorar"
 fin
 ```
 
@@ -87,14 +101,22 @@ imprimir sumar(2, 3)
 ```tz
 variable numeros = [1, 2, 3]
 imprimir numeros[0]
+imprimir numeros[-1]          // -1 es el ultimo
+imprimir [1, 2] + [3, 4]      // las listas se concatenan
 
 variable persona = {"nombre": "Ana", "edad": 20}
 imprimir persona["nombre"]
+
+// Asignar con corchetes sirve para las DOS cosas:
+persona["edad"] = 21          // modifica una clave que ya existe
+persona["ciudad"] = "Madrid"  // y crea una que no existia
 ```
 
-**Las 16 funciones incorporadas, y no hay más:**
+`claves(dic)` y `valores(dic)` devuelven las listas en el orden en que se insertaron, no ordenadas.
 
-`largo(x)` · `tipo(x)` · `texto(x)` · `numero(x)` · `decimal(x)` · `agregar(lista, v)` · `eliminar(x, k)` · `contiene(x, v)` · `unir(lista, sep)` · `separar(txt, sep)` · `mayusculas(txt)` · `minusculas(txt)` · `absoluto(x)` · `redondear(x)` · `claves(dic)` · `valores(dic)`
+**Las 17 funciones incorporadas, y no hay más:**
+
+`largo(x)` · `tipo(x)` · `texto(x)` · `numero(x)` · `decimal(x)` · `agregar(lista, v)` · `eliminar(x, k)` · `contiene(x, v)` · `unir(lista, sep)` · `separar(txt, sep)` · `mayusculas(txt)` · `minusculas(txt)` · `absoluto(x)` · `redondear(x)` · `claves(dic)` · `valores(dic)` · `entrada(mensaje)`
 
 ## La trampa más grande: las funciones reciben COPIAS
 
@@ -168,27 +190,10 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 
 ## Lo que NO existe — no lo uses
 
-- **`sino si`** no existe. Para encadenar condiciones, anida un `si` completo dentro del `sino`, y **cada nivel suma un `fin` al final**:
-
-  ```tz
-  si x es mayor que 10
-      imprimir "grande"
-  sino
-      si x es mayor que 3
-          imprimir "mediano"
-      sino
-          imprimir "pequeno"
-      fin
-  fin
-  ```
-
-  Con tres o más ramas es muy fácil perder la cuenta de los `fin`. Cuéntalos.
 - **`+=`, `-=`, `++`, `--`** no existen. Escribe `x = x + 1`.
 - **`para i = 0 hasta 10`** no existe. Solo existe `para cada x en lista`. Para contar, usa `mientras`.
 - **`>`, `<`, `>=`, `<=`, `==`, `!=`** no existen como símbolos. Usa las formas con palabras.
-- No hay `entrada`, `leer` ni forma de pedir datos al usuario. Los valores van escritos en el programa.
 - No hay clases, objetos, módulos, `importar`, ni manejo de excepciones.
-- No hay operador de módulo `%`. Si necesitas el resto, calcúlalo: `a - (a / b) * b`. Funciona porque la división entre enteros trunca.
 - **Cuidado con la división entera:** entre dos enteros, `10 / 3` da `3`, no `3.33`.
 - **Y cuidado con el orden al convertir.** `decimal()` hay que aplicarlo **antes** de dividir, no después:
 
@@ -200,14 +205,10 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
   ```
 
   Basta con que **uno** de los dos sea decimal. `decimal(a / b)` es el error clásico: convierte un resultado que ya perdió los decimales.
-- **`%`** no existe como operador. `7 % 3` da error del lexer.
 - **`x++` y `x--`** no existen.
 - **Comillas simples** no existen: los textos van con `"` dobles. `'Hola'` da error.
 - **Notación de punto** no existe: es `persona["nombre"]`, nunca `persona.nombre`.
-- **No hay secuencias de escape.** `\n` sale literal como barra y ene, y `\"` da error del lexer. Para varias líneas, usa varios `imprimir`. No se pueden meter comillas dobles dentro de un texto.
 - **`texto()` no convierte listas ni diccionarios.** Para verlos, `imprimir lista` directamente.
-- **Los índices negativos** no existen: `lista[-1]` es error, no el último elemento. Para el último: `lista[largo(lista) - 1]`.
-- **Las listas no se concatenan con `+`**: `[1,2] + [3,4]` es error. Hay que recorrer una y `agregar()` a la otra.
 - `romper` y `continuar` solo valen dentro de un `mientras` o un `para cada`.
 - Los bloques se cierran **siempre** con `fin`.
 - Cada instrucción va en su propia línea.
@@ -235,6 +236,18 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 
 ## Detalles de comportamiento
 
+- **Un decimal con valor entero se imprime SIN decimales.** Esto es lo que más estropea las salidas esperadas:
+
+  ```tz
+  texto(8.0)     // "8"     <- no "8.0"
+  texto(8.25)    // "8.25"
+  tipo(8.0)      // decimal <- el tipo no cambia, solo cómo se ve
+  ```
+
+  El promedio de `[8, 9, 7, 8]` es `8`, y se imprime `8`. Si escribes que la salida esperada es `8.0`, el ejercicio queda mal. Calcula siempre cómo se verá de verdad.
+
+- La aritmética mixta da decimal: `5 + 2.5` es `7.5`, de tipo `decimal`.
+- `redondear()` devuelve un `numero`, no un `decimal`.
 - No hay conversión implícita: `5 es igual a "5"` da `falso`.
 - `redondear` aleja del cero: `redondear(2.5)` da `3`, `redondear(-2.5)` da `-3`.
 - Dividir entre cero siempre es error, también con decimales. No hay infinito.

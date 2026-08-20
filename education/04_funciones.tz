@@ -1,0 +1,59 @@
+// ==========================
+// Leccion 4: funciones
+// ==========================
+//
+// Una funcion es un trozo de programa
+// al que le pones nombre para poder
+// usarlo muchas veces.
+
+funcion saludar(nombre)
+    imprimir "Hola, " + nombre
+fin
+
+saludar("Ana")
+saludar("Luis")
+
+// 'retornar' devuelve un resultado
+
+funcion area(base, altura)
+    retornar base * altura / 2
+fin
+
+imprimir "Area del triangulo: " + texto(area(10, 4))
+
+// Una funcion puede llamarse a si misma
+
+funcion factorial(n)
+    si n es menor o igual que 1
+        retornar 1
+    fin
+    retornar n * factorial(n - 1)
+fin
+
+imprimir "5! = " + texto(factorial(5))
+
+// ==========================
+// OJO: las funciones reciben COPIAS
+// ==========================
+//
+// Cambiar una lista dentro de una
+// funcion NO cambia la de fuera.
+
+funcion intentarAgregar(lista)
+    agregar(lista, 99)
+fin
+
+variable numeros = [1, 2, 3]
+intentarAgregar(numeros)
+imprimir numeros            // sigue siendo [1, 2, 3]
+
+// Para que el cambio salga, hay que
+// devolver la lista.
+
+funcion agregarBien(lista)
+    agregar(lista, 99)
+    retornar lista
+fin
+
+numeros = agregarBien(numeros)
+imprimir numeros            // ahora si

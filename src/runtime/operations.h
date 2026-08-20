@@ -35,6 +35,23 @@ int operation_divide(
 
 /*
  * ==========================
+ * RESTO
+ * ==========================
+ *
+ * Solo entre numeros enteros. Con
+ * decimales no esta definido de forma
+ * util para quien aprende, asi que da
+ * error en vez de inventar.
+ */
+
+int operation_modulo(
+    Value left,
+    Value right,
+    Value *result
+);
+
+/*
+ * ==========================
  * OPERACIONES DE COMPARACIÓN
  * ==========================
  *
