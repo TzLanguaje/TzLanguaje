@@ -241,7 +241,7 @@ Escribe:
 tz --version
 ```
 
-Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.2.0`, ya está instalado.
+Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.2.1`, ya está instalado.
 
 Si en cambio dice *«orden no encontrada»* o *«no se reconoce como un comando»*, casi siempre es una de dos cosas: la terminal estaba abierta desde antes de instalar (ciérrala y abre otra), o en Windows desmarcaste la casilla del PATH (vuelve a pasar el instalador y déjala marcada).
 
@@ -281,7 +281,7 @@ Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de adm
 
 ```bash
 TZ_PREFIX=/usr/local sh install.sh
-TZ_VERSION=v0.2.0    sh install.sh
+TZ_VERSION=v0.2.1    sh install.sh
 ```
 
 **Windows**, en PowerShell:
@@ -397,7 +397,7 @@ tz --version            # mostrar la versión (o -v)
 ```
 
 ```
-TzLang 0.2.0
+TzLang 0.2.1
 ```
 
 > Nota: la ayuda integrada todavía se refiere al ejecutable por su nombre de compilación, `tzc`, aunque lo hayas instalado como `tz`. Es una diferencia cosmética pendiente de unificar.
@@ -995,7 +995,7 @@ AñO
 
 ## Roadmap
 
-Lo que ya está terminado en la **0.2.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; suite de 148 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
+Lo que ya está terminado en la **0.2.1**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos, de comparación y lógicos; sintaxis comparativa en español; condicionales, bucles, `romper` y `continuar`; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda; 16 funciones incorporadas; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; suite de 148 pruebas; compilación con sanitizers; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
 
 Lo siguiente, por orden de prioridad:
 
