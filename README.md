@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/TzLanguaje/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/TzLanguaje/TzLanguaje?label=versión&color=blue" alt="Última versión"></a>
+  <a href="https://github.com/TzLanguaje/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/TzLanguaje/TzLanguaje?label=versi%C3%B3n&amp;color=blue" alt="Última versión"></a>
   <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
   <img src="https://img.shields.io/badge/tests-163%20passed-success" alt="163 tests">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
