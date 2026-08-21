@@ -207,7 +207,7 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 - **`x++` y `x--`** no existen.
 - **Comillas simples** no existen: los textos van con `"` dobles. `'Hola'` da error.
 - **Notación de punto** no existe: es `persona["nombre"]`, nunca `persona.nombre`.
-- **`texto()` no convierte listas ni diccionarios.** Para verlos, `imprimir lista` directamente.
+- **`texto()` convierte cualquier cosa**, listas y diccionarios incluidos, con la misma representación que `imprimir`.
 - **Las palabras del lenguaje no valen como nombres de variable.** `variable y = 5` falla porque `y` es el operador lógico. Cuidado con `y`, `o`, `no`, `si`, `a`, `de`, `que`: son cortas y tentadoras. Usa `resultado`, `total`, `altura`.
 - `romper` y `continuar` solo valen dentro de un `mientras` o un `para cada`.
 - Los bloques se cierran **siempre** con `fin`.
@@ -215,9 +215,11 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
 
 ## Detalles de las funciones incorporadas
 
-- **`contiene()` cambia de significado según el tipo.** En una lista busca un **valor**; en un diccionario busca una **clave**:
+- **`contiene()` cambia de significado según el tipo.** En un texto busca un trozo; en una lista busca un **valor**; en un diccionario busca una **clave**:
 
   ```tz
+  contiene("hola mundo", "mundo")   // verdadero  <- un trozo del texto
+
   variable p = {"nombre": "Carlos"}
   contiene(p, "nombre")   // verdadero  <- es una clave
   contiene(p, "Carlos")   // falso      <- es un valor, no cuenta
@@ -231,7 +233,7 @@ Es el hábito de `lista.append()` de Python. Aquí destruye la lista.
   ```
 
 - **`largo()` solo vale para texto, lista y diccionario.** Sobre un número da error, no `0`.
-- **`texto()` no convierte listas ni diccionarios.** Para verlos, `imprimir lista` directamente.
+- **`texto()` convierte cualquier cosa**, listas y diccionarios incluidos, con la misma representación que `imprimir`.
 - **`agregar()` y `eliminar()` devuelven `nulo`**, nunca la estructura.
 
 ## Límites

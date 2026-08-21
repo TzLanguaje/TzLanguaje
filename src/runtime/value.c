@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 
 static char *copy_string(const char *source) {
@@ -835,21 +836,107 @@ int value_is_truthy(Value value) {
  * imprimir "Hola"  →  Hola
  */
 
-static void value_print_nested(
+/*
+ * ==========================
+ * REPRESENTACION EN TEXTO
+ * ==========================
+ *
+ * Una sola funcion construye como se
+ * ve un valor, y tanto imprimir como
+ * texto() usan esa.
+ *
+ * Antes se imprimia directamente con
+ * printf, asi que texto() no tenia de
+ * donde sacar la representacion de una
+ * lista y se rendia con un error. Al
+ * construirla en memoria las dos
+ * comparten la misma, y no pueden
+ * separarse con el tiempo.
+ */
+
+typedef struct {
+    char  *datos;
+    size_t usado;
+    size_t capacidad;
+} Buffer;
+
+static int buffer_crecer(Buffer *b, size_t hace_falta) {
+
+    size_t nueva;
+    char *mas;
+
+    if (b->usado + hace_falta + 1 <= b->capacidad) {
+        return 1;
+    }
+
+    nueva = b->capacidad == 0 ? 64 : b->capacidad;
+
+    while (nueva < b->usado + hace_falta + 1) {
+        nueva *= 2;
+    }
+
+    mas = realloc(b->datos, nueva);
+
+    if (mas == NULL) {
+        return 0;
+    }
+
+    b->datos = mas;
+    b->capacidad = nueva;
+
+    return 1;
+}
+
+static int buffer_texto(Buffer *b, const char *texto) {
+
+    size_t largo;
+
+    if (texto == NULL) {
+        texto = "";
+    }
+
+    largo = strlen(texto);
+
+    if (!buffer_crecer(b, largo)) {
+        return 0;
+    }
+
+    memcpy(b->datos + b->usado, texto, largo);
+
+    b->usado += largo;
+    b->datos[b->usado] = '\0';
+
+    return 1;
+}
+
+/*
+ * Los numeros caben de sobra en 64
+ * caracteres, asi que se formatean
+ * aparte y se anaden como texto.
+ */
+
+static int buffer_numero(Buffer *b, const char *formato, ...) {
+
+    char temporal[64];
+    va_list args;
+
+    va_start(args, formato);
+    vsnprintf(temporal, sizeof(temporal), formato, args);
+    va_end(args);
+
+    return buffer_texto(b, temporal);
+}
+
+static int value_render(
     Value value,
-    int inside_list
+    int inside_list,
+    Buffer *salida
 ) {
 
     switch (value.type) {
 
         case VALUE_NUMBER:
-
-            printf(
-                "%d",
-                value.data.number
-            );
-
-            break;
+            return buffer_numero(salida, "%d", value.data.number);
 
         case VALUE_DECIMAL:
 
@@ -861,7 +948,7 @@ static void value_print_nested(
              * salia "3.14159e+06".
              *
              * 15 cifras conservan lo que
-             * el usuario escribio y
+             * escribio la persona y
              * evitan la notacion
              * cientifica en cualquier
              * rango normal.
@@ -872,9 +959,8 @@ static void value_print_nested(
              * exacto) porque entonces
              * asoma el ruido de la coma
              * flotante: 0.1 + 0.2 se
-             * imprimiria
-             * 0.30000000000000004, que
-             * en un lenguaje para
+             * veria 0.30000000000000004,
+             * que en un lenguaje para
              * aprender no ayuda a nadie.
              *
              * %g sigue quitando los
@@ -882,117 +968,123 @@ static void value_print_nested(
              * se sigue viendo "8".
              */
 
-            printf(
-                "%.15g",
-                value.data.decimal
-            );
-
-            break;
+            return buffer_numero(salida, "%.15g", value.data.decimal);
 
         case VALUE_STRING:
 
+            /*
+             * Dentro de una lista o un
+             * diccionario los textos van
+             * entrecomillados, para que
+             * se distinga [1, "1"].
+             * Sueltos, no.
+             */
+
             if (inside_list) {
-
-                printf(
-                    "\"%s\"",
-                    value.data.string == NULL
-                        ? ""
-                        : value.data.string
-                );
-
-                break;
+                return buffer_texto(salida, "\"")
+                    && buffer_texto(salida, value.data.string)
+                    && buffer_texto(salida, "\"");
             }
 
-            printf(
-                "%s",
-                value.data.string == NULL
-                    ? ""
-                    : value.data.string
-            );
-
-            break;
+            return buffer_texto(salida, value.data.string);
 
         case VALUE_BOOLEAN:
-
-            printf(
-                "%s",
-                value.data.boolean
-                    ? "verdadero"
-                    : "falso"
+            return buffer_texto(
+                salida,
+                value.data.boolean ? "verdadero" : "falso"
             );
 
-            break;
-
         case VALUE_NULL:
-
-            printf("nulo");
-
-            break;
+            return buffer_texto(salida, "nulo");
 
         case VALUE_LIST: {
 
-            printf("[");
+            int count = value_list_count(value);
+            int i;
 
-            int count =
-                value_list_count(value);
-
-            for (int i = 0; i < count; i++) {
-
-                if (i > 0) {
-                    printf(", ");
-                }
-
-                value_print_nested(
-                    value.data.list->items[i],
-                    1
-                );
+            if (!buffer_texto(salida, "[")) {
+                return 0;
             }
 
-            printf("]");
+            for (i = 0; i < count; i++) {
 
-            break;
+                if (i > 0 && !buffer_texto(salida, ", ")) {
+                    return 0;
+                }
+
+                if (!value_render(value.data.list->items[i], 1, salida)) {
+                    return 0;
+                }
+            }
+
+            return buffer_texto(salida, "]");
         }
 
         case VALUE_DICTIONARY: {
 
-            printf("{");
+            int count = value_dictionary_count(value);
+            int i;
 
-            int count =
-                value_dictionary_count(value);
-
-            for (int i = 0; i < count; i++) {
-
-                if (i > 0) {
-                    printf(", ");
-                }
-
-                printf(
-                    "\"%s\": ",
-                    value.data.dictionary
-                        ->entries[i].key
-                );
-
-                value_print_nested(
-                    value.data.dictionary
-                        ->entries[i].value,
-                    1
-                );
+            if (!buffer_texto(salida, "{")) {
+                return 0;
             }
 
-            printf("}");
+            for (i = 0; i < count; i++) {
 
-            break;
+                if (i > 0 && !buffer_texto(salida, ", ")) {
+                    return 0;
+                }
+
+                if (!buffer_texto(salida, "\"")
+                    || !buffer_texto(salida, value.data.dictionary->entries[i].key)
+                    || !buffer_texto(salida, "\": ")) {
+                    return 0;
+                }
+
+                if (!value_render(
+                        value.data.dictionary->entries[i].value, 1, salida)) {
+                    return 0;
+                }
+            }
+
+            return buffer_texto(salida, "}");
         }
 
         default:
-
-            printf("<?>");
-
-            break;
+            return buffer_texto(salida, "<?>");
     }
+}
+
+char *value_to_text(Value value) {
+
+    Buffer b;
+
+    b.datos = NULL;
+    b.usado = 0;
+    b.capacidad = 0;
+
+    if (!buffer_texto(&b, "")) {
+        return NULL;
+    }
+
+    if (!value_render(value, 0, &b)) {
+        free(b.datos);
+        return NULL;
+    }
+
+    return b.datos;
 }
 
 void value_print(Value value) {
 
-    value_print_nested(value, 0);
+    char *texto = value_to_text(value);
+
+    if (texto == NULL) {
+        return;
+    }
+
+    fputs(texto, stdout);
+
+    free(texto);
 }
+

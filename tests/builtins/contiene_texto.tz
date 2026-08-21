@@ -1,0 +1,14 @@
+// contiene() busca dentro de un texto
+imprimir contiene("hola mundo", "mundo")
+imprimir contiene("hola mundo", "adios")
+imprimir contiene("Programar", "gram")
+imprimir contiene("hola", "")
+imprimir contiene("", "algo")
+
+// distingue mayusculas
+imprimir contiene("hola", "HOLA")
+
+// y sigue funcionando con lo de siempre:
+// en listas busca valores, en diccionarios claves
+imprimir contiene([1, 2, 3], 2)
+imprimir contiene({"a": 1}, "a")

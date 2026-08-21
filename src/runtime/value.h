@@ -343,6 +343,19 @@ void value_free(Value *value);
  * Mostrar un Value
  */
 
+/*
+ * Devuelve como se ve un valor, en
+ * memoria reservada que hay que
+ * liberar con free().
+ *
+ * Es la MISMA representacion que
+ * imprime value_print: las dos usan
+ * esta funcion.
+ *
+ * Devuelve NULL si no hay memoria.
+ */
+char *value_to_text(Value value);
+
 void value_print(Value value);
 
 /*

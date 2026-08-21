@@ -2064,6 +2064,43 @@ static int builtin_texto(
 
             return 1;
 
+        case VALUE_LIST:
+        case VALUE_DICTIONARY: {
+
+            /*
+             * Listas y diccionarios se
+             * convierten con la MISMA
+             * representacion que imprime
+             * imprimir, asi que
+             *
+             *   imprimir lista
+             *   imprimir texto(lista)
+             *
+             * dan lo mismo.
+             *
+             * Antes esto era un error, y
+             * para escribir
+             * "Tengo " + texto(lista)
+             * habia que recorrerla a
+             * mano. Una funcion que se
+             * llama texto() deberia
+             * convertir a texto
+             * cualquier cosa.
+             */
+
+            char *rendido = value_to_text(value);
+
+            if (rendido == NULL) {
+                return 0;
+            }
+
+            *result = value_string(rendido);
+
+            free(rendido);
+
+            return 1;
+        }
+
         default:
 
             diagnostic_registrar(DIAG_ARGUMENTO);
@@ -2379,6 +2416,56 @@ static int builtin_contiene(
         return 1;
     }
 
+    /*
+     * ==========================
+     * CONTIENE EN UN TEXTO
+     * ==========================
+     *
+     * "¿Esta palabra esta en esta
+     * frase?" es de las primeras cosas
+     * que alguien quiere preguntar. Que
+     * la funcion se llame contiene() y
+     * no sirviera para textos era una
+     * incoherencia que hacia dudar a
+     * quien aprende.
+     *
+     * Busca el texto dentro del texto,
+     * tal cual. Un texto vacio esta
+     * contenido en cualquiera, que es
+     * lo que hace strstr y lo que se
+     * espera.
+     */
+
+    if (container.type == VALUE_STRING) {
+
+        if (needle.type != VALUE_STRING) {
+
+            diagnostic_registrar(DIAG_TIPO);
+
+            fprintf(
+                stderr,
+                "Error: para buscar dentro de un texto hace falta otro texto, no %s.\n",
+                value_type_name(needle.type)
+            );
+
+            return 0;
+        }
+
+        *result =
+            value_boolean(
+                strstr(
+                    container.data.string == NULL
+                        ? ""
+                        : container.data.string,
+                    needle.data.string == NULL
+                        ? ""
+                        : needle.data.string
+                ) != NULL
+            );
+
+        return 1;
+    }
+
     if (container.type == VALUE_DICTIONARY) {
 
         if (needle.type != VALUE_STRING) {
@@ -2409,7 +2496,7 @@ static int builtin_contiene(
 
     fprintf(
         stderr,
-        "Error: contiene() solo funciona con lista o diccionario, no %s.\n",
+        "Error: contiene() funciona con texto, lista o diccionario, no %s.\n",
         value_type_name(container.type)
     );
 

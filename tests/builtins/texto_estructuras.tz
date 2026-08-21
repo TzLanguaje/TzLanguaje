@@ -1,0 +1,16 @@
+// texto() convierte listas y diccionarios
+// con la misma representacion que imprimir
+
+variable notas = [8, 9, 7]
+imprimir "Mis notas: " + texto(notas)
+
+variable p = {"nombre": "Ana", "edad": 20}
+imprimir "Datos: " + texto(p)
+
+imprimir texto([1, "dos", verdadero, nulo, [3]])
+imprimir texto([])
+imprimir texto({})
+
+// imprimir y texto() dan lo mismo
+imprimir notas
+imprimir texto(notas)

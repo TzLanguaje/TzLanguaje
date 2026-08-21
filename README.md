@@ -8,7 +8,7 @@
   <a href="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml"><img src="https://github.com/TzLanguaje/TzLanguaje/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/TzLanguaje/TzLanguaje/releases/latest"><img src="https://img.shields.io/github/v/release/TzLanguaje/TzLanguaje?label=versi%C3%B3n&amp;color=blue" alt="Última versión"></a>
   <img src="https://img.shields.io/badge/C-C11-blue" alt="C11">
-  <img src="https://img.shields.io/badge/tests-171%20passed-success" alt="171 tests">
+  <img src="https://img.shields.io/badge/tests-173%20passed-success" alt="173 tests">
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
   <img src="https://img.shields.io/badge/plataformas-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="Plataformas">
 </p>
@@ -241,7 +241,7 @@ Escribe:
 tz --version
 ```
 
-Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.3.4`, ya está instalado.
+Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.4.0`, ya está instalado.
 
 Si en cambio dice *«orden no encontrada»* o *«no se reconoce como un comando»*, casi siempre es una de dos cosas: la terminal estaba abierta desde antes de instalar (ciérrala y abre otra), o en Windows desmarcaste la casilla del PATH (vuelve a pasar el instalador y déjala marcada).
 
@@ -281,7 +281,7 @@ Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de adm
 
 ```bash
 TZ_PREFIX=/usr/local sh install.sh
-TZ_VERSION=v0.3.4    sh install.sh
+TZ_VERSION=v0.4.0    sh install.sh
 ```
 
 **Windows**, en PowerShell:
@@ -389,7 +389,7 @@ tz --version            # mostrar la versión (o -v)
 ```
 
 ```
-TzLang 0.3.4
+TzLang 0.4.0
 ```
 
 Solo se aceptan archivos con extensión `.tz`.
@@ -784,12 +784,12 @@ TzLang incluye 16 funciones integradas:
 |---|---|---|---|
 | `largo(x)` | Longitud de texto, lista o diccionario | `largo("Hola")` | `4` |
 | `tipo(x)` | Nombre del tipo | `tipo(3.14)` | `decimal` |
-| `texto(x)` | Convierte a texto | `texto(42)` | `"42"` |
+| `texto(x)` | Convierte a texto, incluidas listas y diccionarios | `texto([1,2])` | `"[1, 2]"` |
 | `numero(x)` | Convierte a número entero | `numero("42")` | `42` |
 | `decimal(x)` | Convierte a decimal | `decimal(7)` | `7` |
 | `agregar(lista, x)` | Añade un elemento al final | `agregar(l, 4)` | — |
 | `eliminar(x, k)` | Borra por índice o por clave | `eliminar(l, 0)` | — |
-| `contiene(x, v)` | ¿Contiene el valor o la clave? | `contiene(l, 99)` | `verdadero` |
+| `contiene(x, v)` | ¿Está dentro? Busca un trozo en un texto, un valor en una lista o una clave en un diccionario | `contiene("hola", "la")` | `verdadero` |
 | `unir(lista, sep)` | Une una lista de textos | `unir(["a","b"], "-")` | `"a-b"` |
 | `separar(txt, sep)` | Parte un texto en lista | `separar("a,b", ",")` | `["a", "b"]` |
 | `mayusculas(txt)` | Pasa a mayúsculas | `mayusculas("hola")` | `"HOLA"` |
@@ -1101,7 +1101,7 @@ AñO
 
 ## Roadmap
 
-Lo que ya está terminado en la **0.3.4**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos —resto incluido—, de comparación y lógicos; sintaxis comparativa en español; condicionales con `sino si`, bucles, `romper` y `continuar`; secuencias de escape en textos; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda, índices negativos y concatenación; 17 funciones incorporadas, con entrada por teclado; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; cinco lecciones en `education/`; suite de 171 pruebas verde también bajo ASan y UBSan; CI que compila y prueba en Linux, macOS y Windows; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
+Lo que ya está terminado en la **0.4.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos —resto incluido—, de comparación y lógicos; sintaxis comparativa en español; condicionales con `sino si`, bucles, `romper` y `continuar`; secuencias de escape en textos; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda, índices negativos y concatenación; 17 funciones incorporadas, con entrada por teclado; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; cinco lecciones en `education/`; suite de 173 pruebas verde también bajo ASan y UBSan; CI que compila y prueba en Linux, macOS y Windows; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
 
 Lo siguiente, por orden de prioridad:
 
