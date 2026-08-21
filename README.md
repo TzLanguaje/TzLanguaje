@@ -863,11 +863,14 @@ sangría de `si`, `mientras`, `para cada` y `funcion`. No colorea la sintaxis:
 eso pide una gramática TextMate, que todavía no está hecha.
 
 ```bash
-sh editors/vscode/construir-vsix.sh
-code --install-extension dist/tzlang-0.4.1.vsix
+curl -fsSLO https://github.com/TzLanguaje/TzLanguaje/releases/latest/download/tzlang-0.4.1.vsix
+code --install-extension tzlang-0.4.1.vsix
 ```
 
 Después hay que recargar la ventana: `Ctrl+Shift+P` → *Developer: Reload Window*.
+
+Hay que instalarla **en cada máquina donde uses VS Code**. Settings Sync no
+propaga las extensiones instaladas desde un `.vsix`, solo las del Marketplace.
 
 ### Si en Windows los `.tz` salen en blanco
 

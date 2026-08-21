@@ -17,13 +17,24 @@ justo lo que hace esta.
 
 ## Instalar
 
-Desde el `.vsix`, sin pasar por el Marketplace:
+Hay que instalarla **en cada máquina**. VS Code no sincroniza las extensiones
+que vienen de un `.vsix`: Settings Sync solo propaga las del Marketplace.
+
+Cada release publica el `.vsix` junto a los demás archivos. En **Linux y macOS**:
 
 ```bash
+curl -fsSLO https://github.com/TzLanguaje/TzLanguaje/releases/latest/download/tzlang-0.4.1.vsix
 code --install-extension tzlang-0.4.1.vsix
 ```
 
-El `.vsix` se construye desde la raíz del repositorio con:
+En **Windows**, con PowerShell:
+
+```powershell
+irm https://github.com/TzLanguaje/TzLanguaje/releases/latest/download/tzlang-0.4.1.vsix -OutFile tzlang.vsix
+code --install-extension tzlang.vsix
+```
+
+O construyéndolo desde el repositorio, que es lo mismo:
 
 ```bash
 sh editors/vscode/construir-vsix.sh

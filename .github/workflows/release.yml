@@ -314,11 +314,53 @@ jobs:
           if-no-files-found: error
 
   # ==========================
+  # 2b. La extension de VS Code
+  # ==========================
+  #
+  # VS Code no mira las asociaciones
+  # del sistema: dentro del editor el
+  # icono de los .tz solo sale si esta
+  # instalada la extension.
+  #
+  # Va en el release para que se pueda
+  # instalar en cualquier maquina sin
+  # tener que clonar el repositorio ni
+  # empaquetarla a mano. Es un solo
+  # .vsix para los tres sistemas: no
+  # lleva binarios, solo el manifiesto,
+  # el icono y la configuracion.
+
+  vsix:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # El script comprueba por su
+      # cuenta que la version del
+      # manifiesto y la de version.h
+      # coincidan.
+      - name: Empaquetar la extension
+        run: sh editors/vscode/construir-vsix.sh "$PWD/dist"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: dist/*.vsix
+          if-no-files-found: error
+
+  # ==========================
   # 3. Publicar el release
   # ==========================
 
   publish:
-    needs: [check, build]
+    needs: [check, build, vsix]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
