@@ -241,7 +241,7 @@ Escribe:
 tz --version
 ```
 
-Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.4.0`, ya está instalado.
+Si responde con el nombre y el número de versión, por ejemplo `TzLang 0.4.1`, ya está instalado.
 
 Si en cambio dice *«orden no encontrada»* o *«no se reconoce como un comando»*, casi siempre es una de dos cosas: la terminal estaba abierta desde antes de instalar (ciérrala y abre otra), o en Windows desmarcaste la casilla del PATH (vuelve a pasar el instalador y déjala marcada).
 
@@ -281,7 +281,7 @@ Verifica el checksum SHA-256 e instala en `~/.local/bin/tz`, sin permisos de adm
 
 ```bash
 TZ_PREFIX=/usr/local sh install.sh
-TZ_VERSION=v0.4.0    sh install.sh
+TZ_VERSION=v0.4.1    sh install.sh
 ```
 
 **Windows**, en PowerShell:
@@ -389,7 +389,7 @@ tz --version            # mostrar la versión (o -v)
 ```
 
 ```
-TzLang 0.4.0
+TzLang 0.4.1
 ```
 
 Solo se aceptan archivos con extensión `.tz`.
@@ -1128,7 +1128,7 @@ AñO
 
 ## Roadmap
 
-Lo que ya está terminado en la **0.4.0**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos —resto incluido—, de comparación y lógicos; sintaxis comparativa en español; condicionales con `sino si`, bucles, `romper` y `continuar`; secuencias de escape en textos; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda, índices negativos y concatenación; 17 funciones incorporadas, con entrada por teclado; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; cinco lecciones en `education/`; suite de 173 pruebas verde también bajo ASan y UBSan; CI que compila y prueba en Linux, macOS y Windows; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
+Lo que ya está terminado en la **0.4.1**: lexer, parser, AST, intérprete y runtime propios; variables y los siete tipos; operadores aritméticos —resto incluido—, de comparación y lógicos; sintaxis comparativa en español; condicionales con `sino si`, bucles, `romper` y `continuar`; secuencias de escape en textos; funciones con parámetros, retorno, recursión y scope léxico; listas y diccionarios anidados con copia profunda, índices negativos y concatenación; 17 funciones incorporadas, con entrada por teclado; CLI con códigos de salida diferenciados; notas de diagnóstico por categoría de error; cinco lecciones en `education/`; suite de 173 pruebas verde también bajo ASan y UBSan; CI que compila y prueba en Linux, macOS y Windows; instaladores nativos para macOS, Windows y Linux publicados automáticamente en cada versión.
 
 Lo siguiente, por orden de prioridad:
 
