@@ -105,6 +105,13 @@ $base    = "https://github.com/$Repo/releases/download/$Version"
 
 Info "TzLang $Version  ($target)"
 
+# Ruta al icono de la asociacion. Si
+# el paquete no trae el .ico suelto,
+# se queda con el que lleva incrustado
+# tz.exe: el ',0' es el indice del
+# recurso.
+$Icono = "$BinDir\tz.exe,0"
+
 # ==========================
 # DESCARGAR Y VERIFICAR
 # ==========================
@@ -169,6 +176,17 @@ try {
         Morir "no se pudo escribir en $BinDir. Cierra cualquier ventana que este usando tz.exe y reintenta."
     }
 
+    # El .zip trae tambien el icono.
+    # Los releases viejos no lo llevan:
+    # entonces se usa el que va dentro
+    # del propio tz.exe.
+    $ico = Get-ChildItem -Path $extraido -Filter "tzlang.ico" -Recurse |
+           Select-Object -First 1
+    if ($ico) {
+        Copy-Item $ico.FullName (Join-Path $Prefix "tzlang.ico") -Force
+        $Icono = Join-Path $Prefix "tzlang.ico"
+    }
+
     Verde "TzLang instalado en $BinDir\tz.exe"
 
 } finally {
@@ -195,6 +213,96 @@ if (-not $yaEsta) {
     Info ""
     Info "$BinDir anadido a tu PATH."
     Info "Abre una terminal NUEVA para que surta efecto."
+}
+
+# ==========================
+# ICONO Y DOBLE CLIC
+# ==========================
+#
+# Esto es lo que hace el instalador
+# .exe y aqui faltaba: sin estas claves
+# los .tz salen con el icono en blanco
+# y el doble clic no sabe que hacer con
+# ellos.
+#
+# Todo va en HKCU: es el usuario, no la
+# maquina, asi que no hace falta
+# elevar permisos.
+
+$Clases = "HKCU:\Software\Classes"
+$ProgId = "TzLang.Programa"
+
+function Clave ($ruta, $valor) {
+    if (-not (Test-Path $ruta)) {
+        New-Item -Path $ruta -Force | Out-Null
+    }
+    # '(default)' es el nombre que da el
+    # proveedor de registro al valor
+    # predeterminado, el que sale sin
+    # nombre en regedit.
+    Set-ItemProperty -Path $ruta -Name "(default)" -Value $valor
+}
+
+try {
+    Clave "$Clases\.tz"                        $ProgId
+    Clave "$Clases\$ProgId"                    "Programa de TzLang"
+    Clave "$Clases\$ProgId\DefaultIcon"        $Icono
+    Clave "$Clases\$ProgId\shell\open\command" ('"{0}\tz.exe" "%1"' -f $BinDir)
+
+    # ==========================
+    # AVISAR AL EXPLORADOR
+    # ==========================
+    #
+    # El Explorador lee las asociaciones
+    # al arrancar y no vuelve a mirar.
+    # Sin este aviso las claves quedan
+    # bien escritas y los iconos siguen
+    # en blanco hasta cerrar sesion.
+    #
+    # SHCNE_ASSOCCHANGED = 0x08000000
+    # SHCNF_IDLIST       = 0x0000
+
+    try {
+        if (-not ("TzLang.Shell" -as [type])) {
+            Add-Type -Namespace TzLang -Name Shell -MemberDefinition @"
+[System.Runtime.InteropServices.DllImport("shell32.dll")]
+public static extern void SHChangeNotify(
+    int eventId, uint flags, System.IntPtr item1, System.IntPtr item2);
+"@
+        }
+        [TzLang.Shell]::SHChangeNotify(0x08000000, 0x0000, [IntPtr]::Zero, [IntPtr]::Zero)
+        Verde "Los archivos .tz ya tienen el icono de TzLang."
+    } catch {
+        Info "Los .tz quedan asociados, pero el Explorador no se ha enterado todavia."
+        Info "Cierra la sesion y vuelve a entrar para ver el icono."
+    }
+
+    # ==========================
+    # ELECCION PREVIA DEL USUARIO
+    # ==========================
+    #
+    # Si alguna vez se abrio un .tz con
+    # 'Abrir con' y se marco la casilla,
+    # Windows guarda esa eleccion aqui y
+    # MANDA sobre lo que acabamos de
+    # escribir: el icono seguira siendo
+    # el del Bloc de notas. No se puede
+    # quitar desde un script (la clave va
+    # firmada a proposito), asi que solo
+    # se avisa.
+
+    $eleccion = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.tz\UserChoice"
+
+    if (Test-Path $eleccion) {
+        Info ""
+        Info "Aviso: los .tz estan abiertos con otro programa por eleccion tuya,"
+        Info "y esa eleccion manda sobre el icono. Para deshacerla: clic derecho"
+        Info "en un .tz > Abrir con > Elegir otra aplicacion > TzLang > Siempre."
+    }
+
+} catch {
+    Info "No se pudo asociar los archivos .tz: $($_.Exception.Message)"
+    Info "TzLang funciona igual desde la terminal."
 }
 
 Info ""

@@ -69,6 +69,45 @@ add_executable(tz
 target_include_directories(tz PRIVATE src)
 
 # ==========================
+# RECURSOS DE WINDOWS
+# ==========================
+#
+# Un .rc compilado dentro del
+# ejecutable: el icono de TzLang y la
+# ficha de version que sale al mirar
+# las propiedades del archivo.
+#
+# Sin esto tz.exe lleva el icono
+# generico de consola, y ademas la
+# asociacion de los .tz se queda sin
+# icono de reserva cuando se instala
+# desde el .zip, donde no hay
+# tzlang.ico suelto.
+#
+# enable_language(RC) hace falta:
+# project() solo declaro C, y sin
+# declarar RC un .rc en la lista de
+# fuentes se ignora en silencio.
+
+if(WIN32)
+    enable_language(RC)
+
+    set(TZ_ICONO "${CMAKE_CURRENT_SOURCE_DIR}/packaging/icono/tzlang.ico")
+
+    if(EXISTS "${TZ_ICONO}")
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/packaging/windows/tzlang.rc.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/tzlang.rc"
+            @ONLY
+        )
+        target_sources(tz PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/tzlang.rc")
+    else()
+        message(WARNING
+            "No esta ${TZ_ICONO}: tz.exe se compilara sin icono.")
+    endif()
+endif()
+
+# ==========================
 # FLAGS POR COMPILADOR
 # ==========================
 

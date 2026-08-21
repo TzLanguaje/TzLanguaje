@@ -836,7 +836,7 @@ TzLang trae su propio icono, y los instaladores lo registran para que el explora
 
 | Sistema | Estado |
 |---|---|
-| **Windows** | Funciona. El instalador asocia los `.tz` y les pone el icono. También lo lleva el propio instalador y la entrada de *Agregar o quitar programas*. |
+| **Windows** | Funciona por las tres vías: el `…-setup.exe`, el instalador de PowerShell y el `.zip`. Asocian los `.tz`, les ponen el icono y avisan al Explorador para que se vea al momento. El propio `tz.exe` lleva el icono incrustado, igual que la entrada de *Agregar o quitar programas*. |
 | **Linux** | Funciona con los paquetes `.deb` y `.rpm`, que declaran el tipo `text/x-tzlang` e instalan el icono en siete tamaños. |
 | **macOS** | Funciona. El `.pkg` instala además `TzLang.app` en Aplicaciones, que declara el tipo de archivo y permite **ejecutar un `.tz` con doble clic**: abre el Terminal y lo corre. |
 
@@ -847,6 +847,33 @@ Los iconos se regeneran desde el original con:
 ```bash
 sh packaging/icono/generar-iconos.sh
 ```
+
+### Si en Windows los `.tz` salen en blanco
+
+El Explorador de Windows lee la lista de asociaciones **al arrancar** y no vuelve a mirarla. Por eso puede pasar que la asociación esté bien puesta y el icono siga sin aparecer.
+
+Lo primero, comprueba que el registro la tiene:
+
+```powershell
+reg query "HKCU\Software\Classes\.tz"
+reg query "HKCU\Software\Classes\TzLang.Programa\DefaultIcon"
+```
+
+- **Si las claves están** y el icono no se ve, es que el Explorador no se ha enterado. Se le avisa reiniciándolo:
+
+  ```powershell
+  Stop-Process -Name explorer -Force
+  ```
+
+  Se cierra y vuelve a abrirse solo. Si aun así no aparece, la caché de iconos está vieja:
+
+  ```powershell
+  ie4uinit.exe -show
+  ```
+
+- **Si las claves no están**, se instaló con una versión anterior a la 0.4.1, o desmarcando la casilla *Asociar los archivos .tz*. Vuelve a pasar el instalador con la casilla marcada.
+
+- **Si sale el icono de otro programa** (el Bloc de notas, VS Code…), es porque alguna vez abriste un `.tz` con *Abrir con* y marcaste *Usar siempre esta aplicación*. Esa elección tuya manda sobre la del instalador, y ningún programa puede deshacerla por ti: clic derecho en un `.tz` → **Abrir con** → **Elegir otra aplicación** → **TzLang** → **Siempre**.
 
 ---
 

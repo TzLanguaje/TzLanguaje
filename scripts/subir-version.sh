@@ -65,9 +65,32 @@ echo
 
 ARCHIVOS="src/version.h README.md docs/language.md install.sh install.ps1 packaging/homebrew/tzlang.rb packaging/scoop/tzlang.json"
 
+# ==========================
+# LOS PUNTOS HAY QUE ESCAPARLOS
+# ==========================
+#
+# Para sed, el punto de "0.3.3" es un
+# comodin: casa con cualquier letra. El
+# patron sin escapar casaba tambien con
+# el "033[3" de las secuencias de color
+# de install.sh, que acabaron
+# convertidas en
+#
+#   printf '\0.4.01m%s\0.4.0m\n'
+#
+# despues de varias subidas de version.
+# Con los puntos escapados solo casa el
+# numero de version de verdad.
+
+escapar() { printf '%s' "$1" | sed 's/\./\\./g'; }
+
+ACTUAL_RE="$(escapar "$ACTUAL")"
+
 for f in $ARCHIVOS; do
-    if grep -q "$ACTUAL" "$f" 2>/dev/null; then
-        sed -i.bak "s/$ACTUAL/$NUEVA/g" "$f" && rm -f "$f.bak"
+    # -F: buscar el texto tal cual, sin
+    # tratarlo como expresion regular.
+    if grep -qF -- "$ACTUAL" "$f" 2>/dev/null; then
+        sed -i.bak "s/$ACTUAL_RE/$NUEVA/g" "$f" && rm -f "$f.bak"
         echo "   actualizado  $f"
     else
         echo "   sin cambios  $f"
@@ -77,7 +100,7 @@ done
 echo
 echo "Comprobando que no quede ninguna mencion vieja..."
 
-if grep -rn "$ACTUAL" $ARCHIVOS 2>/dev/null; then
+if grep -nF -- "$ACTUAL" $ARCHIVOS 2>/dev/null; then
     echo "AVISO: quedan menciones a $ACTUAL, revisalas a mano." >&2
 else
     echo "   ninguna"

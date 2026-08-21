@@ -1,0 +1,74 @@
+/* ==========================
+   Recursos de tz.exe (Windows)
+   ==========================
+
+   CMake genera tzlang.rc a partir de
+   este archivo, rellenando @TZ_ICONO@
+   y la version, y se lo pasa al
+   compilador de recursos.
+
+   Sirve para dos cosas:
+
+     1. Que tz.exe tenga el icono de
+        TzLang en el Explorador, en la
+        barra de tareas y en el
+        administrador de tareas, en vez
+        del icono generico de consola.
+
+     2. Que la pestana Detalles de sus
+        propiedades diga que version es
+        y de quien viene.
+
+   NO se incluye ninguna cabecera a
+   proposito. Los .rc suelen hacer
+   #include <winver.h>, pero eso obliga
+   a que el compilador de recursos
+   encuentre el SDK, y aqui solo hacen
+   falta dos constantes que se pueden
+   escribir tal cual:
+
+     VS_VERSION_INFO  es el recurso 1
+     VOS_NT_WINDOWS32 es 0x40004
+     VFT_APP          es 0x1
+
+   Todo el archivo es ASCII: rc.exe lee
+   los .rc con la pagina de codigos del
+   sistema, asi que un acento aqui
+   saldria torcido en las propiedades
+   del archivo.
+
+   Las rutas van con barras normales:
+   las entiende tanto rc.exe de MSVC
+   como windres de MinGW, y una barra
+   invertida seria un escape. */
+
+/* El Explorador usa el icono de ID mas
+   bajo como icono del programa. */
+1 ICON "@TZ_ICONO@"
+
+1 VERSIONINFO
+FILEVERSION    @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,0
+PRODUCTVERSION @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,0
+FILEOS         0x40004L
+FILETYPE       0x1L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        /* 0c0a = espanol; 04b0 = UTF-16 */
+        BLOCK "0c0a04b0"
+        BEGIN
+            VALUE "CompanyName",      "TzLanguaje"
+            VALUE "FileDescription",  "TzLang, un lenguaje de programacion educativo en espanol"
+            VALUE "FileVersion",      "@TZLANG_VERSION@"
+            VALUE "InternalName",     "tz"
+            VALUE "LegalCopyright",   "Licencia MIT"
+            VALUE "OriginalFilename", "tz.exe"
+            VALUE "ProductName",      "TzLang"
+            VALUE "ProductVersion",   "@TZLANG_VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0c0a, 1200
+    END
+END

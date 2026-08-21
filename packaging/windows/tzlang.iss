@@ -77,6 +77,33 @@ ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayName={#TzNombre} {#TzVersion}
 UninstallDisplayIcon={app}\tzlang.ico
 
+; ==========================
+; AVISAR AL SISTEMA
+; ==========================
+;
+; Sin estas dos lineas el instalador
+; escribe en el registro y se calla.
+;
+; ChangesAssociations hace que Inno
+; llame a SHChangeNotify al terminar.
+; Sin ella el Explorador sigue con la
+; lista de asociaciones que leyo al
+; arrancar: los .tz se quedan con el
+; icono en blanco hasta que se cierre
+; la sesion. Era exactamente eso lo
+; que pasaba: la asociacion SI estaba
+; puesta, pero nadie se lo habia dicho
+; al Explorador.
+;
+; ChangesEnvironment hace lo mismo con
+; el PATH (WM_SETTINGCHANGE). Sin ella
+; no basta con abrir una terminal
+; nueva, porque la hereda del
+; explorer.exe que sigue vivo con el
+; PATH viejo.
+ChangesAssociations=yes
+ChangesEnvironment=yes
+
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"

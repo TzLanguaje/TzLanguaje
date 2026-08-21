@@ -135,7 +135,21 @@ jobs:
 
       - name: Comprobar que arranca (Windows)
         if: runner.os == 'Windows'
-        run: build-rel\Release\tz.exe --version
+        shell: pwsh
+        run: |
+          .\build-rel\Release\tz.exe --version
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          # Los recursos del .rc: si no
+          # estan, tz.exe salio sin icono
+          # y sin ficha de version. Se
+          # comprueba aqui porque es un
+          # fallo que no se nota hasta
+          # tener el archivo delante.
+          $info = (Get-Item .\build-rel\Release\tz.exe).VersionInfo
+          if ($info.ProductName -ne "TzLang") {
+            throw "tz.exe se compilo sin los recursos de Windows (ProductName='$($info.ProductName)')"
+          }
+          Write-Host "recursos: $($info.ProductName) $($info.ProductVersion)"
 
       # ==========================
       # Empaquetar
@@ -164,6 +178,12 @@ jobs:
           New-Item -ItemType Directory -Force -Path "dist\$name" | Out-Null
           Copy-Item build-rel\Release\tz.exe "dist\$name\"
           Copy-Item LICENSE, README.md "dist\$name\"
+          # El icono viaja en el zip para
+          # que install.ps1 pueda
+          # registrarlo en los .tz. Sin
+          # el, quien instala por
+          # PowerShell se queda sin icono.
+          Copy-Item packaging\icono\tzlang.ico "dist\$name\"
           Compress-Archive -Path "dist\$name\*" -DestinationPath "dist\$name.zip"
           Remove-Item -Recurse -Force "dist\$name"
 
@@ -255,6 +275,37 @@ jobs:
           & $tz --version
           & $tz examples\hola.tz
           if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          # ==========================
+          # La asociacion de los .tz
+          # ==========================
+          #
+          # Es lo que pone el icono en el
+          # Explorador. Se comprueba clave
+          # por clave: cuando esto se
+          # rompe no falla nada, solo
+          # aparecen los .tz en blanco en
+          # la maquina de quien instala.
+
+          $clases = "HKCU:\Software\Classes"
+
+          foreach ($clave in @(
+              "$clases\.tz",
+              "$clases\TzLang.Programa\DefaultIcon",
+              "$clases\TzLang.Programa\shell\open\command")) {
+            if (-not (Test-Path $clave)) { throw "el instalador no registro $clave" }
+          }
+
+          $progid = (Get-ItemProperty "$clases\.tz")."(default)"
+          if ($progid -ne "TzLang.Programa") { throw ".tz apunta a '$progid'" }
+
+          # El icono puede venir como
+          # ruta suelta o como 'exe,0'.
+          $icono = (Get-ItemProperty "$clases\TzLang.Programa\DefaultIcon")."(default)"
+          $archivoIcono = $icono -replace ',\d+$', ''
+          if (-not (Test-Path $archivoIcono)) { throw "el icono $archivoIcono no existe" }
+
+          Write-Host "asociacion .tz -> $progid, icono $icono"
 
       - uses: actions/upload-artifact@v4
         with:

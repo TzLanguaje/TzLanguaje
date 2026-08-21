@@ -28,8 +28,8 @@ REPO="${TZ_REPO:-TzLanguaje/TzLanguaje}"
 PREFIX="${TZ_PREFIX:-$HOME/.local}"
 BIN_DIR="$PREFIX/bin"
 
-rojo()  { printf '\0.4.01m%s\0.4.0m\n' "$1" >&2; }
-verde() { printf '\0.4.02m%s\0.4.0m\n' "$1"; }
+rojo()  { printf '\033[31m%s\033[0m\n' "$1" >&2; }
+verde() { printf '\033[32m%s\033[0m\n' "$1"; }
 info()  { printf '%s\n' "$1"; }
 
 morir() { rojo "Error: $1"; exit 1; }
