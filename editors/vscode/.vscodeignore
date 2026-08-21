@@ -1,0 +1,6 @@
+# Lo que NO entra en el .vsix.
+#
+# El script que lo construye no tiene
+# nada que hacer dentro del paquete.
+construir-vsix.sh
+.vscodeignore

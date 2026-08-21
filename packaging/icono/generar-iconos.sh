@@ -142,4 +142,26 @@ rm -rf "$SET" "$AQUI/.recortado.png"
 
 printf '   tzlang.icns (%s KB)\n' "$(( $(wc -c < "$AQUI/tzlang.icns") / 1024 ))"
 
+# ==========================
+# .png para la extension de VS Code
+# ==========================
+#
+# VS Code no mira las asociaciones del
+# sistema: el icono de los .tz sale de
+# su tema de iconos, y para eso la
+# extension tiene que llevar el suyo
+# dentro.
+#
+# 128 sirve para las dos cosas que lo
+# usan: el explorador lo dibuja a 16 y
+# el Marketplace exige 128 como minimo.
+
+VSCODE="$AQUI/../../editors/vscode/icons"
+
+if [ -d "$VSCODE" ]; then
+    cp "$AQUI/tzlang-128.png" "$VSCODE/tzlang.png"
+    echo "Copiando el icono de la extension de VS Code..."
+    echo "   editors/vscode/icons/tzlang.png"
+fi
+
 echo "Listo."

@@ -63,7 +63,7 @@ echo
 # resto son menciones que tienen que
 # seguirla.
 
-ARCHIVOS="src/version.h README.md docs/language.md install.sh install.ps1 packaging/homebrew/tzlang.rb packaging/scoop/tzlang.json"
+ARCHIVOS="src/version.h README.md docs/language.md install.sh install.ps1 packaging/homebrew/tzlang.rb packaging/scoop/tzlang.json editors/vscode/package.json"
 
 # ==========================
 # LOS PUNTOS HAY QUE ESCAPARLOS

@@ -1,0 +1,49 @@
+{
+  "name": "tzlang",
+  "displayName": "TzLang",
+  "description": "Icono y ajustes de editor para los archivos .tz de TzLang, el lenguaje de programacion educativo en espanol.",
+  "version": "0.4.1",
+  "publisher": "TzLanguaje",
+  "license": "MIT",
+  "icon": "icons/tzlang.png",
+  "engines": {
+    "vscode": "^1.66.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "tzlang",
+    "tz",
+    "espanol",
+    "educativo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TzLanguaje/TzLanguaje.git",
+    "directory": "editors/vscode"
+  },
+  "homepage": "https://github.com/TzLanguaje/TzLanguaje#readme",
+  "bugs": {
+    "url": "https://github.com/TzLanguaje/TzLanguaje/issues"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "tzlang",
+        "aliases": [
+          "TzLang",
+          "tzlang"
+        ],
+        "extensions": [
+          ".tz"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/tzlang.png",
+          "dark": "./icons/tzlang.png"
+        }
+      }
+    ]
+  }
+}

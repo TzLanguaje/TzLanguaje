@@ -839,6 +839,7 @@ TzLang trae su propio icono, y los instaladores lo registran para que el explora
 | **Windows** | Funciona por las tres vías: el `…-setup.exe`, el instalador de PowerShell y el `.zip`. Asocian los `.tz`, les ponen el icono y avisan al Explorador para que se vea al momento. El propio `tz.exe` lleva el icono incrustado, igual que la entrada de *Agregar o quitar programas*. |
 | **Linux** | Funciona con los paquetes `.deb` y `.rpm`, que declaran el tipo `text/x-tzlang` e instalan el icono en siete tamaños. |
 | **macOS** | Funciona. El `.pkg` instala además `TzLang.app` en Aplicaciones, que declara el tipo de archivo y permite **ejecutar un `.tz` con doble clic**: abre el Terminal y lo corre. |
+| **VS Code** | Funciona con la extensión de `editors/vscode`, que hay que instalar aparte. |
 
 En macOS hace falta esa aplicación porque el icono de un tipo de archivo **solo** se puede declarar desde el `Info.plist` de una app: un programa de línea de órdenes no tiene dónde hacerlo. Ya que hacía falta, se aprovecha para dar el doble clic.
 
@@ -847,6 +848,26 @@ Los iconos se regeneran desde el original con:
 ```bash
 sh packaging/icono/generar-iconos.sh
 ```
+
+### VS Code va por libre
+
+Dentro de VS Code los `.tz` **siguen sin icono** por mucho que el sistema lo
+tenga registrado, y no es un fallo: VS Code no mira las asociaciones del sistema
+operativo. Sus iconos salen de su propio *tema de iconos*, y ningún tema conoce
+la extensión `.tz`.
+
+La única forma de que aparezca ahí es una extensión que lo declare. Está en
+[`editors/vscode/`](editors/vscode/), y además de poner el icono le enseña al
+editor a cerrar comillas y paréntesis, a comentar con `//` y a manejar la
+sangría de `si`, `mientras`, `para cada` y `funcion`. No colorea la sintaxis:
+eso pide una gramática TextMate, que todavía no está hecha.
+
+```bash
+sh editors/vscode/construir-vsix.sh
+code --install-extension dist/tzlang-0.4.1.vsix
+```
+
+Después hay que recargar la ventana: `Ctrl+Shift+P` → *Developer: Reload Window*.
 
 ### Si en Windows los `.tz` salen en blanco
 
