@@ -23,14 +23,14 @@ que vienen de un `.vsix`: Settings Sync solo propaga las del Marketplace.
 Cada release publica el `.vsix` junto a los demás archivos. En **Linux y macOS**:
 
 ```bash
-curl -fsSLO https://github.com/TzLanguaje/TzLanguaje/releases/latest/download/tzlang-0.4.1.vsix
-code --install-extension tzlang-0.4.1.vsix
+curl -fsSLO https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/tzlang-0.4.2.vsix
+code --install-extension tzlang-0.4.2.vsix
 ```
 
 En **Windows**, con PowerShell:
 
 ```powershell
-irm https://github.com/TzLanguaje/TzLanguaje/releases/latest/download/tzlang-0.4.1.vsix -OutFile tzlang.vsix
+irm https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/tzlang-0.4.2.vsix -OutFile tzlang.vsix
 code --install-extension tzlang.vsix
 ```
 

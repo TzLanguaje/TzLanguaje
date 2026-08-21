@@ -863,7 +863,7 @@ sangría de `si`, `mientras`, `para cada` y `funcion`. No colorea la sintaxis:
 eso pide una gramática TextMate, que todavía no está hecha.
 
 ```bash
-curl -fsSLO https://github.com/TzLanguaje/TzLanguaje/releases/latest/download/tzlang-0.4.2.vsix
+curl -fsSLO https://github.com/TzLanguaje/TzLanguaje/releases/download/v0.4.2/tzlang-0.4.2.vsix
 code --install-extension tzlang-0.4.2.vsix
 ```
 

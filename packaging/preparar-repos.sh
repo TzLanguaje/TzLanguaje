@@ -79,7 +79,32 @@ trap 'rm -rf "$TMP"' EXIT INT TERM
 
 echo "Descargando el codigo de v$VERSION..."
 
-if bajar "$BASE/archive/refs/tags/v$VERSION.tar.gz" "$TMP/fuente.tar.gz"; then
+# ==========================
+# REINTENTAR
+# ==========================
+#
+# GitHub GENERA el tarball la primera
+# vez que alguien lo pide, y hasta que
+# termina responde con un error. Con un
+# solo intento la formula salia con el
+# hueco sin rellenar y el aviso pasaba
+# desapercibido entre el resto de la
+# salida.
+
+bajar_con_reintentos() {
+    intento=1
+    while [ "$intento" -le 5 ]; do
+        if bajar "$1" "$2"; then
+            return 0
+        fi
+        echo "   intento $intento sin suerte, esperando..."
+        sleep 10
+        intento=$((intento + 1))
+    done
+    return 1
+}
+
+if bajar_con_reintentos "$BASE/archive/refs/tags/v$VERSION.tar.gz" "$TMP/fuente.tar.gz"; then
     SHA_FUENTE="$(sha256 "$TMP/fuente.tar.gz")"
     echo "   sha256: $SHA_FUENTE"
 else
