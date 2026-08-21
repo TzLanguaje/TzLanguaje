@@ -2,7 +2,7 @@
   "name": "tzlang",
   "displayName": "TzLang",
   "description": "Icono y ajustes de editor para los archivos .tz de TzLang, el lenguaje de programacion educativo en espanol.",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "publisher": "TzLanguaje",
   "license": "MIT",
   "icon": "icons/tzlang.png",
